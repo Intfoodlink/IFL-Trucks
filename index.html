@@ -10,7 +10,12 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- JSZip -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- Leaflet CSS & JS for Free Interactive Route Maps -->
+  <!-- SheetJS (Excel Generation) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF & AutoTable (PDF Generation) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <!-- Leaflet CSS & JS for Route Mapping -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Supabase Cloud SDK -->
@@ -62,7 +67,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Cloud Freight Planner, Route Mapper & Waypoints</p>
+          <p class="text-[11px] text-slate-400">Cloud Freight Planner, Route Mapper & Reporting Matrix</p>
         </div>
       </div>
 
@@ -136,17 +141,38 @@
       <div id="calendarGrid" class="grid grid-cols-7 gap-2 min-h-[600px]"></div>
     </div>
 
-    <!-- FILTERS VIEW -->
+    <!-- FILTERS VIEW WITH REPORTING SYSTEM -->
     <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
       <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-action"></i> Shipment Directory</h2>
-        <div class="flex gap-3">
-          <button onclick="resetFilters()" class="text-xs text-action font-bold hover:underline">Reset Filters</button>
-          <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-action"></i> Shipment Directory & Custom Reports</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Filter loads and export executive or detailed spreadsheets & PDF manifests.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- REPORT GENERATION BUTTONS -->
+          <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
+            <span class="text-[11px] font-bold text-slate-500 px-2">Reports:</span>
+            <button onclick="exportExcelReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Excel (Simple)
+            </button>
+            <button onclick="exportExcelReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Excel (Full)
+            </button>
+            <button onclick="exportPDFReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-600"></i> PDF (Simple)
+            </button>
+            <button onclick="exportPDFReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-700"></i> PDF (Full)
+            </button>
+          </div>
+
+          <button onclick="resetFilters()" class="text-xs text-action font-bold hover:underline px-2">Reset</button>
+          <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
             <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
           </button>
         </div>
       </div>
+
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 text-xs">
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Departure Date Range</label>
@@ -172,6 +198,7 @@
           </select>
         </div>
       </div>
+
       <div class="overflow-x-auto border border-slate-200 rounded-xl">
         <table class="w-full text-left text-xs text-slate-600">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
@@ -186,7 +213,7 @@
     </div>
   </main>
 
-  <!-- TRUCK MODAL (PUBLISH / EDIT) -->
+  <!-- TRUCK MODAL -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -207,7 +234,6 @@
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
-        <!-- ORIGIN DETAILS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
           <div class="grid grid-cols-3 gap-2">
@@ -219,7 +245,6 @@
               <option value="Germany">Germany</option>
               <option value="Netherlands">Netherlands</option>
               <option value="Belgium">Belgium</option>
-              <option value="Italy">Italy</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -229,7 +254,6 @@
           </div>
         </div>
 
-        <!-- STOPS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex justify-between items-center mb-2">
             <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops</p>
@@ -238,7 +262,6 @@
           <div id="stopsContainer" class="space-y-2"></div>
         </div>
 
-        <!-- DESTINATION DETAILS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
           <div class="grid grid-cols-3 gap-2">
@@ -250,7 +273,6 @@
               <option value="Germany">Germany</option>
               <option value="Netherlands">Netherlands</option>
               <option value="Belgium">Belgium</option>
-              <option value="Italy">Italy</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -260,7 +282,6 @@
           </div>
         </div>
 
-        <!-- PALLET CARGO ALLOCATION -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Pallet Cargo Allocation:</p>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
@@ -283,10 +304,9 @@
           </div>
         </div>
 
-        <!-- ATTACH REAL FILES -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Documentation:</p>
+            <p class="font-bold text-slate-700">Attach Real Files (PDF, Excel, Word, Images):</p>
             <button type="button" onclick="addDocRow('truckDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
           </div>
           <div id="truckDocRows" class="space-y-2"></div>
@@ -354,7 +374,6 @@
           </div>
         </div>
 
-        <!-- REQUESTED STOP WITH GEOGRAPHY -->
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700">Requested Stop / Delivery Point (Optional)</p>
           <div class="grid grid-cols-3 gap-2">
@@ -364,8 +383,6 @@
               <option value="United Kingdom">United Kingdom</option>
               <option value="Spain">Spain</option>
               <option value="Germany">Germany</option>
-              <option value="Netherlands">Netherlands</option>
-              <option value="Belgium">Belgium</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -375,7 +392,6 @@
           </div>
         </div>
 
-        <!-- ATTACH REAL FILES -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
             <p class="font-bold text-slate-700">Attach Real Files (PDF, Excel, Word, Images):</p>
@@ -411,8 +427,8 @@
     let selectedTruckId = null;
     let calendarDate = new Date();
     let currentLeafletMap = null;
+    let currentlyFilteredTrucks = [];
 
-    // Fast Geocoding Cache with preset coordinates for instantaneous rendering
     const geoCoordsCache = {
       'london': [51.5074, -0.1278],
       'calais': [50.9513, 1.8587],
@@ -442,7 +458,7 @@
       } catch (e) {
         console.warn("Geocoding fallback triggered", e);
       }
-      return [48.8566, 2.3522]; // Default Europe center
+      return [48.8566, 2.3522];
     }
 
     async function uploadFileToSupabase(file) {
@@ -580,7 +596,7 @@
 
     function openOriginalDoc(url) {
       if (!url || !url.startsWith('http')) {
-        alert("This is an unindexed document. Please upload a real file to test cloud download.");
+        alert("This document is an unindexed reference. Please upload a real file to live-test cloud opening.");
         return;
       }
       window.open(url, '_blank');
@@ -662,7 +678,6 @@
       lucide.createIcons();
     }
 
-    // === RENDER TRIP DETAIL WITH MAP & INDIVIDUAL STOP ARRIVED CHECKS ===
     async function renderDetail() {
       const truck = trucks.find(t => t.id === selectedTruckId);
       const container = document.getElementById('truckDetail');
@@ -702,11 +717,11 @@
             </div>
           </div>
 
-          <!-- DYNAMIC ROUTE MAP -->
+          <!-- ROUTE MAP -->
           <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map" class="w-4 h-4 text-action"></i> Visual Route Itinerary</span>
-              <span class="text-[10px] text-slate-400">Interactive OpenStreetMap</span>
+              <span class="text-[10px] text-slate-400">OpenStreetMap Free Engine</span>
             </div>
             <div id="routeMap"></div>
           </div>
@@ -716,25 +731,19 @@
             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Route Stops & Checkpoint Status</h4>
             <div class="space-y-2">
               
-              <!-- Origin Checkpoint -->
               <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                  <div>
-                    <strong>Origin:</strong> ${truck.originComp ? truck.originComp + ' - ' : ''}${truck.origin} ${truck.originCP ? `(${truck.originCP})` : ''}
-                  </div>
+                  <div><strong>Origin:</strong> ${truck.originComp ? truck.originComp + ' - ' : ''}${truck.origin} ${truck.originCP ? `(${truck.originCP})` : ''}</div>
                 </div>
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">Departed</span>
               </div>
 
-              <!-- Intermediate Stops (with individual arrival check) -->
               ${(truck.stops || []).map((s, idx) => `
                 <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
                   <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full ${s.arrived ? 'bg-emerald-500' : 'bg-yellow-500'}"></span>
-                    <div>
-                      <strong>Stop ${idx + 1}:</strong> ${s.comp ? s.comp + ' - ' : ''}${s.city || s.addr} ${s.cp ? `(${s.cp})` : ''}
-                    </div>
+                    <div><strong>Stop ${idx + 1}:</strong> ${s.comp ? s.comp + ' - ' : ''}${s.city || s.addr} ${s.cp ? `(${s.cp})` : ''}</div>
                   </div>
                   <button onclick="toggleTruckStopArrived('${truck.id}', ${idx})" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition ${s.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 hover:border-emerald-500'}">
                     ${s.arrived ? '✓ Arrived' : 'Mark as Arrived'}
@@ -742,13 +751,10 @@
                 </div>
               `).join('')}
 
-              <!-- Final Destination Checkpoint -->
               <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full ${truck.status === 'completed' ? 'bg-emerald-600' : 'bg-slate-400'}"></span>
-                  <div>
-                    <strong>Destination:</strong> ${truck.destComp ? truck.destComp + ' - ' : ''}${truck.destination} ${truck.destCP ? `(${truck.destCP})` : ''}
-                  </div>
+                  <div><strong>Destination:</strong> ${truck.destComp ? truck.destComp + ' - ' : ''}${truck.destination} ${truck.destCP ? `(${truck.destCP})` : ''}</div>
                 </div>
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded ${truck.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
                   ${truck.status === 'completed' ? 'Delivered' : 'Pending'}
@@ -775,7 +781,6 @@
           ` : ''}
         </div>
 
-        <!-- LOAD MANIFEST -->
         <div class="mt-6">
           <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest</h3>
           <div class="space-y-4">
@@ -801,7 +806,6 @@
               ` : ''}
             </div>
 
-            <!-- Team Reservations with Individual Stop Checks -->
             ${truckRes.map(r => `
               <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
                 <div class="flex justify-between items-center">
@@ -851,7 +855,6 @@
       `;
       lucide.createIcons();
 
-      // INITIALIZE INTERACTIVE ROUTE MAP
       setTimeout(async () => {
         const mapContainer = document.getElementById('routeMap');
         if (!mapContainer) return;
@@ -872,12 +875,10 @@
 
         const routePoints = [originCoords];
 
-        // Origin Marker (Blue)
         L.circleMarker(originCoords, { color: '#1E40AF', fillColor: '#3B82F6', fillOpacity: 0.9, radius: 8 })
           .addTo(currentLeafletMap)
           .bindPopup(`<b>Origin:</b> ${truck.origin}`);
 
-        // Stop Markers (Yellow)
         for (const s of (truck.stops || [])) {
           const stopCoords = await getCoordinates(s.city || s.addr, s.country);
           routePoints.push(stopCoords);
@@ -886,7 +887,6 @@
             .bindPopup(`<b>Stop:</b> ${s.comp || ''} ${s.city || s.addr} (${s.arrived ? 'Arrived' : 'Pending'})`);
         }
 
-        // Booker Stops
         for (const r of truckRes) {
           if (r.stop && (r.stop.city || r.stop.addr)) {
             const bStopCoords = await getCoordinates(r.stop.city || r.stop.addr, r.stop.country);
@@ -897,19 +897,16 @@
           }
         }
 
-        // Destination Marker (Green)
         routePoints.push(destCoords);
         L.circleMarker(destCoords, { color: '#047857', fillColor: '#10B981', fillOpacity: 0.9, radius: 8 })
           .addTo(currentLeafletMap)
           .bindPopup(`<b>Destination:</b> ${truck.destination}`);
 
-        // Route Polyline
         const polyline = L.polyline(routePoints, { color: '#EA0A2A', weight: 3, opacity: 0.8, dashArray: '6, 6' }).addTo(currentLeafletMap);
         currentLeafletMap.fitBounds(polyline.getBounds(), { padding: [30, 30] });
       }, 100);
     }
 
-    // === TOGGLE ARRIVAL STATUS ON INDIVIDUAL STOPS ===
     async function toggleTruckStopArrived(truckId, stopIndex) {
       const truck = trucks.find(t => t.id === truckId);
       if (!truck || !truck.stops) return;
@@ -1248,7 +1245,7 @@
       const userQuery = document.getElementById('filterUser').value.toLowerCase();
       const statusFilter = document.getElementById('filterStatus').value;
 
-      const filtered = trucks.filter(t => {
+      currentlyFilteredTrucks = trucks.filter(t => {
         if (fromDate && t.departureDate < fromDate) return false;
         if (toDate && t.departureDate > toDate) return false;
 
@@ -1264,9 +1261,9 @@
       });
 
       const tbody = document.getElementById('filteredTableBody');
-      tbody.innerHTML = filtered.length === 0 ? '<tr><td colspan="9" class="text-center py-8 text-slate-400">No matching trips found.</td></tr>' : '';
+      tbody.innerHTML = currentlyFilteredTrucks.length === 0 ? '<tr><td colspan="9" class="text-center py-8 text-slate-400">No matching trips found.</td></tr>' : '';
 
-      filtered.forEach(t => {
+      currentlyFilteredTrucks.forEach(t => {
         const stats = calculateLoad(t);
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/70 transition';
@@ -1292,6 +1289,161 @@
       document.getElementById('filterUser').value = '';
       document.getElementById('filterStatus').value = 'all';
       applyAdvancedFilters();
+    }
+
+    // === ADVANCED EXCEL EXPORT (SIMPLE & FULL) ===
+    function exportExcelReport(type) {
+      if (currentlyFilteredTrucks.length === 0) {
+        alert("No filtered data to export.");
+        return;
+      }
+
+      let dataToExport = [];
+
+      if (type === 'simple') {
+        dataToExport = currentlyFilteredTrucks.map(t => {
+          const stats = calculateLoad(t);
+          return {
+            "Trip Ref / Plate": t.title,
+            "Coordinator": t.author,
+            "Origin": t.origin,
+            "Destination": t.destination,
+            "Departure Date": t.departureDate,
+            "Price": t.price || '-',
+            "Total EUR Pallets": stats.totalEUR,
+            "Total UK Pallets": stats.totalUK,
+            "Occupancy %": `${stats.pct}%`,
+            "Status": t.status
+          };
+        });
+      } else {
+        // Full detailed breakdown (with booking rows & waypoints)
+        currentlyFilteredTrucks.forEach(t => {
+          const stats = calculateLoad(t);
+          const tripRes = reservations.filter(r => r.truckId === t.id);
+          const stopsSummary = (t.stops || []).map(s => `${s.comp || ''} ${s.city || s.addr}`).join(' | ') || 'None';
+
+          // Base Publisher Row
+          dataToExport.push({
+            "Trip Ref / Plate": t.title,
+            "Trip Status": t.status,
+            "Coordinator": t.author,
+            "Origin Hub": `${t.originComp || ''} (${t.origin})`,
+            "Final Destination": `${t.destComp || ''} (${t.destination})`,
+            "Intermediate Stops": stopsSummary,
+            "Departure Date": `${t.departureDate} ${t.departureTime || ''}`,
+            "Trip Price": t.price || '-',
+            "Total Saturation %": `${stats.pct}%`,
+            "Role / Type": "Publisher Initial Load",
+            "Booker / Partner": t.author,
+            "Project #": "-",
+            "EUR Pallets": t.eurQty || 0,
+            "EUR Description": t.eurDesc || '',
+            "UK Pallets": t.ukQty || 0,
+            "UK Description": t.ukDesc || '',
+            "Booking Notes": t.notes || '',
+            "Attached Docs": (t.docs || []).map(d => d.name).join(', ') || 'None'
+          });
+
+          // Booking Rows
+          tripRes.forEach(r => {
+            dataToExport.push({
+              "Trip Ref / Plate": t.title,
+              "Trip Status": t.status,
+              "Coordinator": t.author,
+              "Origin Hub": t.origin,
+              "Final Destination": t.destination,
+              "Intermediate Stops": "-",
+              "Departure Date": t.departureDate,
+              "Trip Price": "-",
+              "Total Saturation %": "-",
+              "Role / Type": "Reserved Space",
+              "Booker / Partner": `${r.author} (${r.partnerType || 'Partner'}: ${r.partnerName || 'N/A'})`,
+              "Project #": r.projectNo || '-',
+              "EUR Pallets": r.eurQty || 0,
+              "EUR Description": r.eurDesc || '',
+              "UK Pallets": r.ukQty || 0,
+              "UK Description": r.ukDesc || '',
+              "Booking Notes": `${r.notes || ''} ${r.stop?.city ? `[Stop: ${r.stop.city}]` : ''}`,
+              "Attached Docs": (r.docs || []).map(d => d.name).join(', ') || 'None'
+            });
+          });
+        });
+      }
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, `IFL_Report_${type.toUpperCase()}`);
+      XLSX.writeFile(wb, `IFL_Freight_Report_${type.toUpperCase()}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    // === ADVANCED PDF EXPORT (SIMPLE & FULL) ===
+    function exportPDFReport(type) {
+      if (currentlyFilteredTrucks.length === 0) {
+        alert("No filtered data to export.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('landscape');
+
+      doc.setFontSize(14);
+      doc.setTextColor(30, 64, 175);
+      doc.text("INTERNATIONAL FOOD LINK - FREIGHT SHIPMENT REPORT", 14, 15);
+      
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString('en-GB')} | Report Level: ${type.toUpperCase()}`, 14, 21);
+
+      if (type === 'simple') {
+        const headers = [["Trip Ref", "Coordinator", "Origin", "Destination", "Departure", "Price", "EUR / UK", "Load %", "Status"]];
+        const rows = currentlyFilteredTrucks.map(t => {
+          const stats = calculateLoad(t);
+          return [t.title, t.author, t.origin, t.destination, t.departureDate, t.price || '-', `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
+        });
+
+        doc.autoTable({
+          head: headers,
+          body: rows,
+          startY: 26,
+          theme: 'grid',
+          headStyles: { fillColor: [30, 64, 175] },
+          styles: { fontSize: 8 }
+        });
+      } else {
+        const headers = [["Trip", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "EUR", "UK", "Notes & Stops"]];
+        const rows = [];
+
+        currentlyFilteredTrucks.forEach(t => {
+          const tripRes = reservations.filter(r => r.truckId === t.id);
+          
+          rows.push([
+            t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate,
+            `${t.author} (Publisher)`, "-", t.eurQty || 0, t.ukQty || 0,
+            t.notes || 'None'
+          ]);
+
+          tripRes.forEach(r => {
+            rows.push([
+              "", "", "", "",
+              `${r.author} (${r.partnerName || 'Client'})`, r.projectNo || '-',
+              r.eurQty || 0, r.ukQty || 0,
+              `${r.notes || ''} ${r.stop?.city ? `[Stop: ${r.stop.city}]` : ''}`
+            ]);
+          });
+        });
+
+        doc.autoTable({
+          head: headers,
+          body: rows,
+          startY: 26,
+          theme: 'striped',
+          headStyles: { fillColor: [234, 10, 42] },
+          styles: { fontSize: 7 }
+        });
+      }
+
+      doc.save(`IFL_Freight_Report_${type.toUpperCase()}_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
     // INITIAL LAUNCH
