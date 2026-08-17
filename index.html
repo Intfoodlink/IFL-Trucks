@@ -4,13 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IFL - Freight & Load Management Platform</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- JSZip -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Leaflet CSS & JS for Free Interactive Route Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Supabase Cloud SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // === TUS CLAVES INTEGRADAS ===
     const SUPABASE_URL = 'https://cidavpupdmepltxjheub.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FguJH96kcQbaoz0nlG5_Og_i5NkL3HV';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -38,13 +43,14 @@
       background-size: contain; background-position: center;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%231E40AF' d='M224 96l64 96 128-32-64 160 96 96H64l32-160 96-32 32-128z'/%3E%3C/svg%3E"); z-index: 0;
     }
+    #routeMap { height: 260px; width: 100%; border-radius: 0.75rem; z-index: 10; }
   </style>
 </head>
 <body class="bg-watermark min-h-screen text-slate-800 font-sans antialiased flex flex-col relative">
 
   <!-- AUTOCOMPLETE PRESETS -->
   <datalist id="companyHistory"></datalist>
-  <datalist id="addressHistory"></datalist>
+  <datalist id="cityHistory"></datalist>
   <datalist id="postcodeHistory"></datalist>
 
   <!-- TOP HEADER -->
@@ -56,7 +62,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Cloud Freight Planner & Real Document Archive</p>
+          <p class="text-[11px] text-slate-400">Cloud Freight Planner, Route Mapper & Waypoints</p>
         </div>
       </div>
 
@@ -98,7 +104,7 @@
       <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-5 flex flex-col h-[85vh] shadow-xs bg-white">
         <div class="relative mb-4">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-          <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by plate, route, partner, project..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
+          <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by plate, route, partner, stop..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
         </div>
         <div id="trucksList" class="overflow-y-auto space-y-3 pr-1 flex-1"></div>
       </section>
@@ -117,7 +123,7 @@
             <button onclick="prevMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i></button>
             <button onclick="nextMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i></button>
           </div>
-          <span class="text-xs text-slate-400 italic">Click any day cell to publish a truck, or click a trip to view details</span>
+          <span class="text-xs text-slate-400 italic">Click any day cell to publish a truck</span>
         </div>
         <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Reservations
@@ -180,7 +186,7 @@
     </div>
   </main>
 
-  <!-- TRUCK MODAL -->
+  <!-- TRUCK MODAL (PUBLISH / EDIT) -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -194,20 +200,36 @@
         <div class="grid grid-cols-3 gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Coordinator Name</label><input type="text" id="truckAuthor" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Truck Plate / Ref (Optional)</label><input type="text" id="truckTitle" placeholder="Auto if empty" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Trip Cost / Price (Optional)</label><input type="text" id="truckPrice" placeholder="e.g. €1,450" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Price (Optional)</label><input type="text" id="truckPrice" placeholder="e.g. €1,450" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
+
+        <!-- ORIGIN DETAILS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
-            <input type="text" id="truckOriginCP" list="postcodeHistory" placeholder="Postal Code" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <div class="grid grid-cols-3 gap-2">
+            <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <select id="truckOriginCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="France">France</option>
+              <option value="Spain">Spain</option>
+              <option value="Germany">Germany</option>
+              <option value="Netherlands">Netherlands</option>
+              <option value="Belgium">Belgium</option>
+              <option value="Italy">Italy</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
-          <input type="text" id="truckOrigin" list="addressHistory" placeholder="City / Address" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <div class="grid grid-cols-3 gap-2">
+            <input type="text" id="truckOriginCity" list="cityHistory" placeholder="City / Municipality" required class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckOriginCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          </div>
         </div>
+
+        <!-- STOPS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex justify-between items-center mb-2">
             <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops</p>
@@ -215,14 +237,30 @@
           </div>
           <div id="stopsContainer" class="space-y-2"></div>
         </div>
+
+        <!-- DESTINATION DETAILS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
-            <input type="text" id="truckDestCP" list="postcodeHistory" placeholder="Postal Code" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <div class="grid grid-cols-3 gap-2">
+            <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <select id="truckDestCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+              <option value="France">France</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Spain">Spain</option>
+              <option value="Germany">Germany</option>
+              <option value="Netherlands">Netherlands</option>
+              <option value="Belgium">Belgium</option>
+              <option value="Italy">Italy</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
-          <input type="text" id="truckDest" list="addressHistory" placeholder="City / Address" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <div class="grid grid-cols-3 gap-2">
+            <input type="text" id="truckDestCity" list="cityHistory" placeholder="City / Municipality" required class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckDestCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          </div>
         </div>
+
+        <!-- PALLET CARGO ALLOCATION -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Pallet Cargo Allocation:</p>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
@@ -248,7 +286,7 @@
         <!-- ATTACH REAL FILES -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Real Files (PDF, Excel, Word, Images):</p>
+            <p class="font-bold text-slate-700">Attach Documentation:</p>
             <button type="button" onclick="addDocRow('truckDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
           </div>
           <div id="truckDocRows" class="space-y-2"></div>
@@ -315,13 +353,26 @@
             <input type="text" id="resUKDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
+
+        <!-- REQUESTED STOP WITH GEOGRAPHY -->
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-          <p class="font-bold text-slate-700">Requested Stop (Optional)</p>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" id="resStopComp" list="companyHistory" placeholder="Company" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
-            <input type="text" id="resStopCP" list="postcodeHistory" placeholder="Postal Code" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <p class="font-bold text-slate-700">Requested Stop / Delivery Point (Optional)</p>
+          <div class="grid grid-cols-3 gap-2">
+            <input type="text" id="resStopComp" list="companyHistory" placeholder="Company" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <select id="resStopCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+              <option value="France">France</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Spain">Spain</option>
+              <option value="Germany">Germany</option>
+              <option value="Netherlands">Netherlands</option>
+              <option value="Belgium">Belgium</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
-          <input type="text" id="resStopAddr" list="addressHistory" placeholder="Address" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <div class="grid grid-cols-3 gap-2">
+            <input type="text" id="resStopCity" list="cityHistory" placeholder="City / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="resStopCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          </div>
         </div>
 
         <!-- ATTACH REAL FILES -->
@@ -348,7 +399,7 @@
   <script>
     const initialDirectory = {
       companies: ['Mercamadrid Hub', 'IFL Depot London', 'Central Foods Distribution', 'Logistique Nord Calais', 'Lille Logistics Centre'],
-      addresses: ['London (UK)', 'Calais (FR)', 'Madrid (ES)', 'Birmingham (UK)', 'Lille (FR)', 'Dover (UK)', 'Paris (FR)', 'Valencia (ES)'],
+      cities: ['London, UK', 'Calais, France', 'Madrid, Spain', 'Birmingham, UK', 'Lille, France', 'Dover, UK', 'Paris, France', 'Valencia, Spain'],
       postcodes: ['28053', 'E16 2PX', 'B1 1AA', '62100', '59000', 'CT16 1JA', '94150']
     };
 
@@ -358,19 +409,57 @@
     
     let currentTab = 'active';
     let selectedTruckId = null;
-    let calendarDate = new Date(); 
+    let calendarDate = new Date();
+    let currentLeafletMap = null;
 
-    // Helper to read file as Base64 Data URL
-    function readFileAsDataURL(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(file);
-      });
+    // Fast Geocoding Cache with preset coordinates for instantaneous rendering
+    const geoCoordsCache = {
+      'london': [51.5074, -0.1278],
+      'calais': [50.9513, 1.8587],
+      'madrid': [40.4168, -3.7038],
+      'dover': [51.1279, 1.3134],
+      'birmingham': [52.4862, -1.8904],
+      'lille': [50.6292, 3.0573],
+      'paris': [48.8566, 2.3522],
+      'valencia': [39.4699, -0.3763],
+      'barcelona': [41.3851, 2.1734],
+      'manchester': [53.4808, -2.2426]
+    };
+
+    async function getCoordinates(cityText, countryText) {
+      const clean = (cityText || '').toLowerCase().trim().split(',')[0].trim();
+      if (geoCoordsCache[clean]) return geoCoordsCache[clean];
+
+      try {
+        const query = encodeURIComponent(`${cityText}, ${countryText || ''}`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+          geoCoordsCache[clean] = coords;
+          return coords;
+        }
+      } catch (e) {
+        console.warn("Geocoding fallback triggered", e);
+      }
+      return [48.8566, 2.3522]; // Default Europe center
     }
 
-    // === CLOUD DATA SYNCHRONIZATION WITH SUPABASE ===
+    async function uploadFileToSupabase(file) {
+      const fileExt = file.name.split('.').pop();
+      const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+      const filePath = `uploads/${cleanFileName}`;
+
+      const { data, error } = await supabaseClient.storage.from('ifl_docs').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+      if (error) throw error;
+      const { data: { publicUrl } } = supabaseClient.storage.from('ifl_docs').getPublicUrl(filePath);
+      return publicUrl;
+    }
+
     async function loadCloudData() {
       try {
         const { data: cloudTrucks } = await supabaseClient.from('trucks').select('*').order('created_at', { ascending: false });
@@ -379,8 +468,8 @@
         if (cloudTrucks) {
           trucks = cloudTrucks.map(t => ({
             id: t.id, author: t.author, title: t.title, price: t.price,
-            originComp: t.origin_comp, origin: t.origin, originCP: t.origin_cp,
-            destComp: t.dest_comp, destination: t.destination, destCP: t.dest_cp,
+            originComp: t.origin_comp, origin: t.origin, originCountry: t.origin_country || 'United Kingdom', originCP: t.origin_cp,
+            destComp: t.dest_comp, destination: t.destination, destCountry: t.dest_country || 'France', destCP: t.dest_cp,
             stops: t.stops || [], departureDate: t.departure_date, departureTime: t.departure_time,
             eurQty: Number(t.eur_qty) || 0, eurDesc: t.eur_desc, ukQty: Number(t.uk_qty) || 0, ukDesc: t.uk_desc,
             notes: t.notes, docs: t.docs || [], status: t.status
@@ -409,16 +498,16 @@
 
     function updateDatalists() {
       const compDl = document.getElementById('companyHistory');
-      const addrDl = document.getElementById('addressHistory');
+      const cityDl = document.getElementById('cityHistory');
       const postDl = document.getElementById('postcodeHistory');
       compDl.innerHTML = (directory.companies || []).map(c => `<option value="${c}">`).join('');
-      addrDl.innerHTML = (directory.addresses || []).map(a => `<option value="${a}">`).join('');
+      cityDl.innerHTML = (directory.cities || []).map(a => `<option value="${a}">`).join('');
       postDl.innerHTML = (directory.postcodes || []).map(p => `<option value="${p}">`).join('');
     }
 
-    function addDirectoryEntry(company, address, postcode) {
+    function addDirectoryEntry(company, city, postcode) {
       if (company && !directory.companies.includes(company)) directory.companies.push(company);
-      if (address && !directory.addresses.includes(address)) directory.addresses.push(address);
+      if (city && !directory.cities.includes(city)) directory.cities.push(city);
       if (postcode && !directory.postcodes.includes(postcode)) directory.postcodes.push(postcode);
       localStorage.setItem('ifl_cloud_directory', JSON.stringify(directory));
       updateDatalists();
@@ -489,58 +578,36 @@
       }
     }
 
-    // === DOWNLOAD NATIVE BINARY BLOB TO PREVENT CORRUPTION ===
-    async function downloadRealDoc(dataUrl, fileName) {
-      if (!dataUrl || !dataUrl.startsWith('data:')) {
-        alert("This document was uploaded prior to the real-file update and has no binary content. Please edit the trip or booking and re-upload the real file.");
+    function openOriginalDoc(url) {
+      if (!url || !url.startsWith('http')) {
+        alert("This is an unindexed document. Please upload a real file to test cloud download.");
         return;
       }
-
-      try {
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = fileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-      } catch (err) {
-        alert("Error downloading file: " + err.message);
-      }
+      window.open(url, '_blank');
     }
 
-    // === BULK DOWNLOAD REAL FILES AS ZIP ===
     async function downloadAllDocs(truckId) {
       const truck = trucks.find(t => t.id === truckId);
       const truckRes = reservations.filter(r => r.truckId === truckId);
       const zip = new JSZip();
 
       let hasFiles = false;
+      const allDocs = [...(truck.docs || [])];
+      truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
 
-      (truck.docs || []).forEach(d => {
-        if (d.data && d.data.startsWith('data:')) {
-          const base64Data = d.data.split(',')[1];
-          zip.file(d.name, base64Data, { base64: true });
-          hasFiles = true;
-        }
-      });
-
-      truckRes.forEach(r => {
-        (r.docs || []).forEach(d => {
-          if (d.data && d.data.startsWith('data:')) {
-            const base64Data = d.data.split(',')[1];
-            zip.file(`${r.author}_${d.name}`, base64Data, { base64: true });
+      for (const d of allDocs) {
+        if (d.url && d.url.startsWith('http')) {
+          try {
+            const res = await fetch(d.url);
+            const blob = await res.blob();
+            zip.file(d.name, blob);
             hasFiles = true;
-          }
-        });
-      });
+          } catch(e) { console.error("Error fetching file for ZIP", e); }
+        }
+      }
 
       if (!hasFiles) {
-        alert("No valid binary files available to archive in ZIP. Please re-upload your files.");
+        alert("No valid cloud files found to archive.");
         return;
       }
 
@@ -595,7 +662,8 @@
       lucide.createIcons();
     }
 
-    function renderDetail() {
+    // === RENDER TRIP DETAIL WITH MAP & INDIVIDUAL STOP ARRIVED CHECKS ===
+    async function renderDetail() {
       const truck = trucks.find(t => t.id === selectedTruckId);
       const container = document.getElementById('truckDetail');
       if (!truck) {
@@ -621,12 +689,12 @@
                 <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
                 ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
               </div>
-              <h2 class="text-2xl font-black text-slate-900">${truck.origin} ➔ ${truck.destination}</h2>
+              <h2 class="text-2xl font-black text-slate-900">${truck.origin} (${truck.originCountry || ''}) ➔ ${truck.destination} (${truck.destCountry || ''})</h2>
               <p class="text-sm text-slate-500 mt-1">Ref: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
             </div>
             <div class="flex items-center gap-2">
               ${truck.status === 'active' ? `
-                <button onclick="toggleTruckStatus('${truck.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Delivered</button>
+                <button onclick="toggleTruckStatus('${truck.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Complete Trip</button>
                 <button onclick="openEditTruckModal('${truck.id}')" class="border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="edit-3" class="w-4 h-4 text-action"></i> Edit</button>
                 <button onclick="openResModal('${truck.id}')" class="bg-action text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs hover:bg-action-hover"><i data-lucide="plus" class="w-4 h-4"></i> Book Pallets</button>
               ` : `<button onclick="toggleTruckStatus('${truck.id}')" class="text-xs border border-slate-200 text-slate-600 px-3 py-2 rounded-xl font-semibold">Reactivate Trip</button>`}
@@ -634,11 +702,62 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5 p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Collection Hub</p><p class="font-bold text-slate-800">${truck.originComp || 'Depot unspecified'}</p><p class="text-slate-600">${truck.origin}</p></div>
-            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Delivery Destination</p><p class="font-bold text-slate-800">${truck.destComp || 'Company unspecified'}</p><p class="text-slate-600">${truck.destination}</p></div>
+          <!-- DYNAMIC ROUTE MAP -->
+          <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map" class="w-4 h-4 text-action"></i> Visual Route Itinerary</span>
+              <span class="text-[10px] text-slate-400">Interactive OpenStreetMap</span>
+            </div>
+            <div id="routeMap"></div>
           </div>
 
+          <!-- WAYPOINTS & STOPS STATUS BOARD -->
+          <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Route Stops & Checkpoint Status</h4>
+            <div class="space-y-2">
+              
+              <!-- Origin Checkpoint -->
+              <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                  <div>
+                    <strong>Origin:</strong> ${truck.originComp ? truck.originComp + ' - ' : ''}${truck.origin} ${truck.originCP ? `(${truck.originCP})` : ''}
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">Departed</span>
+              </div>
+
+              <!-- Intermediate Stops (with individual arrival check) -->
+              ${(truck.stops || []).map((s, idx) => `
+                <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full ${s.arrived ? 'bg-emerald-500' : 'bg-yellow-500'}"></span>
+                    <div>
+                      <strong>Stop ${idx + 1}:</strong> ${s.comp ? s.comp + ' - ' : ''}${s.city || s.addr} ${s.cp ? `(${s.cp})` : ''}
+                    </div>
+                  </div>
+                  <button onclick="toggleTruckStopArrived('${truck.id}', ${idx})" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition ${s.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 hover:border-emerald-500'}">
+                    ${s.arrived ? '✓ Arrived' : 'Mark as Arrived'}
+                  </button>
+                </div>
+              `).join('')}
+
+              <!-- Final Destination Checkpoint -->
+              <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full ${truck.status === 'completed' ? 'bg-emerald-600' : 'bg-slate-400'}"></span>
+                  <div>
+                    <strong>Destination:</strong> ${truck.destComp ? truck.destComp + ' - ' : ''}${truck.destination} ${truck.destCP ? `(${truck.destCP})` : ''}
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${truck.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                  ${truck.status === 'completed' ? 'Delivered' : 'Pending'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- METRICS -->
           <div class="grid grid-cols-3 gap-3 mt-4">
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy Gauge</p><p class="text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR (Max 33)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeEUR})</span></p></div>
@@ -648,7 +767,7 @@
           <!-- BULK DOWNLOAD -->
           ${allDocs.length > 0 ? `
             <div class="mt-4 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-              <span class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="archive" class="w-4 h-4 text-action"></i> Trip File Archive (${allDocs.length} real files)</span>
+              <span class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="archive" class="w-4 h-4 text-action"></i> Trip File Archive (${allDocs.length} files)</span>
               <button onclick="downloadAllDocs('${truck.id}')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-2xs">
                 <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-action"></i> Download All as ZIP
               </button>
@@ -656,11 +775,11 @@
           ` : ''}
         </div>
 
+        <!-- LOAD MANIFEST -->
         <div class="mt-6">
           <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest</h3>
           <div class="space-y-4">
             
-            <!-- Publisher Allocation -->
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm space-y-3">
               <div class="flex items-center gap-2">
                 <span class="font-bold text-slate-900">${truck.author}</span>
@@ -671,20 +790,18 @@
                 ${truck.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.ukDesc || 'UK Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.ukQty} UK Pallets</span></div>` : ''}
               </div>
               ${truck.notes ? `<div class="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200"><strong class="text-slate-800">Remarks:</strong> ${truck.notes}</div>` : ''}
-              
-              <!-- Real Download Buttons -->
               ${(truck.docs && truck.docs.length > 0) ? `
                 <div class="flex flex-wrap gap-2 pt-1">
-                  ${truck.docs.map((d, idx) => `
-                    <button onclick='downloadRealDoc(trucks.find(t=>t.id==="${truck.id}").docs[${idx}].data, "${d.name}")' class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
-                      <i data-lucide="download" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
+                  ${truck.docs.map(d => `
+                    <button onclick='openOriginalDoc("${d.url}")' class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                      <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
                     </button>
                   `).join('')}
                 </div>
               ` : ''}
             </div>
 
-            <!-- Team Reservations -->
+            <!-- Team Reservations with Individual Stop Checks -->
             ${truckRes.map(r => `
               <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
                 <div class="flex justify-between items-center">
@@ -706,14 +823,23 @@
                 </div>
 
                 ${r.notes ? `<div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><strong class="text-slate-800">Notes:</strong> ${r.notes}</div>` : ''}
-                ${r.stop && r.stop.addr ? `<p class="text-xs text-amber-700 font-medium"><i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.addr} ${r.stop.cp ? `(${r.stop.cp})` : ''}</p>` : ''}
+                
+                ${r.stop && (r.stop.city || r.stop.addr) ? `
+                  <div class="flex items-center justify-between p-2 bg-yellow-50/60 border border-yellow-200 rounded-lg text-xs">
+                    <p class="text-amber-800 font-medium">
+                      <i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Requested Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.city || r.stop.addr} ${r.stop.cp ? `(${r.stop.cp})` : ''}
+                    </p>
+                    <button onclick="toggleResStopArrived('${r.id}')" class="text-[10px] font-bold px-2.5 py-0.5 rounded-md border transition ${r.stop.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 hover:border-emerald-500'}">
+                      ${r.stop.arrived ? '✓ Arrived' : 'Mark Arrived'}
+                    </button>
+                  </div>
+                ` : ''}
 
-                <!-- Real Download Buttons for Reservation -->
                 ${(r.docs && r.docs.length > 0) ? `
                   <div class="flex flex-wrap gap-2 pt-1">
-                    ${r.docs.map((d, idx) => `
-                      <button onclick='downloadRealDoc(reservations.find(x=>x.id==="${r.id}").docs[${idx}].data, "${d.name}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
-                        <i data-lucide="download" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
+                    ${r.docs.map(d => `
+                      <button onclick='openOriginalDoc("${d.url}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
                       </button>
                     `).join('')}
                   </div>
@@ -724,6 +850,80 @@
         </div>
       `;
       lucide.createIcons();
+
+      // INITIALIZE INTERACTIVE ROUTE MAP
+      setTimeout(async () => {
+        const mapContainer = document.getElementById('routeMap');
+        if (!mapContainer) return;
+
+        if (currentLeafletMap) {
+          currentLeafletMap.remove();
+          currentLeafletMap = null;
+        }
+
+        const originCoords = await getCoordinates(truck.origin, truck.originCountry);
+        const destCoords = await getCoordinates(truck.destination, truck.destCountry);
+
+        currentLeafletMap = L.map('routeMap').setView(originCoords, 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '© OpenStreetMap'
+        }).addTo(currentLeafletMap);
+
+        const routePoints = [originCoords];
+
+        // Origin Marker (Blue)
+        L.circleMarker(originCoords, { color: '#1E40AF', fillColor: '#3B82F6', fillOpacity: 0.9, radius: 8 })
+          .addTo(currentLeafletMap)
+          .bindPopup(`<b>Origin:</b> ${truck.origin}`);
+
+        // Stop Markers (Yellow)
+        for (const s of (truck.stops || [])) {
+          const stopCoords = await getCoordinates(s.city || s.addr, s.country);
+          routePoints.push(stopCoords);
+          L.circleMarker(stopCoords, { color: '#B45309', fillColor: '#FBBF24', fillOpacity: 0.9, radius: 6 })
+            .addTo(currentLeafletMap)
+            .bindPopup(`<b>Stop:</b> ${s.comp || ''} ${s.city || s.addr} (${s.arrived ? 'Arrived' : 'Pending'})`);
+        }
+
+        // Booker Stops
+        for (const r of truckRes) {
+          if (r.stop && (r.stop.city || r.stop.addr)) {
+            const bStopCoords = await getCoordinates(r.stop.city || r.stop.addr, r.stop.country);
+            routePoints.push(bStopCoords);
+            L.circleMarker(bStopCoords, { color: '#B45309', fillColor: '#FDE047', fillOpacity: 0.9, radius: 6 })
+              .addTo(currentLeafletMap)
+              .bindPopup(`<b>Booking Stop (${r.author}):</b> ${r.stop.city || r.stop.addr}`);
+          }
+        }
+
+        // Destination Marker (Green)
+        routePoints.push(destCoords);
+        L.circleMarker(destCoords, { color: '#047857', fillColor: '#10B981', fillOpacity: 0.9, radius: 8 })
+          .addTo(currentLeafletMap)
+          .bindPopup(`<b>Destination:</b> ${truck.destination}`);
+
+        // Route Polyline
+        const polyline = L.polyline(routePoints, { color: '#EA0A2A', weight: 3, opacity: 0.8, dashArray: '6, 6' }).addTo(currentLeafletMap);
+        currentLeafletMap.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+      }, 100);
+    }
+
+    // === TOGGLE ARRIVAL STATUS ON INDIVIDUAL STOPS ===
+    async function toggleTruckStopArrived(truckId, stopIndex) {
+      const truck = trucks.find(t => t.id === truckId);
+      if (!truck || !truck.stops) return;
+      truck.stops[stopIndex].arrived = !truck.stops[stopIndex].arrived;
+      await supabaseClient.from('trucks').update({ stops: truck.stops }).eq('id', truckId);
+      await loadCloudData();
+    }
+
+    async function toggleResStopArrived(resId) {
+      const res = reservations.find(r => r.id === resId);
+      if (!res || !res.stop) return;
+      res.stop.arrived = !res.stop.arrived;
+      await supabaseClient.from('reservations').update({ stop: res.stop }).eq('id', resId);
+      await loadCloudData();
     }
 
     function renderMonthlyCalendar() {
@@ -774,8 +974,27 @@
     function addStopInput() {
       const container = document.getElementById('stopsContainer');
       const div = document.createElement('div');
-      div.className = 'grid grid-cols-3 gap-2 pt-1 border-t border-slate-200/60';
-      div.innerHTML = `<input type="text" list="companyHistory" placeholder="Company" class="stop-comp px-2 py-1 border rounded-lg text-xs outline-none"><input type="text" list="postcodeHistory" placeholder="CP" class="stop-cp px-2 py-1 border rounded-lg text-xs outline-none"><div class="flex gap-1"><input type="text" list="addressHistory" placeholder="Address / City" class="stop-addr flex-1 px-2 py-1 border rounded-lg text-xs outline-none"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button></div>`;
+      div.className = 'p-2.5 bg-white border border-slate-200 rounded-lg space-y-1.5 stop-item';
+      div.innerHTML = `
+        <div class="grid grid-cols-3 gap-2">
+          <input type="text" list="companyHistory" placeholder="Company Name" class="stop-comp col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
+          <select class="stop-country px-2 py-1 border rounded-lg text-xs outline-none bg-white">
+            <option value="France">France</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Spain">Spain</option>
+            <option value="Germany">Germany</option>
+            <option value="Belgium">Belgium</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <input type="text" list="cityHistory" placeholder="City / Municipality" class="stop-city col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
+          <div class="flex gap-1">
+            <input type="text" list="postcodeHistory" placeholder="CP" class="stop-cp flex-1 px-2 py-1 border rounded-lg text-xs outline-none">
+            <button type="button" onclick="this.closest('.stop-item').remove()" class="text-slate-400 hover:text-red-500 px-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+          </div>
+        </div>
+      `;
       container.appendChild(div);
       lucide.createIcons();
     }
@@ -805,11 +1024,13 @@
       document.getElementById('truckDate').value = t.departureDate;
       document.getElementById('truckTime').value = t.departureTime || '';
       document.getElementById('truckOriginComp').value = t.originComp || '';
+      document.getElementById('truckOriginCountry').value = t.originCountry || 'United Kingdom';
       document.getElementById('truckOriginCP').value = t.originCP || '';
-      document.getElementById('truckOrigin').value = t.origin;
+      document.getElementById('truckOriginCity').value = t.origin;
       document.getElementById('truckDestComp').value = t.destComp || '';
+      document.getElementById('truckDestCountry').value = t.destCountry || 'France';
       document.getElementById('truckDestCP').value = t.destCP || '';
-      document.getElementById('truckDest').value = t.destination;
+      document.getElementById('truckDestCity').value = t.destination;
       document.getElementById('truckEUR').value = t.eurQty || 0;
       document.getElementById('truckEURDesc').value = t.eurDesc || '';
       document.getElementById('truckUK').value = t.ukQty || 0;
@@ -845,8 +1066,9 @@
       document.getElementById('resUKDesc').value = r.ukDesc || '';
       if (r.stop) {
         document.getElementById('resStopComp').value = r.stop.comp || '';
+        document.getElementById('resStopCountry').value = r.stop.country || 'France';
         document.getElementById('resStopCP').value = r.stop.cp || '';
-        document.getElementById('resStopAddr').value = r.stop.addr || '';
+        document.getElementById('resStopCity').value = r.stop.city || r.stop.addr || '';
       }
       document.getElementById('resNotes').value = r.notes || '';
       document.getElementById('resDocRows').innerHTML = '';
@@ -855,132 +1077,144 @@
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
-    // === SAVE / UPDATE TRUCK TO SUPABASE WITH REAL FILES ===
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
-      submitBtn.innerText = 'Saving files...';
+      submitBtn.innerText = 'Uploading files to cloud...';
       submitBtn.disabled = true;
 
-      const id = document.getElementById('editingTruckId').value || ('t_' + Date.now());
-      const originComp = document.getElementById('truckOriginComp').value;
-      const origin = document.getElementById('truckOrigin').value;
-      const originCP = document.getElementById('truckOriginCP').value;
-      const destComp = document.getElementById('truckDestComp').value;
-      const dest = document.getElementById('truckDest').value;
-      const destCP = document.getElementById('truckDestCP').value;
+      try {
+        const id = document.getElementById('editingTruckId').value || ('t_' + Date.now());
+        const originComp = document.getElementById('truckOriginComp').value;
+        const originCountry = document.getElementById('truckOriginCountry').value;
+        const origin = document.getElementById('truckOriginCity').value;
+        const originCP = document.getElementById('truckOriginCP').value;
 
-      addDirectoryEntry(originComp, origin, originCP);
-      addDirectoryEntry(destComp, dest, destCP);
+        const destComp = document.getElementById('truckDestComp').value;
+        const destCountry = document.getElementById('truckDestCountry').value;
+        const dest = document.getElementById('truckDestCity').value;
+        const destCP = document.getElementById('truckDestCP').value;
 
-      const stopComps = document.querySelectorAll('#stopsContainer .stop-comp');
-      const stopCPs = document.querySelectorAll('#stopsContainer .stop-cp');
-      const stopAddrs = document.querySelectorAll('#stopsContainer .stop-addr');
-      const stops = [];
-      for (let i = 0; i < stopComps.length; i++) {
-        if (stopAddrs[i].value) stops.push({ comp: stopComps[i].value, cp: stopCPs[i].value, addr: stopAddrs[i].value });
-      }
+        addDirectoryEntry(originComp, origin, originCP);
+        addDirectoryEntry(destComp, dest, destCP);
 
-      let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
-
-      const docRows = document.querySelectorAll('#truckDocRows .doc-row');
-      const newDocs = [];
-      for (const row of docRows) {
-        const fileInput = row.querySelector('.doc-file');
-        const docType = row.querySelector('.doc-type').value;
-        if (fileInput.files[0]) {
-          const file = fileInput.files[0];
-          const dataUrl = await readFileAsDataURL(file);
-          newDocs.push({ type: docType, name: file.name, data: dataUrl });
+        const stopElements = document.querySelectorAll('#stopsContainer .stop-item');
+        const stops = [];
+        for (const el of stopElements) {
+          const comp = el.querySelector('.stop-comp').value;
+          const country = el.querySelector('.stop-country').value;
+          const city = el.querySelector('.stop-city').value;
+          const cp = el.querySelector('.stop-cp').value;
+          if (city) stops.push({ comp, country, city, cp, arrived: false });
         }
+
+        let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
+
+        const docRows = document.querySelectorAll('#truckDocRows .doc-row');
+        const newDocs = [];
+        for (const row of docRows) {
+          const fileInput = row.querySelector('.doc-file');
+          const docType = row.querySelector('.doc-type').value;
+          if (fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const publicUrl = await uploadFileToSupabase(file);
+            newDocs.push({ type: docType, name: file.name, url: publicUrl });
+          }
+        }
+
+        const existingTruck = trucks.find(t => t.id === id);
+        const combinedDocs = existingTruck ? [...(existingTruck.docs || []), ...newDocs] : newDocs;
+
+        const payload = {
+          id,
+          author: document.getElementById('truckAuthor').value,
+          title: plate,
+          price: document.getElementById('truckPrice').value,
+          origin_comp: originComp, origin, origin_cp: originCP,
+          dest_comp: destComp, destination: dest, dest_cp: destCP,
+          stops,
+          departure_date: document.getElementById('truckDate').value,
+          departure_time: document.getElementById('truckTime').value,
+          eur_qty: Number(document.getElementById('truckEUR').value) || 0,
+          eur_desc: document.getElementById('truckEURDesc').value,
+          uk_qty: Number(document.getElementById('truckUK').value) || 0,
+          uk_desc: document.getElementById('truckUKDesc').value,
+          notes: document.getElementById('truckNotes').value,
+          docs: combinedDocs,
+          status: existingTruck ? existingTruck.status : 'active'
+        };
+
+        const { error } = await supabaseClient.from('trucks').upsert(payload);
+        if (error) alert("Error: " + error.message);
+        
+        closeTruckModal();
+        await loadCloudData();
+        switchTab('active');
+      } catch(err) {
+        alert("Upload Error: " + err.message);
+      } finally {
+        submitBtn.innerText = 'Publish Trip';
+        submitBtn.disabled = false;
       }
-
-      const existingTruck = trucks.find(t => t.id === id);
-      const combinedDocs = existingTruck ? [...(existingTruck.docs || []), ...newDocs] : newDocs;
-
-      const payload = {
-        id,
-        author: document.getElementById('truckAuthor').value,
-        title: plate,
-        price: document.getElementById('truckPrice').value,
-        origin_comp: originComp, origin, origin_cp: originCP,
-        dest_comp: destComp, destination: dest, dest_cp: destCP,
-        stops,
-        departure_date: document.getElementById('truckDate').value,
-        departure_time: document.getElementById('truckTime').value,
-        eur_qty: Number(document.getElementById('truckEUR').value) || 0,
-        eur_desc: document.getElementById('truckEURDesc').value,
-        uk_qty: Number(document.getElementById('truckUK').value) || 0,
-        uk_desc: document.getElementById('truckUKDesc').value,
-        notes: document.getElementById('truckNotes').value,
-        docs: combinedDocs,
-        status: existingTruck ? existingTruck.status : 'active'
-      };
-
-      const { error } = await supabaseClient.from('trucks').upsert(payload);
-      submitBtn.innerText = 'Publish Trip';
-      submitBtn.disabled = false;
-
-      if (error) alert("Error saving to cloud: " + error.message);
-      
-      closeTruckModal();
-      await loadCloudData();
-      switchTab('active');
     }
 
-    // === SAVE / UPDATE RESERVATION TO SUPABASE WITH REAL FILES ===
     async function saveReservation(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveResSubmit');
-      submitBtn.innerText = 'Saving files...';
+      submitBtn.innerText = 'Uploading files to cloud...';
       submitBtn.disabled = true;
 
-      const id = document.getElementById('editingResId').value || ('r_' + Date.now());
-      const stopComp = document.getElementById('resStopComp').value;
-      const stopCP = document.getElementById('resStopCP').value;
-      const stopAddr = document.getElementById('resStopAddr').value;
+      try {
+        const id = document.getElementById('editingResId').value || ('r_' + Date.now());
+        const stopComp = document.getElementById('resStopComp').value;
+        const stopCountry = document.getElementById('resStopCountry').value;
+        const stopCity = document.getElementById('resStopCity').value;
+        const stopCP = document.getElementById('resStopCP').value;
 
-      if (stopComp || stopAddr || stopCP) addDirectoryEntry(stopComp, stopAddr, stopCP);
+        if (stopComp || stopCity || stopCP) addDirectoryEntry(stopComp, stopCity, stopCP);
 
-      const docRows = document.querySelectorAll('#resDocRows .doc-row');
-      const newDocs = [];
-      for (const row of docRows) {
-        const fileInput = row.querySelector('.doc-file');
-        const docType = row.querySelector('.doc-type').value;
-        if (fileInput.files[0]) {
-          const file = fileInput.files[0];
-          const dataUrl = await readFileAsDataURL(file);
-          newDocs.push({ type: docType, name: file.name, data: dataUrl });
+        const docRows = document.querySelectorAll('#resDocRows .doc-row');
+        const newDocs = [];
+        for (const row of docRows) {
+          const fileInput = row.querySelector('.doc-file');
+          const docType = row.querySelector('.doc-type').value;
+          if (fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const publicUrl = await uploadFileToSupabase(file);
+            newDocs.push({ type: docType, name: file.name, url: publicUrl });
+          }
         }
+
+        const existingRes = reservations.find(r => r.id === id);
+        const combinedDocs = existingRes ? [...(existingRes.docs || []), ...newDocs] : newDocs;
+
+        const payload = {
+          id,
+          truck_id: selectedTruckId,
+          author: document.getElementById('resAuthor').value,
+          project_no: document.getElementById('resProjectNo').value,
+          partner_type: document.getElementById('resPartnerType').value,
+          partner_name: document.getElementById('resPartnerName').value,
+          eur_qty: Number(document.getElementById('resEUR').value) || 0,
+          eur_desc: document.getElementById('resEURDesc').value,
+          uk_qty: Number(document.getElementById('resUK').value) || 0,
+          uk_desc: document.getElementById('resUKDesc').value,
+          stop: { comp: stopComp, country: stopCountry, city: stopCity, cp: stopCP, arrived: false },
+          notes: document.getElementById('resNotes').value,
+          docs: combinedDocs
+        };
+
+        const { error } = await supabaseClient.from('reservations').upsert(payload);
+        if (error) alert("Error: " + error.message);
+
+        closeResModal();
+        await loadCloudData();
+      } catch(err) {
+        alert("Upload Error: " + err.message);
+      } finally {
+        submitBtn.innerText = 'Save Booking';
+        submitBtn.disabled = false;
       }
-
-      const existingRes = reservations.find(r => r.id === id);
-      const combinedDocs = existingRes ? [...(existingRes.docs || []), ...newDocs] : newDocs;
-
-      const payload = {
-        id,
-        truck_id: selectedTruckId,
-        author: document.getElementById('resAuthor').value,
-        project_no: document.getElementById('resProjectNo').value,
-        partner_type: document.getElementById('resPartnerType').value,
-        partner_name: document.getElementById('resPartnerName').value,
-        eur_qty: Number(document.getElementById('resEUR').value) || 0,
-        eur_desc: document.getElementById('resEURDesc').value,
-        uk_qty: Number(document.getElementById('resUK').value) || 0,
-        uk_desc: document.getElementById('resUKDesc').value,
-        stop: { comp: stopComp, cp: stopCP, addr: stopAddr },
-        notes: document.getElementById('resNotes').value,
-        docs: combinedDocs
-      };
-
-      const { error } = await supabaseClient.from('reservations').upsert(payload);
-      submitBtn.innerText = 'Save Booking';
-      submitBtn.disabled = false;
-
-      if (error) alert("Error saving reservation: " + error.message);
-
-      closeResModal();
-      await loadCloudData();
     }
 
     async function toggleTruckStatus(id) {
