@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IFL - Freight & Load Management Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ifl: { blue: '#1E40AF', yellow: '#EAB308' },
+            action: { DEFAULT: '#ea0a2a', hover: '#c90823' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .bg-watermark {
+      background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+      background-size: 24px 24px;
+      position: relative;
+    }
+    .bg-watermark::after {
+      content: ""; position: fixed; bottom: 20px; right: 30px; width: 350px; height: 350px;
+      opacity: 0.03; pointer-events: none; background-repeat: no-repeat;
+      background-size: contain; background-position: center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%231E40AF' d='M224 96l64 96 128-32-64 160 96 96H64l32-160 96-32 32-128z'/%3E%3C/svg%3E"); z-index: 0;
+    }
+  </style>
+</head>
+<body class="bg-watermark min-h-screen text-slate-800 font-sans antialiased flex flex-col relative">
+
+  <!-- AUTOCOMPLETE PRESET DIRECTORIES -->
+  <datalist id="companyHistory"></datalist>
+  <datalist id="addressHistory"></datalist>
+  <datalist id="postcodeHistory"></datalist>
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-[96%] mx-auto px-4 py-3.5 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="border border-slate-200 px-3 py-1.5 rounded-xl shadow-2xs bg-white">
+          <span class="text-2xl font-black text-ifl-blue tracking-tighter">i<span class="text-ifl-yellow">FL</span></span>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
+          <p class="text-[11px] text-slate-400">Freight Allocation & Multi-Pallet Load Planner</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="openTruckModal()" class="bg-action hover:bg-action-hover text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-xs flex items-center gap-2 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
+          <span>Publish Truck</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="max-w-[96%] mx-auto px-4 py-6 flex-1 w-full relative z-10">
+
+    <!-- NAVIGATION TABS -->
+    <div class="flex items-center justify-between border-b border-slate-200 mb-6">
+      <div class="flex space-x-8">
+        <button onclick="switchTab('active')" id="tabActive" class="pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2">
+          <i data-lucide="truck" class="w-4 h-4"></i> In Transit / Scheduled
+        </button>
+        <button onclick="switchTab('completed')" id="tabCompleted" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i> Completed Deliveries
+        </button>
+        <button onclick="switchTab('calendar')" id="tabCalendar" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
+          <i data-lucide="calendar" class="w-4 h-4"></i> Monthly Calendar
+        </button>
+        <button onclick="switchTab('filters')" id="tabFilters" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Advanced Search & Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- WORKSPACE VIEW -->
+    <div id="workspaceView" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-5 flex flex-col h-[85vh] shadow-xs bg-white">
+        <div class="relative mb-4">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+          <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by plate, route, partner, project..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
+        </div>
+        <div id="trucksList" class="overflow-y-auto space-y-3 pr-1 flex-1"></div>
+      </section>
+
+      <section class="lg:col-span-8 border border-slate-200 rounded-2xl p-6 flex flex-col h-[85vh] overflow-y-auto shadow-xs bg-white">
+        <div id="truckDetail"></div>
+      </section>
+    </div>
+
+    <!-- CALENDAR VIEW -->
+    <div id="calendarView" class="hidden border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
+      <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-4">
+          <h2 id="calendarMonthTitle" class="text-lg font-bold text-slate-900">Month Year</h2>
+          <div class="flex gap-1.5">
+            <button onclick="prevMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i></button>
+            <button onclick="nextMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i></button>
+          </div>
+          <span class="text-xs text-slate-400 italic">Click any day cell to publish a truck, or click a trip to view its reservations</span>
+        </div>
+        <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Reservations
+        </button>
+      </div>
+
+      <div class="grid grid-cols-7 gap-2 mb-2 text-center text-[11px] font-bold text-slate-400 uppercase">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>
+      <div id="calendarGrid" class="grid grid-cols-7 gap-2 min-h-[600px]"></div>
+    </div>
+
+    <!-- FILTERS VIEW -->
+    <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
+      <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-action"></i> Shipment Directory</h2>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="resetFilters()" class="text-xs text-action font-bold hover:underline">Reset Filters</button>
+          <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Departure Date Range</label>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="date" id="filterFromDate" onchange="applyAdvancedFilters()" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+            <input type="date" id="filterToDate" onchange="applyAdvancedFilters()" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Route / Hub</label>
+          <input type="text" id="filterRoute" oninput="applyAdvancedFilters()" placeholder="Origin, Destination or CP" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Project # / Client / User</label>
+          <input type="text" id="filterUser" oninput="applyAdvancedFilters()" placeholder="Search references..." class="w-full px-3 py-1.5 border border-slate-200 rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Status</label>
+          <select id="filterStatus" onchange="applyAdvancedFilters()" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <option value="all">All Trips</option>
+            <option value="active">Active / In Transit</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="overflow-x-auto border border-slate-200 rounded-xl">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
+            <tr>
+              <th class="p-3">Reference</th><th class="p-3">Coordinator</th><th class="p-3">Route</th><th class="p-3">Departure</th>
+              <th class="p-3">Price</th><th class="p-3">Pallets</th><th class="p-3">Occupancy</th><th class="p-3">Status</th><th class="p-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="filteredTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- TRUCK MODAL -->
+  <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i data-lucide="truck" class="w-5 h-5 text-action"></i><h3 id="truckModalTitle" class="text-base font-bold text-slate-900">Publish New Route</h3>
+        </div>
+        <button onclick="closeTruckModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="truckForm" onsubmit="saveTruck(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="editingTruckId" value="">
+        <div class="grid grid-cols-3 gap-3">
+          <div><label class="block font-semibold text-slate-600 mb-1">Coordinator Name</label><input type="text" id="truckAuthor" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Truck Plate / Trip Ref (Optional)</label><input type="text" id="truckTitle" placeholder="e.g. GB-FR-882 (Auto if empty)" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Cost / Price (Optional)</label><input type="text" id="truckPrice" placeholder="e.g. €1,450 or £1,200" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+        </div>
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name (Select or type)" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="truckOriginCP" list="postcodeHistory" placeholder="Postal Code" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          </div>
+          <input type="text" id="truckOrigin" list="addressHistory" placeholder="City / Street Address (Select or type)" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+        </div>
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="flex justify-between items-center mb-2">
+            <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops</p>
+            <button type="button" onclick="addStopInput()" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Stop</button>
+          </div>
+          <div id="stopsContainer" class="space-y-2"></div>
+        </div>
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company (Select or type)" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="truckDestCP" list="postcodeHistory" placeholder="Postal Code" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          </div>
+          <input type="text" id="truckDest" list="addressHistory" placeholder="City / Street Address (Select or type)" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+        </div>
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
+          <p class="font-bold text-slate-800">Pallet Cargo Allocation:</p>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="w-1/3"><span class="font-bold block text-xs">EUR Pallets</span></div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
+              <input type="number" id="truckEUR" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+            </div>
+            <input type="text" id="truckEURDesc" placeholder="Cargo Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('truckUK', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
+              <input type="number" id="truckUK" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckUK', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+            </div>
+            <input type="text" id="truckUKDesc" placeholder="Cargo Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+          </div>
+        </div>
+        <div class="p-3.5 border border-slate-200 rounded-xl">
+          <div class="flex justify-between items-center mb-2">
+            <p class="font-bold text-slate-700">Attach Documentation:</p>
+            <button type="button" onclick="addDocRow('truckDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
+          </div>
+          <div id="truckDocRows" class="space-y-2"></div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Trip Notes & Remarks</label>
+          <textarea id="truckNotes" rows="2" placeholder="Driver info, temperature requirements, delivery windows..." class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeTruckModal()" class="px-4 py-2 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="btnSaveTruckSubmit" class="px-4 py-2 bg-action text-white rounded-xl font-bold hover:bg-action-hover shadow-xs">Publish Trip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RESERVATION MODAL -->
+  <div id="resModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i data-lucide="package-plus" class="w-5 h-5 text-action"></i><h3 id="resModalTitle" class="text-base font-bold text-slate-900">Book Pallets</h3>
+        </div>
+        <button onclick="closeResModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="resForm" onsubmit="saveReservation(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="editingResId" value="">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block font-semibold text-slate-600 mb-1">Booker Name</label><input type="text" id="resAuthor" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Project Number (Ref)</label><input type="text" id="resProjectNo" placeholder="e.g. PRJ-2026-088" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Partner Type</label>
+            <select id="resPartnerType" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none bg-white">
+              <option value="Client">Client</option>
+              <option value="Supplier">Supplier</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Client / Supplier Name</label>
+            <input type="text" id="resPartnerName" list="companyHistory" placeholder="e.g. Food Delivery Brands" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action">
+          </div>
+        </div>
+
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
+          <p class="font-bold text-slate-800">Pallets to Book:</p>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="w-1/3"><span class="font-bold block text-xs">EUR Pallets</span></div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('resEUR', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
+              <input type="number" id="resEUR" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('resEUR', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+            </div>
+            <input type="text" id="resEURDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('resUK', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
+              <input type="number" id="resUK" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('resUK', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+            </div>
+            <input type="text" id="resUKDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <p class="font-bold text-slate-700">Requested Stop / Delivery Point (Optional)</p>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" id="resStopComp" list="companyHistory" placeholder="Company (Select or type)" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="resStopCP" list="postcodeHistory" placeholder="Postal Code" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          </div>
+          <input type="text" id="resStopAddr" list="addressHistory" placeholder="Delivery Street & City Address" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+        </div>
+
+        <div class="p-3.5 border border-slate-200 rounded-xl">
+          <div class="flex justify-between items-center mb-2">
+            <p class="font-bold text-slate-700">Attach Documentation:</p>
+            <button type="button" onclick="addDocRow('resDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
+          </div>
+          <div id="resDocRows" class="space-y-2"></div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Booking Notes & Instructions</label>
+          <textarea id="resNotes" rows="2" placeholder="Specific handling guidelines, temperature, order numbers..." class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeResModal()" class="px-4 py-2 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="btnSaveResSubmit" class="px-4 py-2 bg-action text-white rounded-xl font-bold hover:bg-action-hover shadow-xs">Save Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const initialDirectory = {
+      companies: [
+        'Mercamadrid Hub',
+        'IFL Depot London',
+        'Central Foods Distribution',
+        'Logistique Nord Calais',
+        'Lille Logistics Centre',
+        'Dover Docks Terminal',
+        'Paris Rungis Market'
+      ],
+      addresses: [
+        'London (UK)',
+        'Calais (FR)',
+        'Madrid (ES)',
+        'Birmingham (UK)',
+        'Lille (FR)',
+        'Dover (UK)',
+        'Paris (FR)',
+        'Valencia (ES)',
+        'Manchester (UK)',
+        'Barcelona (ES)'
+      ],
+      postcodes: [
+        '28053',
+        'E16 2PX',
+        'B1 1AA',
+        '62100',
+        '59000',
+        'CT16 1JA',
+        '94150',
+        '46001',
+        '08001'
+      ]
+    };
+
+    let trucks = JSON.parse(localStorage.getItem('ifl_v8_trucks')) || [];
+    let reservations = JSON.parse(localStorage.getItem('ifl_v8_reservations')) || [];
+    let directory = JSON.parse(localStorage.getItem('ifl_v8_directory')) || initialDirectory;
+    
+    let currentTab = 'active';
+    let selectedTruckId = trucks.find(t => t.status === 'active')?.id || null;
+    let calendarDate = new Date(); 
+
+    function persist() {
+      localStorage.setItem('ifl_v8_trucks', JSON.stringify(trucks));
+      localStorage.setItem('ifl_v8_reservations', JSON.stringify(reservations));
+      localStorage.setItem('ifl_v8_directory', JSON.stringify(directory));
+      updateDatalists();
+    }
+
+    function updateDatalists() {
+      const compDl = document.getElementById('companyHistory');
+      const addrDl = document.getElementById('addressHistory');
+      const postDl = document.getElementById('postcodeHistory');
+      
+      compDl.innerHTML = (directory.companies || []).map(c => `<option value="${c}">`).join('');
+      addrDl.innerHTML = (directory.addresses || []).map(a => `<option value="${a}">`).join('');
+      postDl.innerHTML = (directory.postcodes || []).map(p => `<option value="${p}">`).join('');
+    }
+
+    function addDirectoryEntry(company, address, postcode) {
+      if (company && !directory.companies.includes(company)) directory.companies.push(company);
+      if (address && !directory.addresses.includes(address)) directory.addresses.push(address);
+      if (postcode && !directory.postcodes.includes(postcode)) directory.postcodes.push(postcode);
+    }
+
+    function adjustQty(id, delta) {
+      const el = document.getElementById(id);
+      let val = (Number(el.value) || 0) + delta;
+      if (val < 0) val = 0;
+      el.value = val;
+    }
+
+    function getDynamicStatus(truck) {
+      if (truck.status === 'completed') return { text: 'Delivered / Completed', style: 'bg-emerald-100 text-emerald-800' };
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (truck.departureDate <= todayStr) return { text: 'In Transit', style: 'bg-blue-100 text-ifl-blue' };
+      return { text: 'Scheduled', style: 'bg-amber-100 text-amber-800' };
+    }
+
+    function calculateLoad(truck) {
+      const truckRes = reservations.filter(r => r.truckId === truck.id);
+      let totalEUR = Number(truck.eurQty) || 0;
+      let totalUK = Number(truck.ukQty) || 0;
+
+      truckRes.forEach(r => {
+        totalEUR += Number(r.eurQty) || 0;
+        totalUK += Number(r.ukQty) || 0;
+      });
+
+      const ratio = (totalEUR / 33) + (totalUK / 26);
+      const pct = Math.round(ratio * 100);
+      const remRatio = Math.max(0, 1 - ratio);
+      
+      let color = pct <= 60 ? '#10B981' : pct <= 80 ? '#EAB308' : pct < 100 ? '#F97316' : '#DC2626';
+      return { totalEUR, totalUK, pct, freeEUR: Math.floor(remRatio * 33), freeUK: Math.floor(remRatio * 26), color, isOverCapacity: pct >= 100 };
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabAct = document.getElementById('tabActive');
+      const tabComp = document.getElementById('tabCompleted');
+      const tabCal = document.getElementById('tabCalendar');
+      const tabFilt = document.getElementById('tabFilters');
+      
+      const workspace = document.getElementById('workspaceView');
+      const calendarView = document.getElementById('calendarView');
+      const filters = document.getElementById('filtersView');
+
+      [tabAct, tabComp, tabCal, tabFilt].forEach(btn => btn.className = 'pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2');
+      workspace.classList.add('hidden');
+      calendarView.classList.add('hidden');
+      filters.classList.add('hidden');
+
+      if (tab === 'calendar') {
+        tabCal.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        calendarView.classList.remove('hidden');
+        renderMonthlyCalendar();
+      } else if (tab === 'filters') {
+        tabFilt.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        filters.classList.remove('hidden');
+        applyAdvancedFilters();
+      } else {
+        workspace.classList.remove('hidden');
+        (tab === 'active' ? tabAct : tabComp).className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        selectedTruckId = trucks.filter(t => t.status === currentTab)[0]?.id || null;
+        renderTrucks();
+        renderDetail();
+      }
+    }
+
+    function downloadSingleDoc(name, type) {
+      const content = `[IFL DOCUMENT VIEWER]\nFile Name: ${name}\nDocument Type: ${type}\nGenerated locally.`;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = name || `${type}.txt`;
+      link.click();
+    }
+
+    function renderTrucks() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const currentList = trucks.filter(t => t.status === currentTab);
+      
+      const filtered = currentList.filter(t => {
+        const tripRes = reservations.filter(r => r.truckId === t.id);
+        const resQuery = tripRes.map(r => `${r.author} ${r.projectNo || ''} ${r.partnerName || ''}`).join(' ').toLowerCase();
+        const mainQuery = `${t.title} ${t.origin} ${t.destination} ${t.author} ${t.price || ''}`.toLowerCase();
+        return mainQuery.includes(search) || resQuery.includes(search);
+      });
+
+      const container = document.getElementById('trucksList');
+      container.innerHTML = filtered.length === 0 ? `<p class="text-xs text-slate-400 text-center py-16">No loads found.</p>` : '';
+
+      filtered.forEach(truck => {
+        const stats = calculateLoad(truck);
+        const isSelected = truck.id === selectedTruckId;
+        const dynStat = getDynamicStatus(truck);
+        
+        const card = document.createElement('div');
+        card.onclick = () => { selectedTruckId = truck.id; renderTrucks(); renderDetail(); };
+        card.className = `p-4 rounded-xl cursor-pointer border transition-all ${isSelected ? 'border-action bg-red-50/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'}`;
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="truck" class="w-4 h-4 text-action"></i>
+              <span class="font-bold text-sm text-slate-900">${truck.title}</span>
+            </div>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
+          </div>
+          <div class="text-xs font-semibold text-slate-700 mb-1">${truck.origin} ➔ ${truck.destination}</div>
+          <div class="flex items-center justify-between text-[11px] text-slate-400 mb-2">
+            <span>${truck.departureDate} ${truck.price ? `· <strong class="text-slate-700">${truck.price}</strong>` : ''}</span>
+            <span style="color: ${stats.color}" class="font-bold">${stats.pct}% loaded</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div class="h-full rounded-full" style="width: ${Math.min(100, stats.pct)}%; background-color: ${stats.color}"></div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function renderDetail() {
+      const truck = trucks.find(t => t.id === selectedTruckId);
+      const container = document.getElementById('truckDetail');
+      if (!truck) {
+        container.innerHTML = '<div class="text-center py-28 text-slate-400 text-xs">Select a transport trip to inspect manifest details.</div>';
+        return;
+      }
+
+      const stats = calculateLoad(truck);
+      const truckRes = reservations.filter(r => r.truckId === truck.id);
+      const dynStat = getDynamicStatus(truck);
+
+      container.innerHTML = `
+        <div class="pb-5 border-b border-slate-100">
+          ${stats.isOverCapacity ? `<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs flex items-center justify-between text-red-800"><div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i><span><strong>Capacity Limit Exceeded!</strong> Saturation at <strong>${stats.pct}%</strong>.</span></div><span class="text-[10px] uppercase font-black bg-red-200 px-2 py-0.5 rounded">Overload</span></div>` : ''}
+
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
+                <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
+                ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
+              </div>
+              <h2 class="text-2xl font-black text-slate-900">${truck.origin} ➔ ${truck.destination}</h2>
+              <p class="text-sm text-slate-500 mt-1">Ref: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              ${truck.status === 'active' ? `
+                <button onclick="toggleTruckStatus('${truck.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Delivered</button>
+                <button onclick="openEditTruckModal('${truck.id}')" class="border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="edit-3" class="w-4 h-4 text-action"></i> Edit</button>
+                <button onclick="openResModal('${truck.id}')" class="bg-action text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs hover:bg-action-hover"><i data-lucide="plus" class="w-4 h-4"></i> Book Pallets</button>
+              ` : `<button onclick="toggleTruckStatus('${truck.id}')" class="text-xs border border-slate-200 text-slate-600 px-3 py-2 rounded-xl font-semibold">Reactivate Trip</button>`}
+              <button onclick="deleteTruck('${truck.id}')" class="p-2 border border-slate-200 text-slate-400 hover:text-red-600 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5 p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Collection Hub</p><p class="font-bold text-slate-800">${truck.originComp || 'Depot unspecified'}</p><p class="text-slate-600">${truck.origin}</p></div>
+            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Delivery Destination</p><p class="font-bold text-slate-800">${truck.destComp || 'Company unspecified'}</p><p class="text-slate-600">${truck.destination}</p></div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mt-4">
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy Gauge</p><p class="text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR (Max 33)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeEUR})</span></p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">UK (Max 26)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalUK} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeUK})</span></p></div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest</h3>
+          <div class="space-y-4">
+            
+            <!-- Publisher Allocation -->
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm space-y-3">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900">${truck.author}</span>
+                <span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span>
+              </div>
+              <div class="space-y-1.5 pl-3 border-l-2 border-ifl-blue">
+                ${truck.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.eurDesc || 'EUR Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.eurQty} EUR Pallets</span></div>` : ''}
+                ${truck.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.ukDesc || 'UK Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.ukQty} UK Pallets</span></div>` : ''}
+              </div>
+              ${truck.notes ? `<div class="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200"><strong class="text-slate-800">Remarks:</strong> ${truck.notes}</div>` : ''}
+              ${(truck.docs && truck.docs.length > 0) ? `<div class="flex flex-wrap gap-2 pt-1">${truck.docs.map(d => `<button onclick="downloadSingleDoc('${d.name}', '${d.type}')" class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> [${d.type}] ${d.name}</button>`).join('')}</div>` : ''}
+            </div>
+
+            <!-- Team Reservations with Dedicated Details Below -->
+            ${truckRes.map(r => `
+              <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-slate-900">${r.author}</span>
+                    <span class="text-[10px] bg-yellow-100 text-amber-800 font-bold px-2 py-0.5 rounded">Booker</span>
+                    ${r.projectNo ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Project: ${r.projectNo}</span>` : ''}
+                    ${r.partnerName ? `<span class="text-[11px] font-medium text-slate-500">(${r.partnerType || 'Partner'}: <strong class="text-slate-800">${r.partnerName}</strong>)</span>` : ''}
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button onclick="openEditResModal('${r.id}')" class="text-slate-400 hover:text-action"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                    <button onclick="cancelReservation('${r.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
+                  </div>
+                </div>
+
+                <!-- Lines -->
+                <div class="space-y-1.5 pl-3 border-l-2 border-ifl-yellow">
+                  ${r.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.eurDesc || 'EUR Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.eurQty} EUR Pallets</span></div>` : ''}
+                  ${r.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.ukDesc || 'UK Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.ukQty} UK Pallets</span></div>` : ''}
+                </div>
+
+                <!-- Booking Notes & Stop directly below lines -->
+                ${r.notes ? `<div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><strong class="text-slate-800">Notes:</strong> ${r.notes}</div>` : ''}
+                ${r.stop && r.stop.addr ? `<p class="text-xs text-amber-700 font-medium"><i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.addr} ${r.stop.cp ? `(${r.stop.cp})` : ''}</p>` : ''}
+
+                <!-- Attached Documentation -->
+                ${(r.docs && r.docs.length > 0) ? `<div class="flex flex-wrap gap-2 pt-1">${r.docs.map(d => `<button onclick="downloadSingleDoc('${d.name}', '${d.type}')" class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> [${d.type}] ${d.name}</button>`).join('')}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function renderMonthlyCalendar() {
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+      document.getElementById('calendarMonthTitle').innerText = calendarDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+      const firstDay = new Date(year, month, 1).getDay();
+      const startingIndex = (firstDay + 6) % 7; 
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      
+      for (let i = 0; i < startingIndex; i++) grid.appendChild(Object.assign(document.createElement('div'), {className: 'h-28 bg-slate-50/50 rounded-xl border border-slate-100'}));
+
+      for (let d = 1; d <= totalDays; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dayTrucks = trucks.filter(t => t.departureDate === dateStr);
+        const cell = document.createElement('div');
+        cell.className = 'h-28 bg-white border border-slate-200 rounded-xl p-2 flex flex-col justify-between hover:border-action transition cursor-pointer group shadow-2xs';
+        cell.onclick = (e) => { if (!e.target.closest('.truck-pill')) openTruckModal(dateStr); };
+        cell.innerHTML = `
+          <div class="flex justify-between items-center text-xs font-bold text-slate-600"><span>${d}</span><span class="text-[10px] text-action opacity-0 group-hover:opacity-100 font-bold">+ Publish</span></div>
+          <div class="space-y-1 overflow-y-auto max-h-16">${dayTrucks.map(t => `<div onclick="event.stopPropagation(); inspectTripDirectly('${t.id}')" class="truck-pill bg-blue-50 hover:bg-blue-100 border border-blue-200 p-1.5 rounded text-[10px] flex justify-between items-center"><strong class="text-ifl-blue truncate">${t.title}</strong><span class="text-[9px] font-bold text-slate-500">${t.eurQty + t.ukQty}p</span></div>`).join('')}</div>
+        `;
+        grid.appendChild(cell);
+      }
+    }
+
+    function addDocRow(containerId) {
+      const container = document.getElementById(containerId);
+      const div = document.createElement('div');
+      div.className = 'grid grid-cols-12 gap-2 items-center doc-row';
+      div.innerHTML = `<select class="col-span-5 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none doc-type"><option value="Invoice">Invoice</option><option value="Packing List">Packing List</option><option value="Product Specifications">Product Specifications</option><option value="CMR">CMR</option><option value="Other">Other</option></select><input type="file" class="col-span-6 py-1 text-xs doc-file"><button type="button" onclick="this.parentElement.remove()" class="col-span-1 text-slate-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>`;
+      container.appendChild(div);
+      lucide.createIcons();
+    }
+
+    function addStopInput() {
+      const container = document.getElementById('stopsContainer');
+      const div = document.createElement('div');
+      div.className = 'grid grid-cols-3 gap-2 pt-1 border-t border-slate-200/60';
+      div.innerHTML = `<input type="text" list="companyHistory" placeholder="Company" class="stop-comp px-2 py-1 border rounded-lg text-xs outline-none"><input type="text" list="postcodeHistory" placeholder="CP" class="stop-cp px-2 py-1 border rounded-lg text-xs outline-none"><div class="flex gap-1"><input type="text" list="addressHistory" placeholder="Address / City" class="stop-addr flex-1 px-2 py-1 border rounded-lg text-xs outline-none"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button></div>`;
+      container.appendChild(div);
+      lucide.createIcons();
+    }
+
+    function prevMonth() { calendarDate.setMonth(calendarDate.getMonth() - 1); renderMonthlyCalendar(); }
+    function nextMonth() { calendarDate.setMonth(calendarDate.getMonth() + 1); renderMonthlyCalendar(); }
+    function inspectTripDirectly(id) { selectedTruckId = id; const t = trucks.find(x => x.id === id); if (t) switchTab(t.status); }
+
+    function openTruckModal(defaultDate = null) {
+      document.getElementById('truckModalTitle').innerText = 'Publish Route';
+      document.getElementById('editingTruckId').value = '';
+      document.getElementById('truckForm').reset();
+      document.getElementById('stopsContainer').innerHTML = '';
+      document.getElementById('truckDocRows').innerHTML = '';
+      if (defaultDate) document.getElementById('truckDate').value = defaultDate;
+      document.getElementById('truckModal').classList.remove('hidden');
+    }
+
+    function openEditTruckModal(id) {
+      const t = trucks.find(x => x.id === id);
+      if(!t) return;
+      document.getElementById('truckModalTitle').innerText = 'Edit Route';
+      document.getElementById('editingTruckId').value = t.id;
+      document.getElementById('truckAuthor').value = t.author;
+      document.getElementById('truckTitle').value = t.title;
+      document.getElementById('truckPrice').value = t.price || '';
+      document.getElementById('truckDate').value = t.departureDate;
+      document.getElementById('truckTime').value = t.departureTime || '';
+      document.getElementById('truckOriginComp').value = t.originComp || '';
+      document.getElementById('truckOriginCP').value = t.originCP || '';
+      document.getElementById('truckOrigin').value = t.origin;
+      document.getElementById('truckDestComp').value = t.destComp || '';
+      document.getElementById('truckDestCP').value = t.destCP || '';
+      document.getElementById('truckDest').value = t.destination;
+      document.getElementById('truckEUR').value = t.eurQty || 0;
+      document.getElementById('truckEURDesc').value = t.eurDesc || '';
+      document.getElementById('truckUK').value = t.ukQty || 0;
+      document.getElementById('truckUKDesc').value = t.ukDesc || '';
+      document.getElementById('truckNotes').value = t.notes || '';
+      document.getElementById('truckModal').classList.remove('hidden');
+    }
+
+    function closeTruckModal() { document.getElementById('truckModal').classList.add('hidden'); }
+
+    function openResModal(truckId = null) {
+      if (truckId) selectedTruckId = truckId;
+      document.getElementById('resModalTitle').innerText = 'Book Pallets';
+      document.getElementById('editingResId').value = '';
+      document.getElementById('resForm').reset();
+      document.getElementById('resModal').classList.remove('hidden');
+    }
+
+    function openEditResModal(id) {
+      const r = reservations.find(x => x.id === id);
+      if(!r) return;
+      document.getElementById('resModalTitle').innerText = 'Edit Booking';
+      document.getElementById('editingResId').value = r.id;
+      document.getElementById('resAuthor').value = r.author;
+      document.getElementById('resProjectNo').value = r.projectNo || '';
+      document.getElementById('resPartnerType').value = r.partnerType || 'Client';
+      document.getElementById('resPartnerName').value = r.partnerName || '';
+      document.getElementById('resEUR').value = r.eurQty || 0;
+      document.getElementById('resEURDesc').value = r.eurDesc || '';
+      document.getElementById('resUK').value = r.ukQty || 0;
+      document.getElementById('resUKDesc').value = r.ukDesc || '';
+      if (r.stop) {
+        document.getElementById('resStopComp').value = r.stop.comp || '';
+        document.getElementById('resStopCP').value = r.stop.cp || '';
+        document.getElementById('resStopAddr').value = r.stop.addr || '';
+      }
+      document.getElementById('resNotes').value = r.notes || '';
+      document.getElementById('resModal').classList.remove('hidden');
+    }
+
+    function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
+
+    function saveTruck(e) {
+      e.preventDefault();
+      const id = document.getElementById('editingTruckId').value;
+      const originComp = document.getElementById('truckOriginComp').value;
+      const origin = document.getElementById('truckOrigin').value;
+      const originCP = document.getElementById('truckOriginCP').value;
+      const destComp = document.getElementById('truckDestComp').value;
+      const dest = document.getElementById('truckDest').value;
+      const destCP = document.getElementById('truckDestCP').value;
+
+      addDirectoryEntry(originComp, origin, originCP);
+      addDirectoryEntry(destComp, dest, destCP);
+
+      const stopComps = document.querySelectorAll('#stopsContainer .stop-comp');
+      const stopCPs = document.querySelectorAll('#stopsContainer .stop-cp');
+      const stopAddrs = document.querySelectorAll('#stopsContainer .stop-addr');
+      const stops = [];
+      for (let i = 0; i < stopComps.length; i++) {
+        if (stopAddrs[i].value) {
+          stops.push({ comp: stopComps[i].value, cp: stopCPs[i].value, addr: stopAddrs[i].value });
+          addDirectoryEntry(stopComps[i].value, stopAddrs[i].value, stopCPs[i].value);
+        }
+      }
+
+      let plate = document.getElementById('truckTitle').value.trim();
+      if (!plate) {
+        plate = 'TRIP-' + Math.floor(1000 + Math.random() * 9000);
+      }
+
+      const data = {
+        author: document.getElementById('truckAuthor').value,
+        title: plate,
+        price: document.getElementById('truckPrice').value,
+        originComp, origin, originCP,
+        destComp, destination: dest, destCP,
+        stops,
+        departureDate: document.getElementById('truckDate').value,
+        departureTime: document.getElementById('truckTime').value,
+        eurQty: Number(document.getElementById('truckEUR').value) || 0,
+        eurDesc: document.getElementById('truckEURDesc').value,
+        ukQty: Number(document.getElementById('truckUK').value) || 0,
+        ukDesc: document.getElementById('truckUKDesc').value,
+        notes: document.getElementById('truckNotes').value,
+        docs: Array.from(document.querySelectorAll('#truckDocRows .doc-row')).map(r => ({ type: r.querySelector('.doc-type').value, name: r.querySelector('.doc-file').files[0]?.name })).filter(d => d.name)
+      };
+
+      if (id) {
+        Object.assign(trucks.find(t => t.id === id), data);
+      } else {
+        const newTruck = { id: String(Date.now()), status: 'active', ...data };
+        trucks.unshift(newTruck);
+        selectedTruckId = newTruck.id;
+      }
+      persist(); closeTruckModal(); switchTab('active');
+    }
+
+    function saveReservation(e) {
+      e.preventDefault();
+      const id = document.getElementById('editingResId').value;
+      const stopComp = document.getElementById('resStopComp').value;
+      const stopCP = document.getElementById('resStopCP').value;
+      const stopAddr = document.getElementById('resStopAddr').value;
+
+      if (stopComp || stopAddr || stopCP) addDirectoryEntry(stopComp, stopAddr, stopCP);
+
+      const data = {
+        author: document.getElementById('resAuthor').value,
+        projectNo: document.getElementById('resProjectNo').value,
+        partnerType: document.getElementById('resPartnerType').value,
+        partnerName: document.getElementById('resPartnerName').value,
+        eurQty: Number(document.getElementById('resEUR').value) || 0,
+        eurDesc: document.getElementById('resEURDesc').value,
+        ukQty: Number(document.getElementById('resUK').value) || 0,
+        ukDesc: document.getElementById('resUKDesc').value,
+        stop: { comp: stopComp, cp: stopCP, addr: stopAddr },
+        notes: document.getElementById('resNotes').value,
+        docs: Array.from(document.querySelectorAll('#resDocRows .doc-row')).map(r => ({ type: r.querySelector('.doc-type').value, name: r.querySelector('.doc-file').files[0]?.name })).filter(d => d.name)
+      };
+
+      if (data.partnerName) addDirectoryEntry(data.partnerName, null, null);
+
+      if (id) {
+        Object.assign(reservations.find(r => r.id === id), data);
+      } else {
+        reservations.push({ id: 'r_' + Date.now(), truckId: selectedTruckId, ...data });
+      }
+      persist(); closeResModal(); renderTrucks(); renderDetail();
+    }
+
+    function applyAdvancedFilters() {
+      const fromDate = document.getElementById('filterFromDate').value;
+      const toDate = document.getElementById('filterToDate').value;
+      const routeQuery = document.getElementById('filterRoute').value.toLowerCase();
+      const userQuery = document.getElementById('filterUser').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+
+      const filtered = trucks.filter(t => {
+        if (fromDate && t.departureDate < fromDate) return false;
+        if (toDate && t.departureDate > toDate) return false;
+
+        const routeString = `${t.origin} ${t.destination}`.toLowerCase();
+        if (routeQuery && !routeString.includes(routeQuery)) return false;
+
+        const tripRes = reservations.filter(r => r.truckId === t.id);
+        const searchPool = `${t.author} ${t.title} ${tripRes.map(r => `${r.author} ${r.projectNo || ''} ${r.partnerName || ''}`).join(' ')}`.toLowerCase();
+        if (userQuery && !searchPool.includes(userQuery)) return false;
+
+        if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('filteredTableBody');
+      tbody.innerHTML = filtered.length === 0 ? '<tr><td colspan="9" class="text-center py-8 text-slate-400">No matching trips found.</td></tr>' : '';
+
+      filtered.forEach(t => {
+        const stats = calculateLoad(t);
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/70 transition';
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-slate-900">${t.title}</td>
+          <td class="p-3 font-medium text-slate-700">${t.author}</td>
+          <td class="p-3 text-slate-800">${t.origin} ➔ ${t.destination}</td>
+          <td class="p-3 text-slate-500">${t.departureDate}</td>
+          <td class="p-3 font-bold text-emerald-700">${t.price || '-'}</td>
+          <td class="p-3 font-semibold text-slate-700">${stats.totalEUR} EUR / ${stats.totalUK} UK</td>
+          <td class="p-3"><span class="font-bold" style="color: ${stats.color}">${stats.pct}%</span></td>
+          <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded ${t.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-ifl-blue'}">${t.status}</span></td>
+          <td class="p-3 text-right"><button onclick="inspectTripDirectly('${t.id}')" class="text-action font-bold hover:underline">Inspect</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function resetFilters() {
+      document.getElementById('filterFromDate').value = '';
+      document.getElementById('filterToDate').value = '';
+      document.getElementById('filterRoute').value = '';
+      document.getElementById('filterUser').value = '';
+      document.getElementById('filterStatus').value = 'all';
+      applyAdvancedFilters();
+    }
+
+    function toggleTruckStatus(id) { const t = trucks.find(x => x.id === id); if (t) { t.status = t.status === 'active' ? 'completed' : 'active'; persist(); switchTab(t.status); } }
+    function deleteTruck(id) { if (confirm('Delete trip?')) { trucks = trucks.filter(t => t.id !== id); reservations = reservations.filter(r => r.truckId !== id); persist(); switchTab(currentTab); } }
+    function cancelReservation(id) { if (confirm('Cancel booking?')) { reservations = reservations.filter(r => r.id !== id); persist(); renderTrucks(); renderDetail(); } }
+
+    updateDatalists();
+    renderTrucks();
+    renderDetail();
+  </script>
+</body>
+</html>
