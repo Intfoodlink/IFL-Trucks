@@ -360,7 +360,7 @@
     let selectedTruckId = null;
     let calendarDate = new Date(); 
 
-    // Helper to read actual file as Base64 data URI
+    // Helper to read file as Base64 Data URL
     function readFileAsDataURL(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -489,18 +489,28 @@
       }
     }
 
-    // === DOWNLOAD REAL ORIGINAL ATTACHMENT ===
-    function downloadRealDoc(dataUrl, fileName) {
-      if (!dataUrl) {
-        alert("This file is a previous text reference without binary content.");
+    // === DOWNLOAD NATIVE BINARY BLOB TO PREVENT CORRUPTION ===
+    async function downloadRealDoc(dataUrl, fileName) {
+      if (!dataUrl || !dataUrl.startsWith('data:')) {
+        alert("This document was uploaded prior to the real-file update and has no binary content. Please edit the trip or booking and re-upload the real file.");
         return;
       }
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = fileName || 'document';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+
+      try {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName || 'document';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      } catch (err) {
+        alert("Error downloading file: " + err.message);
+      }
     }
 
     // === BULK DOWNLOAD REAL FILES AS ZIP ===
@@ -512,7 +522,7 @@
       let hasFiles = false;
 
       (truck.docs || []).forEach(d => {
-        if (d.data) {
+        if (d.data && d.data.startsWith('data:')) {
           const base64Data = d.data.split(',')[1];
           zip.file(d.name, base64Data, { base64: true });
           hasFiles = true;
@@ -521,7 +531,7 @@
 
       truckRes.forEach(r => {
         (r.docs || []).forEach(d => {
-          if (d.data) {
+          if (d.data && d.data.startsWith('data:')) {
             const base64Data = d.data.split(',')[1];
             zip.file(`${r.author}_${d.name}`, base64Data, { base64: true });
             hasFiles = true;
@@ -530,7 +540,7 @@
       });
 
       if (!hasFiles) {
-        alert("No real files attached to download.");
+        alert("No valid binary files available to archive in ZIP. Please re-upload your files.");
         return;
       }
 
@@ -873,7 +883,6 @@
 
       let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
 
-      // Read real binary docs as DataURL
       const docRows = document.querySelectorAll('#truckDocRows .doc-row');
       const newDocs = [];
       for (const row of docRows) {
@@ -933,7 +942,6 @@
 
       if (stopComp || stopAddr || stopCP) addDirectoryEntry(stopComp, stopAddr, stopCP);
 
-      // Read real binary docs as DataURL
       const docRows = document.querySelectorAll('#resDocRows .doc-row');
       const newDocs = [];
       for (const row of docRows) {
