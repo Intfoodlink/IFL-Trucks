@@ -48,7 +48,7 @@
       background-size: contain; background-position: center;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%231E40AF' d='M224 96l64 96 128-32-64 160 96 96H64l32-160 96-32 32-128z'/%3E%3C/svg%3E"); z-index: 0;
     }
-    #routeMap { height: 260px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+    #routeMap { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
   </style>
 </head>
 <body class="bg-watermark min-h-screen text-slate-800 font-sans antialiased flex flex-col relative">
@@ -234,6 +234,7 @@
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
+        <!-- ORIGIN -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
           <div class="grid grid-cols-3 gap-2">
@@ -254,6 +255,7 @@
           </div>
         </div>
 
+        <!-- STOPS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex justify-between items-center mb-2">
             <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops</p>
@@ -262,14 +264,15 @@
           <div id="stopsContainer" class="space-y-2"></div>
         </div>
 
+        <!-- DESTINATION -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
           <div class="grid grid-cols-3 gap-2">
             <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="truckDestCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+              <option value="Spain">Spain</option>
               <option value="France">France</option>
               <option value="United Kingdom">United Kingdom</option>
-              <option value="Spain">Spain</option>
               <option value="Germany">Germany</option>
               <option value="Netherlands">Netherlands</option>
               <option value="Belgium">Belgium</option>
@@ -379,9 +382,9 @@
           <div class="grid grid-cols-3 gap-2">
             <input type="text" id="resStopComp" list="companyHistory" placeholder="Company" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="resStopCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+              <option value="Spain">Spain</option>
               <option value="France">France</option>
               <option value="United Kingdom">United Kingdom</option>
-              <option value="Spain">Spain</option>
               <option value="Germany">Germany</option>
               <option value="Other">Other</option>
             </select>
@@ -421,7 +424,14 @@
 
     let trucks = [];
     let reservations = [];
-    let directory = JSON.parse(localStorage.getItem('ifl_cloud_directory')) || initialDirectory;
+    
+    // SAFE DIRECTORY LOAD (PREVENTS UNDEFINED ARRAYS)
+    let rawDirectory = JSON.parse(localStorage.getItem('ifl_cloud_directory')) || {};
+    let directory = {
+      companies: Array.isArray(rawDirectory.companies) ? rawDirectory.companies : initialDirectory.companies,
+      cities: Array.isArray(rawDirectory.cities) ? rawDirectory.cities : (Array.isArray(rawDirectory.addresses) ? rawDirectory.addresses : initialDirectory.cities),
+      postcodes: Array.isArray(rawDirectory.postcodes) ? rawDirectory.postcodes : initialDirectory.postcodes
+    };
     
     let currentTab = 'active';
     let selectedTruckId = null;
@@ -431,8 +441,11 @@
 
     const geoCoordsCache = {
       'london': [51.5074, -0.1278],
+      'enfield': [51.6538, -0.0799],
+      'maldon': [51.7311, 0.6759],
       'calais': [50.9513, 1.8587],
       'madrid': [40.4168, -3.7038],
+      'coslada': [40.4260, -3.5656],
       'dover': [51.1279, 1.3134],
       'birmingham': [52.4862, -1.8904],
       'lille': [50.6292, 3.0573],
@@ -442,23 +455,46 @@
       'manchester': [53.4808, -2.2426]
     };
 
+    function extractSearchLocation(rawText) {
+      if (!rawText) return '';
+      const postMatch = rawText.match(/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}|\d{5})\b/i);
+      if (postMatch) return postMatch[0];
+
+      const parts = rawText.split(/[-–,]/).map(s => s.trim()).filter(Boolean);
+      for (const part of parts.reverse()) {
+        const clean = part.toLowerCase();
+        if (geoCoordsCache[clean]) return clean;
+        if (part.length > 3 && !part.match(/unit|street|road|industrial|estate|avenue|poligono|calle/i)) {
+          return part;
+        }
+      }
+      return parts[0] || rawText;
+    }
+
     async function getCoordinates(cityText, countryText) {
-      const clean = (cityText || '').toLowerCase().trim().split(',')[0].trim();
-      if (geoCoordsCache[clean]) return geoCoordsCache[clean];
+      const cleanTarget = extractSearchLocation(cityText);
+      const cacheKey = cleanTarget.toLowerCase().trim();
+
+      if (geoCoordsCache[cacheKey]) return geoCoordsCache[cacheKey];
 
       try {
-        const query = encodeURIComponent(`${cityText}, ${countryText || ''}`);
+        const query = encodeURIComponent(`${cleanTarget}, ${countryText || ''}`);
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
         const data = await res.json();
         if (data && data.length > 0) {
           const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-          geoCoordsCache[clean] = coords;
+          geoCoordsCache[cacheKey] = coords;
           return coords;
         }
       } catch (e) {
-        console.warn("Geocoding fallback triggered", e);
+        console.warn("Geocoding query fallback:", e);
       }
-      return [48.8566, 2.3522];
+
+      const str = `${cityText} ${countryText}`.toLowerCase();
+      if (str.includes('spain') || str.includes('españa') || str.includes('madrid') || str.includes('28820')) return [40.4260, -3.5656];
+      if (str.includes('essex') || str.includes('maldon') || str.includes('enfield') || str.includes('uk')) return [51.7311, 0.6759];
+
+      return [50.9513, 1.8587];
     }
 
     async function uploadFileToSupabase(file) {
@@ -485,7 +521,7 @@
           trucks = cloudTrucks.map(t => ({
             id: t.id, author: t.author, title: t.title, price: t.price,
             originComp: t.origin_comp, origin: t.origin, originCountry: t.origin_country || 'United Kingdom', originCP: t.origin_cp,
-            destComp: t.dest_comp, destination: t.destination, destCountry: t.dest_country || 'France', destCP: t.dest_cp,
+            destComp: t.dest_comp, destination: t.destination, destCountry: t.dest_country || 'Spain', destCP: t.dest_cp,
             stops: t.stops || [], departureDate: t.departure_date, departureTime: t.departure_time,
             eurQty: Number(t.eur_qty) || 0, eurDesc: t.eur_desc, ukQty: Number(t.uk_qty) || 0, ukDesc: t.uk_desc,
             notes: t.notes, docs: t.docs || [], status: t.status
@@ -521,10 +557,16 @@
       postDl.innerHTML = (directory.postcodes || []).map(p => `<option value="${p}">`).join('');
     }
 
+    // SAFE ADD DIRECTORY ENTRY
     function addDirectoryEntry(company, city, postcode) {
+      if (!Array.isArray(directory.companies)) directory.companies = [];
+      if (!Array.isArray(directory.cities)) directory.cities = [];
+      if (!Array.isArray(directory.postcodes)) directory.postcodes = [];
+
       if (company && !directory.companies.includes(company)) directory.companies.push(company);
       if (city && !directory.cities.includes(city)) directory.cities.push(city);
       if (postcode && !directory.postcodes.includes(postcode)) directory.postcodes.push(postcode);
+      
       localStorage.setItem('ifl_cloud_directory', JSON.stringify(directory));
       updateDatalists();
     }
@@ -690,6 +732,9 @@
       const truckRes = reservations.filter(r => r.truckId === truck.id);
       const dynStat = getDynamicStatus(truck);
 
+      const todayStr = new Date().toISOString().split('T')[0];
+      const hasDeparted = truck.departureDate <= todayStr;
+
       const allDocs = [...(truck.docs || [])];
       truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
 
@@ -733,10 +778,12 @@
               
               <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
                 <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                  <span class="w-2.5 h-2.5 rounded-full ${hasDeparted ? 'bg-blue-600' : 'bg-amber-500'}"></span>
                   <div><strong>Origin:</strong> ${truck.originComp ? truck.originComp + ' - ' : ''}${truck.origin} ${truck.originCP ? `(${truck.originCP})` : ''}</div>
                 </div>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">Departed</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${hasDeparted ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-800'}">
+                  ${hasDeparted ? 'Departed' : 'Scheduled / Pending Departure'}
+                </span>
               </div>
 
               ${(truck.stops || []).map((s, idx) => `
@@ -806,6 +853,7 @@
               ` : ''}
             </div>
 
+            <!-- Team Reservations -->
             ${truckRes.map(r => `
               <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
                 <div class="flex justify-between items-center">
@@ -968,26 +1016,32 @@
       lucide.createIcons();
     }
 
-    function addStopInput() {
+    function addStopInput(stopData = null) {
       const container = document.getElementById('stopsContainer');
       const div = document.createElement('div');
       div.className = 'p-2.5 bg-white border border-slate-200 rounded-lg space-y-1.5 stop-item';
+      
+      const compVal = stopData?.comp || '';
+      const countryVal = stopData?.country || 'United Kingdom';
+      const cityVal = stopData?.city || stopData?.addr || '';
+      const cpVal = stopData?.cp || '';
+
       div.innerHTML = `
         <div class="grid grid-cols-3 gap-2">
-          <input type="text" list="companyHistory" placeholder="Company Name" class="stop-comp col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
+          <input type="text" list="companyHistory" value="${compVal}" placeholder="Company Name" class="stop-comp col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
           <select class="stop-country px-2 py-1 border rounded-lg text-xs outline-none bg-white">
-            <option value="France">France</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="Spain">Spain</option>
-            <option value="Germany">Germany</option>
-            <option value="Belgium">Belgium</option>
-            <option value="Other">Other</option>
+            <option value="United Kingdom" ${countryVal === 'United Kingdom' ? 'selected' : ''}>United Kingdom</option>
+            <option value="France" ${countryVal === 'France' ? 'selected' : ''}>France</option>
+            <option value="Spain" ${countryVal === 'Spain' ? 'selected' : ''}>Spain</option>
+            <option value="Germany" ${countryVal === 'Germany' ? 'selected' : ''}>Germany</option>
+            <option value="Belgium" ${countryVal === 'Belgium' ? 'selected' : ''}>Belgium</option>
+            <option value="Other" ${countryVal === 'Other' ? 'selected' : ''}>Other</option>
           </select>
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <input type="text" list="cityHistory" placeholder="City / Municipality" class="stop-city col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
+          <input type="text" list="cityHistory" value="${cityVal}" placeholder="City / Municipality" class="stop-city col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
           <div class="flex gap-1">
-            <input type="text" list="postcodeHistory" placeholder="CP" class="stop-cp flex-1 px-2 py-1 border rounded-lg text-xs outline-none">
+            <input type="text" list="postcodeHistory" value="${cpVal}" placeholder="CP" class="stop-cp flex-1 px-2 py-1 border rounded-lg text-xs outline-none">
             <button type="button" onclick="this.closest('.stop-item').remove()" class="text-slate-400 hover:text-red-500 px-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
           </div>
         </div>
@@ -1025,7 +1079,7 @@
       document.getElementById('truckOriginCP').value = t.originCP || '';
       document.getElementById('truckOriginCity').value = t.origin;
       document.getElementById('truckDestComp').value = t.destComp || '';
-      document.getElementById('truckDestCountry').value = t.destCountry || 'France';
+      document.getElementById('truckDestCountry').value = t.destCountry || 'Spain';
       document.getElementById('truckDestCP').value = t.destCP || '';
       document.getElementById('truckDestCity').value = t.destination;
       document.getElementById('truckEUR').value = t.eurQty || 0;
@@ -1034,7 +1088,14 @@
       document.getElementById('truckUKDesc').value = t.ukDesc || '';
       document.getElementById('truckNotes').value = t.notes || '';
       document.getElementById('truckDocRows').innerHTML = '';
+
+      // Populate existing stops correctly
+      const stopsContainer = document.getElementById('stopsContainer');
+      stopsContainer.innerHTML = '';
+      (t.stops || []).forEach(s => addStopInput(s));
+
       document.getElementById('truckModal').classList.remove('hidden');
+      lucide.createIcons();
     }
 
     function closeTruckModal() { document.getElementById('truckModal').classList.add('hidden'); }
@@ -1063,7 +1124,7 @@
       document.getElementById('resUKDesc').value = r.ukDesc || '';
       if (r.stop) {
         document.getElementById('resStopComp').value = r.stop.comp || '';
-        document.getElementById('resStopCountry').value = r.stop.country || 'France';
+        document.getElementById('resStopCountry').value = r.stop.country || 'Spain';
         document.getElementById('resStopCP').value = r.stop.cp || '';
         document.getElementById('resStopCity').value = r.stop.city || r.stop.addr || '';
       }
@@ -1102,7 +1163,10 @@
           const country = el.querySelector('.stop-country').value;
           const city = el.querySelector('.stop-city').value;
           const cp = el.querySelector('.stop-cp').value;
-          if (city) stops.push({ comp, country, city, cp, arrived: false });
+          if (city) {
+            stops.push({ comp, country, city, cp, arrived: false });
+            addDirectoryEntry(comp, city, cp);
+          }
         }
 
         let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
@@ -1317,13 +1381,11 @@
           };
         });
       } else {
-        // Full detailed breakdown (with booking rows & waypoints)
         currentlyFilteredTrucks.forEach(t => {
           const stats = calculateLoad(t);
           const tripRes = reservations.filter(r => r.truckId === t.id);
           const stopsSummary = (t.stops || []).map(s => `${s.comp || ''} ${s.city || s.addr}`).join(' | ') || 'None';
 
-          // Base Publisher Row
           dataToExport.push({
             "Trip Ref / Plate": t.title,
             "Trip Status": t.status,
@@ -1345,7 +1407,6 @@
             "Attached Docs": (t.docs || []).map(d => d.name).join(', ') || 'None'
           });
 
-          // Booking Rows
           tripRes.forEach(r => {
             dataToExport.push({
               "Trip Ref / Plate": t.title,
