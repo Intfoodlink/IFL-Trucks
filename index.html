@@ -56,7 +56,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Cloud Freight Planner & Multi-Pallet Load System</p>
+          <p class="text-[11px] text-slate-400">Cloud Freight Planner & Real Document Archive</p>
         </div>
       </div>
 
@@ -244,13 +244,16 @@
             <input type="text" id="truckUKDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
-        <div class="p-3.5 border border-slate-200 rounded-xl">
+
+        <!-- ATTACH REAL FILES -->
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Documentation:</p>
+            <p class="font-bold text-slate-700">Attach Real Files (PDF, Excel, Word, Images):</p>
             <button type="button" onclick="addDocRow('truckDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
           </div>
           <div id="truckDocRows" class="space-y-2"></div>
         </div>
+
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Trip Notes</label>
           <textarea id="truckNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
@@ -320,13 +323,16 @@
           </div>
           <input type="text" id="resStopAddr" list="addressHistory" placeholder="Address" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
         </div>
-        <div class="p-3.5 border border-slate-200 rounded-xl">
+
+        <!-- ATTACH REAL FILES -->
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Documentation:</p>
+            <p class="font-bold text-slate-700">Attach Real Files (PDF, Excel, Word, Images):</p>
             <button type="button" onclick="addDocRow('resDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
           </div>
           <div id="resDocRows" class="space-y-2"></div>
         </div>
+
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Notes</label>
           <textarea id="resNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
@@ -353,6 +359,16 @@
     let currentTab = 'active';
     let selectedTruckId = null;
     let calendarDate = new Date(); 
+
+    // Helper to read actual file as Base64 data URI
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
 
     // === CLOUD DATA SYNCHRONIZATION WITH SUPABASE ===
     async function loadCloudData() {
@@ -473,12 +489,55 @@
       }
     }
 
-    function downloadSingleDoc(name, type) {
-      const content = `[IFL DOCUMENT VIEWER]\nFile Name: ${name}\nDocument Type: ${type}`;
-      const blob = new Blob([content], { type: 'text/plain' });
+    // === DOWNLOAD REAL ORIGINAL ATTACHMENT ===
+    function downloadRealDoc(dataUrl, fileName) {
+      if (!dataUrl) {
+        alert("This file is a previous text reference without binary content.");
+        return;
+      }
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = name || `${type}.txt`;
+      link.href = dataUrl;
+      link.download = fileName || 'document';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // === BULK DOWNLOAD REAL FILES AS ZIP ===
+    async function downloadAllDocs(truckId) {
+      const truck = trucks.find(t => t.id === truckId);
+      const truckRes = reservations.filter(r => r.truckId === truckId);
+      const zip = new JSZip();
+
+      let hasFiles = false;
+
+      (truck.docs || []).forEach(d => {
+        if (d.data) {
+          const base64Data = d.data.split(',')[1];
+          zip.file(d.name, base64Data, { base64: true });
+          hasFiles = true;
+        }
+      });
+
+      truckRes.forEach(r => {
+        (r.docs || []).forEach(d => {
+          if (d.data) {
+            const base64Data = d.data.split(',')[1];
+            zip.file(`${r.author}_${d.name}`, base64Data, { base64: true });
+            hasFiles = true;
+          }
+        });
+      });
+
+      if (!hasFiles) {
+        alert("No real files attached to download.");
+        return;
+      }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(content);
+      link.download = `IFL_Docs_${truck.title}.zip`;
       link.click();
     }
 
@@ -538,6 +597,9 @@
       const truckRes = reservations.filter(r => r.truckId === truck.id);
       const dynStat = getDynamicStatus(truck);
 
+      const allDocs = [...(truck.docs || [])];
+      truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
+
       container.innerHTML = `
         <div class="pb-5 border-b border-slate-100">
           ${stats.isOverCapacity ? `<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs flex items-center justify-between text-red-800"><div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i><span><strong>Capacity Limit Exceeded!</strong> Saturation at <strong>${stats.pct}%</strong>.</span></div><span class="text-[10px] uppercase font-black bg-red-200 px-2 py-0.5 rounded">Overload</span></div>` : ''}
@@ -572,21 +634,47 @@
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR (Max 33)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeEUR})</span></p></div>
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">UK (Max 26)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalUK} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeUK})</span></p></div>
           </div>
+
+          <!-- BULK DOWNLOAD -->
+          ${allDocs.length > 0 ? `
+            <div class="mt-4 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+              <span class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="archive" class="w-4 h-4 text-action"></i> Trip File Archive (${allDocs.length} real files)</span>
+              <button onclick="downloadAllDocs('${truck.id}')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-2xs">
+                <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-action"></i> Download All as ZIP
+              </button>
+            </div>
+          ` : ''}
         </div>
 
         <div class="mt-6">
           <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest</h3>
           <div class="space-y-4">
+            
+            <!-- Publisher Allocation -->
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm space-y-3">
-              <div class="flex items-center gap-2"><span class="font-bold text-slate-900">${truck.author}</span><span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span></div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900">${truck.author}</span>
+                <span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span>
+              </div>
               <div class="space-y-1.5 pl-3 border-l-2 border-ifl-blue">
                 ${truck.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.eurDesc || 'EUR Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.eurQty} EUR Pallets</span></div>` : ''}
                 ${truck.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.ukDesc || 'UK Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.ukQty} UK Pallets</span></div>` : ''}
               </div>
               ${truck.notes ? `<div class="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200"><strong class="text-slate-800">Remarks:</strong> ${truck.notes}</div>` : ''}
-              ${(truck.docs && truck.docs.length > 0) ? `<div class="flex flex-wrap gap-2 pt-1">${truck.docs.map(d => `<button onclick="downloadSingleDoc('${d.name}', '${d.type}')" class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> [${d.type}] ${d.name}</button>`).join('')}</div>` : ''}
+              
+              <!-- Real Download Buttons -->
+              ${(truck.docs && truck.docs.length > 0) ? `
+                <div class="flex flex-wrap gap-2 pt-1">
+                  ${truck.docs.map((d, idx) => `
+                    <button onclick='downloadRealDoc(trucks.find(t=>t.id==="${truck.id}").docs[${idx}].data, "${d.name}")' class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                      <i data-lucide="download" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
+                    </button>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
 
+            <!-- Team Reservations -->
             ${truckRes.map(r => `
               <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
                 <div class="flex justify-between items-center">
@@ -601,13 +689,25 @@
                     <button onclick="cancelReservation('${r.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
                   </div>
                 </div>
+
                 <div class="space-y-1.5 pl-3 border-l-2 border-ifl-yellow">
                   ${r.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.eurDesc || 'EUR Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.eurQty} EUR Pallets</span></div>` : ''}
                   ${r.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.ukDesc || 'UK Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.ukQty} UK Pallets</span></div>` : ''}
                 </div>
+
                 ${r.notes ? `<div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><strong class="text-slate-800">Notes:</strong> ${r.notes}</div>` : ''}
                 ${r.stop && r.stop.addr ? `<p class="text-xs text-amber-700 font-medium"><i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.addr} ${r.stop.cp ? `(${r.stop.cp})` : ''}</p>` : ''}
-                ${(r.docs && r.docs.length > 0) ? `<div class="flex flex-wrap gap-2 pt-1">${r.docs.map(d => `<button onclick="downloadSingleDoc('${d.name}', '${d.type}')" class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> [${d.type}] ${d.name}</button>`).join('')}</div>` : ''}
+
+                <!-- Real Download Buttons for Reservation -->
+                ${(r.docs && r.docs.length > 0) ? `
+                  <div class="flex flex-wrap gap-2 pt-1">
+                    ${r.docs.map((d, idx) => `
+                      <button onclick='downloadRealDoc(reservations.find(x=>x.id==="${r.id}").docs[${idx}].data, "${d.name}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                        <i data-lucide="download" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
+                      </button>
+                    `).join('')}
+                  </div>
+                ` : ''}
               </div>
             `).join('')}
           </div>
@@ -645,8 +745,18 @@
     function addDocRow(containerId) {
       const container = document.getElementById(containerId);
       const div = document.createElement('div');
-      div.className = 'grid grid-cols-12 gap-2 items-center doc-row';
-      div.innerHTML = `<select class="col-span-5 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none doc-type"><option value="Invoice">Invoice</option><option value="Packing List">Packing List</option><option value="Product Specifications">Product Specifications</option><option value="CMR">CMR</option><option value="Other">Other</option></select><input type="file" class="col-span-6 py-1 text-xs doc-file"><button type="button" onclick="this.parentElement.remove()" class="col-span-1 text-slate-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>`;
+      div.className = 'grid grid-cols-12 gap-2 items-center doc-row bg-slate-50 p-2 rounded-lg border border-slate-200';
+      div.innerHTML = `
+        <select class="col-span-5 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none doc-type bg-white">
+          <option value="Invoice">Invoice</option>
+          <option value="Packing List">Packing List</option>
+          <option value="Product Specifications">Product Specifications</option>
+          <option value="CMR">CMR</option>
+          <option value="Other">Other</option>
+        </select>
+        <input type="file" class="col-span-6 py-1 text-xs doc-file">
+        <button type="button" onclick="this.parentElement.remove()" class="col-span-1 text-slate-400 hover:text-red-500 flex justify-center"><i data-lucide="trash" class="w-4 h-4"></i></button>
+      `;
       container.appendChild(div);
       lucide.createIcons();
     }
@@ -695,6 +805,7 @@
       document.getElementById('truckUK').value = t.ukQty || 0;
       document.getElementById('truckUKDesc').value = t.ukDesc || '';
       document.getElementById('truckNotes').value = t.notes || '';
+      document.getElementById('truckDocRows').innerHTML = '';
       document.getElementById('truckModal').classList.remove('hidden');
     }
 
@@ -705,6 +816,7 @@
       document.getElementById('resModalTitle').innerText = 'Book Pallets';
       document.getElementById('editingResId').value = '';
       document.getElementById('resForm').reset();
+      document.getElementById('resDocRows').innerHTML = '';
       document.getElementById('resModal').classList.remove('hidden');
     }
 
@@ -727,14 +839,19 @@
         document.getElementById('resStopAddr').value = r.stop.addr || '';
       }
       document.getElementById('resNotes').value = r.notes || '';
+      document.getElementById('resDocRows').innerHTML = '';
       document.getElementById('resModal').classList.remove('hidden');
     }
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
-    // === SAVE / UPDATE TRUCK TO SUPABASE ===
+    // === SAVE / UPDATE TRUCK TO SUPABASE WITH REAL FILES ===
     async function saveTruck(e) {
       e.preventDefault();
+      const submitBtn = document.getElementById('btnSaveTruckSubmit');
+      submitBtn.innerText = 'Saving files...';
+      submitBtn.disabled = true;
+
       const id = document.getElementById('editingTruckId').value || ('t_' + Date.now());
       const originComp = document.getElementById('truckOriginComp').value;
       const origin = document.getElementById('truckOrigin').value;
@@ -756,6 +873,22 @@
 
       let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
 
+      // Read real binary docs as DataURL
+      const docRows = document.querySelectorAll('#truckDocRows .doc-row');
+      const newDocs = [];
+      for (const row of docRows) {
+        const fileInput = row.querySelector('.doc-file');
+        const docType = row.querySelector('.doc-type').value;
+        if (fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const dataUrl = await readFileAsDataURL(file);
+          newDocs.push({ type: docType, name: file.name, data: dataUrl });
+        }
+      }
+
+      const existingTruck = trucks.find(t => t.id === id);
+      const combinedDocs = existingTruck ? [...(existingTruck.docs || []), ...newDocs] : newDocs;
+
       const payload = {
         id,
         author: document.getElementById('truckAuthor').value,
@@ -771,11 +904,14 @@
         uk_qty: Number(document.getElementById('truckUK').value) || 0,
         uk_desc: document.getElementById('truckUKDesc').value,
         notes: document.getElementById('truckNotes').value,
-        docs: Array.from(document.querySelectorAll('#truckDocRows .doc-row')).map(r => ({ type: r.querySelector('.doc-type').value, name: r.querySelector('.doc-file').files[0]?.name })).filter(d => d.name),
-        status: 'active'
+        docs: combinedDocs,
+        status: existingTruck ? existingTruck.status : 'active'
       };
 
       const { error } = await supabaseClient.from('trucks').upsert(payload);
+      submitBtn.innerText = 'Publish Trip';
+      submitBtn.disabled = false;
+
       if (error) alert("Error saving to cloud: " + error.message);
       
       closeTruckModal();
@@ -783,15 +919,35 @@
       switchTab('active');
     }
 
-    // === SAVE / UPDATE RESERVATION TO SUPABASE ===
+    // === SAVE / UPDATE RESERVATION TO SUPABASE WITH REAL FILES ===
     async function saveReservation(e) {
       e.preventDefault();
+      const submitBtn = document.getElementById('btnSaveResSubmit');
+      submitBtn.innerText = 'Saving files...';
+      submitBtn.disabled = true;
+
       const id = document.getElementById('editingResId').value || ('r_' + Date.now());
       const stopComp = document.getElementById('resStopComp').value;
       const stopCP = document.getElementById('resStopCP').value;
       const stopAddr = document.getElementById('resStopAddr').value;
 
       if (stopComp || stopAddr || stopCP) addDirectoryEntry(stopComp, stopAddr, stopCP);
+
+      // Read real binary docs as DataURL
+      const docRows = document.querySelectorAll('#resDocRows .doc-row');
+      const newDocs = [];
+      for (const row of docRows) {
+        const fileInput = row.querySelector('.doc-file');
+        const docType = row.querySelector('.doc-type').value;
+        if (fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const dataUrl = await readFileAsDataURL(file);
+          newDocs.push({ type: docType, name: file.name, data: dataUrl });
+        }
+      }
+
+      const existingRes = reservations.find(r => r.id === id);
+      const combinedDocs = existingRes ? [...(existingRes.docs || []), ...newDocs] : newDocs;
 
       const payload = {
         id,
@@ -806,10 +962,13 @@
         uk_desc: document.getElementById('resUKDesc').value,
         stop: { comp: stopComp, cp: stopCP, addr: stopAddr },
         notes: document.getElementById('resNotes').value,
-        docs: Array.from(document.querySelectorAll('#resDocRows .doc-row')).map(r => ({ type: r.querySelector('.doc-type').value, name: r.querySelector('.doc-file').files[0]?.name })).filter(d => d.name)
+        docs: combinedDocs
       };
 
       const { error } = await supabaseClient.from('reservations').upsert(payload);
+      submitBtn.innerText = 'Save Booking';
+      submitBtn.disabled = false;
+
       if (error) alert("Error saving reservation: " + error.message);
 
       closeResModal();
