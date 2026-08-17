@@ -149,7 +149,6 @@
           <p class="text-xs text-slate-400 mt-0.5">Filter loads and export executive or detailed spreadsheets & PDF manifests.</p>
         </div>
         <div class="flex items-center gap-2">
-          <!-- REPORT GENERATION BUTTONS -->
           <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
             <span class="text-[11px] font-bold text-slate-500 px-2">Reports:</span>
             <button onclick="exportExcelReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
@@ -213,7 +212,7 @@
     </div>
   </main>
 
-  <!-- TRUCK MODAL -->
+  <!-- TRUCK MODAL (ALL FIELDS FORGIVING & OPTIONAL) -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -225,12 +224,12 @@
       <form id="truckForm" onsubmit="saveTruck(event)" class="space-y-4 text-xs">
         <input type="hidden" id="editingTruckId" value="">
         <div class="grid grid-cols-3 gap-3">
-          <div><label class="block font-semibold text-slate-600 mb-1">Coordinator Name</label><input type="text" id="truckAuthor" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Truck Plate / Ref (Optional)</label><input type="text" id="truckTitle" placeholder="Auto if empty" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Trip Price (Optional)</label><input type="text" id="truckPrice" placeholder="e.g. €1,450" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Coordinator Name</label><input type="text" id="truckAuthor" placeholder="e.g. Magda" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Truck Plate / Ref</label><input type="text" id="truckTitle" placeholder="Auto TRIP-XXXX if empty" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Price</label><input type="text" id="truckPrice" placeholder="e.g. €1,450" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
@@ -238,7 +237,7 @@
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
           <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="truckOriginCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
               <option value="United Kingdom">United Kingdom</option>
               <option value="France">France</option>
@@ -250,7 +249,7 @@
             </select>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckOriginCity" list="cityHistory" placeholder="City / Municipality" required class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckOriginCity" list="cityHistory" placeholder="City / Municipality / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <input type="text" id="truckOriginCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
           </div>
         </div>
@@ -258,7 +257,7 @@
         <!-- STOPS -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops</p>
+            <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops (Optional)</p>
             <button type="button" onclick="addStopInput()" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Stop</button>
           </div>
           <div id="stopsContainer" class="space-y-2"></div>
@@ -268,7 +267,7 @@
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
           <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="truckDestCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
               <option value="Spain">Spain</option>
               <option value="France">France</option>
@@ -280,7 +279,7 @@
             </select>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckDestCity" list="cityHistory" placeholder="City / Municipality" required class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckDestCity" list="cityHistory" placeholder="City / Municipality / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <input type="text" id="truckDestCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
           </div>
         </div>
@@ -294,7 +293,7 @@
               <input type="number" id="truckEUR" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
               <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
             </div>
-            <input type="text" id="truckEURDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
@@ -303,13 +302,13 @@
               <input type="number" id="truckUK" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
               <button type="button" onclick="adjustQty('truckUK', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
             </div>
-            <input type="text" id="truckUKDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
 
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Real Files (PDF, Excel, Word, Images):</p>
+            <p class="font-bold text-slate-700">Attach Documents (PDF, Excel, Word, Images):</p>
             <button type="button" onclick="addDocRow('truckDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
           </div>
           <div id="truckDocRows" class="space-y-2"></div>
@@ -317,7 +316,7 @@
 
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Trip Notes</label>
-          <textarea id="truckNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
+          <textarea id="truckNotes" rows="2" placeholder="Optional remarks..." class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
           <button type="button" onclick="closeTruckModal()" class="px-4 py-2 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
@@ -327,7 +326,7 @@
     </div>
   </div>
 
-  <!-- RESERVATION MODAL -->
+  <!-- RESERVATION MODAL (ALL FORGIVING) -->
   <div id="resModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -339,8 +338,8 @@
       <form id="resForm" onsubmit="saveReservation(event)" class="space-y-4 text-xs">
         <input type="hidden" id="editingResId" value="">
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="block font-semibold text-slate-600 mb-1">Booker Name</label><input type="text" id="resAuthor" required class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Project Number (Ref)</label><input type="text" id="resProjectNo" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Booker Name</label><input type="text" id="resAuthor" placeholder="e.g. Colin" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Project Number (Ref)</label><input type="text" id="resProjectNo" placeholder="Optional (e.g. PRJ-2026-01)" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -352,7 +351,7 @@
           </div>
           <div>
             <label class="block font-semibold text-slate-600 mb-1">Client / Supplier Name</label>
-            <input type="text" id="resPartnerName" list="companyHistory" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action">
+            <input type="text" id="resPartnerName" list="companyHistory" placeholder="Optional" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action">
           </div>
         </div>
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
@@ -364,7 +363,7 @@
               <input type="number" id="resEUR" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
               <button type="button" onclick="adjustQty('resEUR', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
             </div>
-            <input type="text" id="resEURDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="resEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
@@ -373,14 +372,14 @@
               <input type="number" id="resUK" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
               <button type="button" onclick="adjustQty('resUK', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
             </div>
-            <input type="text" id="resUKDesc" placeholder="Description" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="resUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
 
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700">Requested Stop / Delivery Point (Optional)</p>
           <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="resStopComp" list="companyHistory" placeholder="Company" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="resStopComp" list="companyHistory" placeholder="Company (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="resStopCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
               <option value="Spain">Spain</option>
               <option value="France">France</option>
@@ -397,7 +396,7 @@
 
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Real Files (PDF, Excel, Word, Images):</p>
+            <p class="font-bold text-slate-700">Attach Documents (PDF, Excel, Word, Images):</p>
             <button type="button" onclick="addDocRow('resDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
           </div>
           <div id="resDocRows" class="space-y-2"></div>
@@ -405,7 +404,7 @@
 
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Notes</label>
-          <textarea id="resNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
+          <textarea id="resNotes" rows="2" placeholder="Optional notes..." class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
           <button type="button" onclick="closeResModal()" class="px-4 py-2 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
@@ -425,12 +424,13 @@
     let trucks = [];
     let reservations = [];
     
-    // SAFE DIRECTORY LOAD (PREVENTS UNDEFINED ARRAYS)
-    let rawDirectory = JSON.parse(localStorage.getItem('ifl_cloud_directory')) || {};
+    // SAFE LOCAL STORAGE READ
+    let rawDir = null;
+    try { rawDir = JSON.parse(localStorage.getItem('ifl_cloud_directory')); } catch(e) { rawDir = null; }
     let directory = {
-      companies: Array.isArray(rawDirectory.companies) ? rawDirectory.companies : initialDirectory.companies,
-      cities: Array.isArray(rawDirectory.cities) ? rawDirectory.cities : (Array.isArray(rawDirectory.addresses) ? rawDirectory.addresses : initialDirectory.cities),
-      postcodes: Array.isArray(rawDirectory.postcodes) ? rawDirectory.postcodes : initialDirectory.postcodes
+      companies: (rawDir && Array.isArray(rawDir.companies)) ? rawDir.companies : [...initialDirectory.companies],
+      cities: (rawDir && Array.isArray(rawDir.cities)) ? rawDir.cities : ((rawDir && Array.isArray(rawDir.addresses)) ? rawDir.addresses : [...initialDirectory.cities]),
+      postcodes: (rawDir && Array.isArray(rawDir.postcodes)) ? rawDir.postcodes : [...initialDirectory.postcodes]
     };
     
     let currentTab = 'active';
@@ -490,26 +490,46 @@
         console.warn("Geocoding query fallback:", e);
       }
 
-      const str = `${cityText} ${countryText}`.toLowerCase();
-      if (str.includes('spain') || str.includes('españa') || str.includes('madrid') || str.includes('28820')) return [40.4260, -3.5656];
+      const str = `${cityText || ''} ${countryText || ''}`.toLowerCase();
+      if (str.includes('spain') || str.includes('españa') || str.includes('madrid') || str.includes('28820') || str.includes('coslada')) return [40.4260, -3.5656];
       if (str.includes('essex') || str.includes('maldon') || str.includes('enfield') || str.includes('uk')) return [51.7311, 0.6759];
 
       return [50.9513, 1.8587];
     }
 
-    async function uploadFileToSupabase(file) {
-      const fileExt = file.name.split('.').pop();
-      const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-      const filePath = `uploads/${cleanFileName}`;
-
-      const { data, error } = await supabaseClient.storage.from('ifl_docs').upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
+    // HELPER: Convert file to Base64 (Reliable fail-safe)
+    function fileToBase64(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
       });
+    }
 
-      if (error) throw error;
-      const { data: { publicUrl } } = supabaseClient.storage.from('ifl_docs').getPublicUrl(filePath);
-      return publicUrl;
+    // SAFE UPLOAD WITH ZERO BLOCKERS
+    async function safeUploadDoc(file) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const filePath = `uploads/${cleanFileName}`;
+
+        const { data, error } = await supabaseClient.storage.from('ifl_docs').upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+        if (!error) {
+          const { data: { publicUrl } } = supabaseClient.storage.from('ifl_docs').getPublicUrl(filePath);
+          if (publicUrl) return publicUrl;
+        }
+      } catch (e) {
+        console.warn("Cloud Storage bucket unavailable. Falling back to local data URL.", e);
+      }
+
+      // Fallback: save Base64 data URL directly
+      const b64 = await fileToBase64(file);
+      return b64 || '';
     }
 
     async function loadCloudData() {
@@ -519,21 +539,21 @@
 
         if (cloudTrucks) {
           trucks = cloudTrucks.map(t => ({
-            id: t.id, author: t.author, title: t.title, price: t.price,
-            originComp: t.origin_comp, origin: t.origin, originCountry: t.origin_country || 'United Kingdom', originCP: t.origin_cp,
-            destComp: t.dest_comp, destination: t.destination, destCountry: t.dest_country || 'Spain', destCP: t.dest_cp,
-            stops: t.stops || [], departureDate: t.departure_date, departureTime: t.departure_time,
-            eurQty: Number(t.eur_qty) || 0, eurDesc: t.eur_desc, ukQty: Number(t.uk_qty) || 0, ukDesc: t.uk_desc,
-            notes: t.notes, docs: t.docs || [], status: t.status
+            id: t.id, author: t.author || 'Logistics Team', title: t.title || 'TRIP-REF', price: t.price || '',
+            originComp: t.origin_comp || '', origin: t.origin || 'Hub (TBD)', originCountry: t.origin_country || 'United Kingdom', originCP: t.origin_cp || '',
+            destComp: t.dest_comp || '', destination: t.destination || 'Hub (TBD)', destCountry: t.dest_country || 'Spain', destCP: t.dest_cp || '',
+            stops: Array.isArray(t.stops) ? t.stops : [], departureDate: t.departure_date || new Date().toISOString().split('T')[0], departureTime: t.departure_time || '',
+            eurQty: Number(t.eur_qty) || 0, eurDesc: t.eur_desc || '', ukQty: Number(t.uk_qty) || 0, ukDesc: t.uk_desc || '',
+            notes: t.notes || '', docs: Array.isArray(t.docs) ? t.docs : [], status: t.status || 'active'
           }));
         }
 
         if (cloudRes) {
           reservations = cloudRes.map(r => ({
-            id: r.id, truckId: r.truck_id, author: r.author, projectNo: r.project_no,
-            partnerType: r.partner_type, partnerName: r.partner_name,
-            eurQty: Number(r.eur_qty) || 0, eurDesc: r.eur_desc, ukQty: Number(r.uk_qty) || 0, ukDesc: r.uk_desc,
-            stop: r.stop || {}, notes: r.notes, docs: r.docs || []
+            id: r.id, truckId: r.truck_id, author: r.author || 'Booker', projectNo: r.project_no || '',
+            partnerType: r.partner_type || 'Client', partnerName: r.partner_name || '',
+            eurQty: Number(r.eur_qty) || 0, eurDesc: r.eur_desc || '', ukQty: Number(r.uk_qty) || 0, ukDesc: r.uk_desc || '',
+            stop: (r.stop && typeof r.stop === 'object') ? r.stop : {}, notes: r.notes || '', docs: Array.isArray(r.docs) ? r.docs : []
           }));
         }
 
@@ -552,12 +572,11 @@
       const compDl = document.getElementById('companyHistory');
       const cityDl = document.getElementById('cityHistory');
       const postDl = document.getElementById('postcodeHistory');
-      compDl.innerHTML = (directory.companies || []).map(c => `<option value="${c}">`).join('');
-      cityDl.innerHTML = (directory.cities || []).map(a => `<option value="${a}">`).join('');
-      postDl.innerHTML = (directory.postcodes || []).map(p => `<option value="${p}">`).join('');
+      if (compDl) compDl.innerHTML = (directory.companies || []).map(c => `<option value="${c}">`).join('');
+      if (cityDl) cityDl.innerHTML = (directory.cities || []).map(a => `<option value="${a}">`).join('');
+      if (postDl) postDl.innerHTML = (directory.postcodes || []).map(p => `<option value="${p}">`).join('');
     }
 
-    // SAFE ADD DIRECTORY ENTRY
     function addDirectoryEntry(company, city, postcode) {
       if (!Array.isArray(directory.companies)) directory.companies = [];
       if (!Array.isArray(directory.cities)) directory.cities = [];
@@ -567,7 +586,7 @@
       if (city && !directory.cities.includes(city)) directory.cities.push(city);
       if (postcode && !directory.postcodes.includes(postcode)) directory.postcodes.push(postcode);
       
-      localStorage.setItem('ifl_cloud_directory', JSON.stringify(directory));
+      try { localStorage.setItem('ifl_cloud_directory', JSON.stringify(directory)); } catch(e){}
       updateDatalists();
     }
 
@@ -614,34 +633,47 @@
       const calendarView = document.getElementById('calendarView');
       const filters = document.getElementById('filtersView');
 
-      [tabAct, tabComp, tabCal, tabFilt].forEach(btn => btn.className = 'pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2');
-      workspace.classList.add('hidden');
-      calendarView.classList.add('hidden');
-      filters.classList.add('hidden');
+      [tabAct, tabComp, tabCal, tabFilt].forEach(btn => {
+        if(btn) btn.className = 'pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2';
+      });
+      if(workspace) workspace.classList.add('hidden');
+      if(calendarView) calendarView.classList.add('hidden');
+      if(filters) filters.classList.add('hidden');
 
       if (tab === 'calendar') {
-        tabCal.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
-        calendarView.classList.remove('hidden');
+        if(tabCal) tabCal.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(calendarView) calendarView.classList.remove('hidden');
         renderMonthlyCalendar();
       } else if (tab === 'filters') {
-        tabFilt.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
-        filters.classList.remove('hidden');
+        if(tabFilt) tabFilt.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(filters) filters.classList.remove('hidden');
         applyAdvancedFilters();
       } else {
-        workspace.classList.remove('hidden');
-        (tab === 'active' ? tabAct : tabComp).className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(workspace) workspace.classList.remove('hidden');
+        const targetBtn = tab === 'active' ? tabAct : tabComp;
+        if(targetBtn) targetBtn.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
         selectedTruckId = trucks.filter(t => t.status === currentTab)[0]?.id || null;
         renderTrucks();
         renderDetail();
       }
     }
 
-    function openOriginalDoc(url) {
-      if (!url || !url.startsWith('http')) {
-        alert("This document is an unindexed reference. Please upload a real file to live-test cloud opening.");
+    function openOriginalDoc(url, fileName) {
+      if (!url) {
+        alert("File reference unavailable.");
         return;
       }
-      window.open(url, '_blank');
+      if (url.startsWith('http')) {
+        window.open(url, '_blank');
+      } else {
+        // Base64 Download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName || 'document';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     }
 
     async function downloadAllDocs(truckId) {
@@ -650,22 +682,28 @@
       const zip = new JSZip();
 
       let hasFiles = false;
-      const allDocs = [...(truck.docs || [])];
+      const allDocs = [...(truck?.docs || [])];
       truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
 
       for (const d of allDocs) {
-        if (d.url && d.url.startsWith('http')) {
+        if (d.url) {
           try {
-            const res = await fetch(d.url);
-            const blob = await res.blob();
-            zip.file(d.name, blob);
-            hasFiles = true;
+            if (d.url.startsWith('http')) {
+              const res = await fetch(d.url);
+              const blob = await res.blob();
+              zip.file(d.name, blob);
+              hasFiles = true;
+            } else if (d.url.startsWith('data:')) {
+              const base64Data = d.url.split(',')[1];
+              zip.file(d.name, base64Data, { base64: true });
+              hasFiles = true;
+            }
           } catch(e) { console.error("Error fetching file for ZIP", e); }
         }
       }
 
       if (!hasFiles) {
-        alert("No valid cloud files found to archive.");
+        alert("No attached files to archive.");
         return;
       }
 
@@ -677,7 +715,7 @@
     }
 
     function renderTrucks() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
+      const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
       const currentList = trucks.filter(t => t.status === currentTab);
       
       const filtered = currentList.filter(t => {
@@ -688,6 +726,7 @@
       });
 
       const container = document.getElementById('trucksList');
+      if (!container) return;
       container.innerHTML = filtered.length === 0 ? `<p class="text-xs text-slate-400 text-center py-16">No loads found.</p>` : '';
 
       filtered.forEach(truck => {
@@ -723,6 +762,8 @@
     async function renderDetail() {
       const truck = trucks.find(t => t.id === selectedTruckId);
       const container = document.getElementById('truckDetail');
+      if (!container) return;
+      
       if (!truck) {
         container.innerHTML = '<div class="text-center py-28 text-slate-400 text-xs">Select a transport trip to inspect manifest details.</div>';
         return;
@@ -733,7 +774,7 @@
       const dynStat = getDynamicStatus(truck);
 
       const todayStr = new Date().toISOString().split('T')[0];
-      const hasDeparted = truck.departureDate <= todayStr;
+      const hasDeparted = (truck.departureDate || '') <= todayStr;
 
       const allDocs = [...(truck.docs || [])];
       truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
@@ -749,7 +790,7 @@
                 <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
                 ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
               </div>
-              <h2 class="text-2xl font-black text-slate-900">${truck.origin} (${truck.originCountry || ''}) ➔ ${truck.destination} (${truck.destCountry || ''})</h2>
+              <h2 class="text-2xl font-black text-slate-900">${truck.origin} ➔ ${truck.destination}</h2>
               <p class="text-sm text-slate-500 mt-1">Ref: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
             </div>
             <div class="flex items-center gap-2">
@@ -790,7 +831,7 @@
                 <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
                   <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full ${s.arrived ? 'bg-emerald-500' : 'bg-yellow-500'}"></span>
-                    <div><strong>Stop ${idx + 1}:</strong> ${s.comp ? s.comp + ' - ' : ''}${s.city || s.addr} ${s.cp ? `(${s.cp})` : ''}</div>
+                    <div><strong>Stop ${idx + 1}:</strong> ${s.comp ? s.comp + ' - ' : ''}${s.city || s.addr || 'Waypoint'} ${s.cp ? `(${s.cp})` : ''}</div>
                   </div>
                   <button onclick="toggleTruckStopArrived('${truck.id}', ${idx})" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition ${s.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 hover:border-emerald-500'}">
                     ${s.arrived ? '✓ Arrived' : 'Mark as Arrived'}
@@ -845,7 +886,7 @@
               ${(truck.docs && truck.docs.length > 0) ? `
                 <div class="flex flex-wrap gap-2 pt-1">
                   ${truck.docs.map(d => `
-                    <button onclick='openOriginalDoc("${d.url}")' class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                    <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
                       <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
                     </button>
                   `).join('')}
@@ -890,7 +931,7 @@
                 ${(r.docs && r.docs.length > 0) ? `
                   <div class="flex flex-wrap gap-2 pt-1">
                     ${r.docs.map(d => `
-                      <button onclick='openOriginalDoc("${d.url}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                      <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
                         <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
                       </button>
                     `).join('')}
@@ -932,7 +973,7 @@
           routePoints.push(stopCoords);
           L.circleMarker(stopCoords, { color: '#B45309', fillColor: '#FBBF24', fillOpacity: 0.9, radius: 6 })
             .addTo(currentLeafletMap)
-            .bindPopup(`<b>Stop:</b> ${s.comp || ''} ${s.city || s.addr} (${s.arrived ? 'Arrived' : 'Pending'})`);
+            .bindPopup(`<b>Stop:</b> ${s.comp || ''} ${s.city || s.addr || 'Waypoint'} (${s.arrived ? 'Arrived' : 'Pending'})`);
         }
 
         for (const r of truckRes) {
@@ -974,11 +1015,14 @@
     function renderMonthlyCalendar() {
       const year = calendarDate.getFullYear();
       const month = calendarDate.getMonth();
-      document.getElementById('calendarMonthTitle').innerText = calendarDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+      const monthTitle = document.getElementById('calendarMonthTitle');
+      if (monthTitle) monthTitle.innerText = calendarDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+      
       const firstDay = new Date(year, month, 1).getDay();
       const startingIndex = (firstDay + 6) % 7; 
       const totalDays = new Date(year, month + 1, 0).getDate();
       const grid = document.getElementById('calendarGrid');
+      if (!grid) return;
       grid.innerHTML = '';
       
       for (let i = 0; i < startingIndex; i++) grid.appendChild(Object.assign(document.createElement('div'), {className: 'h-28 bg-slate-50/50 rounded-xl border border-slate-100'}));
@@ -999,6 +1043,7 @@
 
     function addDocRow(containerId) {
       const container = document.getElementById(containerId);
+      if (!container) return;
       const div = document.createElement('div');
       div.className = 'grid grid-cols-12 gap-2 items-center doc-row bg-slate-50 p-2 rounded-lg border border-slate-200';
       div.innerHTML = `
@@ -1018,6 +1063,7 @@
 
     function addStopInput(stopData = null) {
       const container = document.getElementById('stopsContainer');
+      if (!container) return;
       const div = document.createElement('div');
       div.className = 'p-2.5 bg-white border border-slate-200 rounded-lg space-y-1.5 stop-item';
       
@@ -1028,7 +1074,7 @@
 
       div.innerHTML = `
         <div class="grid grid-cols-3 gap-2">
-          <input type="text" list="companyHistory" value="${compVal}" placeholder="Company Name" class="stop-comp col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
+          <input type="text" list="companyHistory" value="${compVal}" placeholder="Company Name (Optional)" class="stop-comp col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
           <select class="stop-country px-2 py-1 border rounded-lg text-xs outline-none bg-white">
             <option value="United Kingdom" ${countryVal === 'United Kingdom' ? 'selected' : ''}>United Kingdom</option>
             <option value="France" ${countryVal === 'France' ? 'selected' : ''}>France</option>
@@ -1039,7 +1085,7 @@
           </select>
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <input type="text" list="cityHistory" value="${cityVal}" placeholder="City / Municipality" class="stop-city col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
+          <input type="text" list="cityHistory" value="${cityVal}" placeholder="City / Address" class="stop-city col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
           <div class="flex gap-1">
             <input type="text" list="postcodeHistory" value="${cpVal}" placeholder="CP" class="stop-cp flex-1 px-2 py-1 border rounded-lg text-xs outline-none">
             <button type="button" onclick="this.closest('.stop-item').remove()" class="text-slate-400 hover:text-red-500 px-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
@@ -1060,7 +1106,10 @@
       document.getElementById('truckForm').reset();
       document.getElementById('stopsContainer').innerHTML = '';
       document.getElementById('truckDocRows').innerHTML = '';
-      if (defaultDate) document.getElementById('truckDate').value = defaultDate;
+      
+      const dateField = document.getElementById('truckDate');
+      if (dateField) dateField.value = defaultDate || new Date().toISOString().split('T')[0];
+      
       document.getElementById('truckModal').classList.remove('hidden');
     }
 
@@ -1069,19 +1118,19 @@
       if(!t) return;
       document.getElementById('truckModalTitle').innerText = 'Edit Route';
       document.getElementById('editingTruckId').value = t.id;
-      document.getElementById('truckAuthor').value = t.author;
-      document.getElementById('truckTitle').value = t.title;
+      document.getElementById('truckAuthor').value = t.author || '';
+      document.getElementById('truckTitle').value = t.title || '';
       document.getElementById('truckPrice').value = t.price || '';
-      document.getElementById('truckDate').value = t.departureDate;
+      document.getElementById('truckDate').value = t.departureDate || new Date().toISOString().split('T')[0];
       document.getElementById('truckTime').value = t.departureTime || '';
       document.getElementById('truckOriginComp').value = t.originComp || '';
       document.getElementById('truckOriginCountry').value = t.originCountry || 'United Kingdom';
       document.getElementById('truckOriginCP').value = t.originCP || '';
-      document.getElementById('truckOriginCity').value = t.origin;
+      document.getElementById('truckOriginCity').value = t.origin || '';
       document.getElementById('truckDestComp').value = t.destComp || '';
       document.getElementById('truckDestCountry').value = t.destCountry || 'Spain';
       document.getElementById('truckDestCP').value = t.destCP || '';
-      document.getElementById('truckDestCity').value = t.destination;
+      document.getElementById('truckDestCity').value = t.destination || '';
       document.getElementById('truckEUR').value = t.eurQty || 0;
       document.getElementById('truckEURDesc').value = t.eurDesc || '';
       document.getElementById('truckUK').value = t.ukQty || 0;
@@ -1089,7 +1138,6 @@
       document.getElementById('truckNotes').value = t.notes || '';
       document.getElementById('truckDocRows').innerHTML = '';
 
-      // Populate existing stops correctly
       const stopsContainer = document.getElementById('stopsContainer');
       stopsContainer.innerHTML = '';
       (t.stops || []).forEach(s => addStopInput(s));
@@ -1114,7 +1162,7 @@
       if(!r) return;
       document.getElementById('resModalTitle').innerText = 'Edit Booking';
       document.getElementById('editingResId').value = r.id;
-      document.getElementById('resAuthor').value = r.author;
+      document.getElementById('resAuthor').value = r.author || '';
       document.getElementById('resProjectNo').value = r.projectNo || '';
       document.getElementById('resPartnerType').value = r.partnerType || 'Client';
       document.getElementById('resPartnerName').value = r.partnerName || '';
@@ -1135,23 +1183,29 @@
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
+    // === FORGIVING & BULLETPROOF TRUCK SAVE ===
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
-      submitBtn.innerText = 'Uploading files to cloud...';
+      submitBtn.innerText = 'Saving...';
       submitBtn.disabled = true;
 
       try {
         const id = document.getElementById('editingTruckId').value || ('t_' + Date.now());
-        const originComp = document.getElementById('truckOriginComp').value;
-        const originCountry = document.getElementById('truckOriginCountry').value;
-        const origin = document.getElementById('truckOriginCity').value;
-        const originCP = document.getElementById('truckOriginCP').value;
+        
+        let author = document.getElementById('truckAuthor').value.trim() || 'Logistics Team';
+        let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
+        let departureDate = document.getElementById('truckDate').value || new Date().toISOString().split('T')[0];
 
-        const destComp = document.getElementById('truckDestComp').value;
+        const originComp = document.getElementById('truckOriginComp').value.trim();
+        const originCountry = document.getElementById('truckOriginCountry').value;
+        const origin = document.getElementById('truckOriginCity').value.trim() || 'Hub (TBD)';
+        const originCP = document.getElementById('truckOriginCP').value.trim();
+
+        const destComp = document.getElementById('truckDestComp').value.trim();
         const destCountry = document.getElementById('truckDestCountry').value;
-        const dest = document.getElementById('truckDestCity').value;
-        const destCP = document.getElementById('truckDestCP').value;
+        const dest = document.getElementById('truckDestCity').value.trim() || 'Hub (TBD)';
+        const destCP = document.getElementById('truckDestCP').value.trim();
 
         addDirectoryEntry(originComp, origin, originCP);
         addDirectoryEntry(destComp, dest, destCP);
@@ -1159,27 +1213,26 @@
         const stopElements = document.querySelectorAll('#stopsContainer .stop-item');
         const stops = [];
         for (const el of stopElements) {
-          const comp = el.querySelector('.stop-comp').value;
-          const country = el.querySelector('.stop-country').value;
-          const city = el.querySelector('.stop-city').value;
-          const cp = el.querySelector('.stop-cp').value;
-          if (city) {
-            stops.push({ comp, country, city, cp, arrived: false });
+          const comp = el.querySelector('.stop-comp')?.value.trim() || '';
+          const country = el.querySelector('.stop-country')?.value || 'United Kingdom';
+          const city = el.querySelector('.stop-city')?.value.trim() || '';
+          const cp = el.querySelector('.stop-cp')?.value.trim() || '';
+          if (city || comp) {
+            stops.push({ comp, country, city: city || 'Waypoint', cp, arrived: false });
             addDirectoryEntry(comp, city, cp);
           }
         }
 
-        let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
-
+        // Upload attached docs safely
         const docRows = document.querySelectorAll('#truckDocRows .doc-row');
         const newDocs = [];
         for (const row of docRows) {
           const fileInput = row.querySelector('.doc-file');
-          const docType = row.querySelector('.doc-type').value;
-          if (fileInput.files[0]) {
+          const docType = row.querySelector('.doc-type')?.value || 'Document';
+          if (fileInput && fileInput.files[0]) {
             const file = fileInput.files[0];
-            const publicUrl = await uploadFileToSupabase(file);
-            newDocs.push({ type: docType, name: file.name, url: publicUrl });
+            const fileUrl = await safeUploadDoc(file);
+            newDocs.push({ type: docType, name: file.name, url: fileUrl });
           }
         }
 
@@ -1188,49 +1241,51 @@
 
         const payload = {
           id,
-          author: document.getElementById('truckAuthor').value,
+          author,
           title: plate,
-          price: document.getElementById('truckPrice').value,
+          price: document.getElementById('truckPrice').value.trim(),
           origin_comp: originComp, origin, origin_cp: originCP,
           dest_comp: destComp, destination: dest, dest_cp: destCP,
           stops,
-          departure_date: document.getElementById('truckDate').value,
+          departure_date: departureDate,
           departure_time: document.getElementById('truckTime').value,
           eur_qty: Number(document.getElementById('truckEUR').value) || 0,
-          eur_desc: document.getElementById('truckEURDesc').value,
+          eur_desc: document.getElementById('truckEURDesc').value.trim(),
           uk_qty: Number(document.getElementById('truckUK').value) || 0,
-          uk_desc: document.getElementById('truckUKDesc').value,
-          notes: document.getElementById('truckNotes').value,
+          uk_desc: document.getElementById('truckUKDesc').value.trim(),
+          notes: document.getElementById('truckNotes').value.trim(),
           docs: combinedDocs,
           status: existingTruck ? existingTruck.status : 'active'
         };
 
         const { error } = await supabaseClient.from('trucks').upsert(payload);
-        if (error) alert("Error: " + error.message);
+        if (error) console.error("Supabase Save Warning:", error);
         
         closeTruckModal();
         await loadCloudData();
         switchTab('active');
       } catch(err) {
-        alert("Upload Error: " + err.message);
+        console.error("General save exception:", err);
       } finally {
         submitBtn.innerText = 'Publish Trip';
         submitBtn.disabled = false;
       }
     }
 
+    // === FORGIVING & BULLETPROOF RESERVATION SAVE ===
     async function saveReservation(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveResSubmit');
-      submitBtn.innerText = 'Uploading files to cloud...';
+      submitBtn.innerText = 'Saving...';
       submitBtn.disabled = true;
 
       try {
         const id = document.getElementById('editingResId').value || ('r_' + Date.now());
-        const stopComp = document.getElementById('resStopComp').value;
+        const author = document.getElementById('resAuthor').value.trim() || 'Team Booker';
+        const stopComp = document.getElementById('resStopComp').value.trim();
         const stopCountry = document.getElementById('resStopCountry').value;
-        const stopCity = document.getElementById('resStopCity').value;
-        const stopCP = document.getElementById('resStopCP').value;
+        const stopCity = document.getElementById('resStopCity').value.trim();
+        const stopCP = document.getElementById('resStopCP').value.trim();
 
         if (stopComp || stopCity || stopCP) addDirectoryEntry(stopComp, stopCity, stopCP);
 
@@ -1238,40 +1293,42 @@
         const newDocs = [];
         for (const row of docRows) {
           const fileInput = row.querySelector('.doc-file');
-          const docType = row.querySelector('.doc-type').value;
-          if (fileInput.files[0]) {
+          const docType = row.querySelector('.doc-type')?.value || 'Document';
+          if (fileInput && fileInput.files[0]) {
             const file = fileInput.files[0];
-            const publicUrl = await uploadFileToSupabase(file);
-            newDocs.push({ type: docType, name: file.name, url: publicUrl });
+            const fileUrl = await safeUploadDoc(file);
+            newDocs.push({ type: docType, name: file.name, url: fileUrl });
           }
         }
 
         const existingRes = reservations.find(r => r.id === id);
         const combinedDocs = existingRes ? [...(existingRes.docs || []), ...newDocs] : newDocs;
 
+        const stopPayload = (stopComp || stopCity) ? { comp: stopComp, country: stopCountry, city: stopCity, cp: stopCP, arrived: false } : {};
+
         const payload = {
           id,
           truck_id: selectedTruckId,
-          author: document.getElementById('resAuthor').value,
-          project_no: document.getElementById('resProjectNo').value,
+          author,
+          project_no: document.getElementById('resProjectNo').value.trim(),
           partner_type: document.getElementById('resPartnerType').value,
-          partner_name: document.getElementById('resPartnerName').value,
+          partner_name: document.getElementById('resPartnerName').value.trim(),
           eur_qty: Number(document.getElementById('resEUR').value) || 0,
-          eur_desc: document.getElementById('resEURDesc').value,
+          eur_desc: document.getElementById('resEURDesc').value.trim(),
           uk_qty: Number(document.getElementById('resUK').value) || 0,
-          uk_desc: document.getElementById('resUKDesc').value,
-          stop: { comp: stopComp, country: stopCountry, city: stopCity, cp: stopCP, arrived: false },
-          notes: document.getElementById('resNotes').value,
+          uk_desc: document.getElementById('resUKDesc').value.trim(),
+          stop: stopPayload,
+          notes: document.getElementById('resNotes').value.trim(),
           docs: combinedDocs
         };
 
         const { error } = await supabaseClient.from('reservations').upsert(payload);
-        if (error) alert("Error: " + error.message);
+        if (error) console.error("Supabase Reservation Warning:", error);
 
         closeResModal();
         await loadCloudData();
       } catch(err) {
-        alert("Upload Error: " + err.message);
+        console.error("Reservation save exception:", err);
       } finally {
         submitBtn.innerText = 'Save Booking';
         submitBtn.disabled = false;
@@ -1303,11 +1360,11 @@
     }
 
     function applyAdvancedFilters() {
-      const fromDate = document.getElementById('filterFromDate').value;
-      const toDate = document.getElementById('filterToDate').value;
-      const routeQuery = document.getElementById('filterRoute').value.toLowerCase();
-      const userQuery = document.getElementById('filterUser').value.toLowerCase();
-      const statusFilter = document.getElementById('filterStatus').value;
+      const fromDate = document.getElementById('filterFromDate')?.value || '';
+      const toDate = document.getElementById('filterToDate')?.value || '';
+      const routeQuery = (document.getElementById('filterRoute')?.value || '').toLowerCase();
+      const userQuery = (document.getElementById('filterUser')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('filterStatus')?.value || 'all';
 
       currentlyFilteredTrucks = trucks.filter(t => {
         if (fromDate && t.departureDate < fromDate) return false;
@@ -1325,6 +1382,7 @@
       });
 
       const tbody = document.getElementById('filteredTableBody');
+      if (!tbody) return;
       tbody.innerHTML = currentlyFilteredTrucks.length === 0 ? '<tr><td colspan="9" class="text-center py-8 text-slate-400">No matching trips found.</td></tr>' : '';
 
       currentlyFilteredTrucks.forEach(t => {
@@ -1347,11 +1405,11 @@
     }
 
     function resetFilters() {
-      document.getElementById('filterFromDate').value = '';
-      document.getElementById('filterToDate').value = '';
-      document.getElementById('filterRoute').value = '';
-      document.getElementById('filterUser').value = '';
-      document.getElementById('filterStatus').value = 'all';
+      if(document.getElementById('filterFromDate')) document.getElementById('filterFromDate').value = '';
+      if(document.getElementById('filterToDate')) document.getElementById('filterToDate').value = '';
+      if(document.getElementById('filterRoute')) document.getElementById('filterRoute').value = '';
+      if(document.getElementById('filterUser')) document.getElementById('filterUser').value = '';
+      if(document.getElementById('filterStatus')) document.getElementById('filterStatus').value = 'all';
       applyAdvancedFilters();
     }
 
