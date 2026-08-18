@@ -67,7 +67,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Cloud Freight Planner, Route Mapper & Reporting Matrix</p>
+          <p class="text-[11px] text-slate-400">Cloud Freight Planner, Route Mapper & File Archive</p>
         </div>
       </div>
 
@@ -212,7 +212,7 @@
     </div>
   </main>
 
-  <!-- TRUCK MODAL (ALL FIELDS FORGIVING & OPTIONAL) -->
+  <!-- TRUCK MODAL -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -306,9 +306,16 @@
           </div>
         </div>
 
+        <!-- EXISTING ATTACHED FILES WITH REMOVE BUTTON -->
+        <div id="truckExistingDocsSection" class="hidden p-3.5 border border-slate-200 rounded-xl bg-slate-50">
+          <p class="font-bold text-slate-700 mb-2">Manage Uploaded Documents:</p>
+          <div id="truckExistingDocsList" class="space-y-1.5"></div>
+        </div>
+
+        <!-- NEW ATTACHMENTS -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Documents (PDF, Excel, Word, Images):</p>
+            <p class="font-bold text-slate-700">Attach New Documents (PDF, Excel, Word, Images):</p>
             <button type="button" onclick="addDocRow('truckDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
           </div>
           <div id="truckDocRows" class="space-y-2"></div>
@@ -326,7 +333,7 @@
     </div>
   </div>
 
-  <!-- RESERVATION MODAL (ALL FORGIVING) -->
+  <!-- RESERVATION MODAL -->
   <div id="resModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -394,6 +401,13 @@
           </div>
         </div>
 
+        <!-- EXISTING ATTACHED FILES WITH REMOVE BUTTON -->
+        <div id="resExistingDocsSection" class="hidden p-3.5 border border-slate-200 rounded-xl bg-slate-50">
+          <p class="font-bold text-slate-700 mb-2">Manage Uploaded Documents:</p>
+          <div id="resExistingDocsList" class="space-y-1.5"></div>
+        </div>
+
+        <!-- NEW ATTACHMENTS -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <div class="flex justify-between items-center mb-2">
             <p class="font-bold text-slate-700">Attach Documents (PDF, Excel, Word, Images):</p>
@@ -424,7 +438,7 @@
     let trucks = [];
     let reservations = [];
     
-    // SAFE LOCAL STORAGE READ
+    // SAFE LOCAL STORAGE
     let rawDir = null;
     try { rawDir = JSON.parse(localStorage.getItem('ifl_cloud_directory')); } catch(e) { rawDir = null; }
     let directory = {
@@ -438,6 +452,10 @@
     let calendarDate = new Date();
     let currentLeafletMap = null;
     let currentlyFilteredTrucks = [];
+
+    // Temporary storage for files staged during editing
+    let stagedTruckDocs = [];
+    let stagedResDocs = [];
 
     const geoCoordsCache = {
       'london': [51.5074, -0.1278],
@@ -497,7 +515,6 @@
       return [50.9513, 1.8587];
     }
 
-    // HELPER: Convert file to Base64 (Reliable fail-safe)
     function fileToBase64(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -507,7 +524,7 @@
       });
     }
 
-    // SAFE UPLOAD WITH ZERO BLOCKERS
+    // CLOUD UPLOAD VIA SUPABASE STORAGE WITH FAILSAFE
     async function safeUploadDoc(file) {
       try {
         const fileExt = file.name.split('.').pop();
@@ -516,7 +533,7 @@
 
         const { data, error } = await supabaseClient.storage.from('ifl_docs').upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true
         });
 
         if (!error) {
@@ -524,10 +541,9 @@
           if (publicUrl) return publicUrl;
         }
       } catch (e) {
-        console.warn("Cloud Storage bucket unavailable. Falling back to local data URL.", e);
+        console.warn("Storage upload warning, fallback to base64.", e);
       }
 
-      // Fallback: save Base64 data URL directly
       const b64 = await fileToBase64(file);
       return b64 || '';
     }
@@ -658,21 +674,39 @@
       }
     }
 
-    function openOriginalDoc(url, fileName) {
+    // ROBUST DIRECT FILE DOWNLOADER
+    async function openOriginalDoc(url, fileName) {
       if (!url) {
-        alert("File reference unavailable.");
+        alert("File link unavailable.");
         return;
       }
+
       if (url.startsWith('http')) {
-        window.open(url, '_blank');
-      } else {
-        // Base64 Download
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = fileName || 'document';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+        } catch(e) {
+          window.open(url, '_blank');
+        }
+      } else if (url.startsWith('data:')) {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = url;
+        link.href = blobUrl;
         link.download = fileName || 'document';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
       }
     }
 
@@ -694,11 +728,12 @@
               zip.file(d.name, blob);
               hasFiles = true;
             } else if (d.url.startsWith('data:')) {
-              const base64Data = d.url.split(',')[1];
-              zip.file(d.name, base64Data, { base64: true });
+              const res = await fetch(d.url);
+              const blob = await res.blob();
+              zip.file(d.name, blob);
               hasFiles = true;
             }
-          } catch(e) { console.error("Error fetching file for ZIP", e); }
+          } catch(e) { console.error("ZIP packaging error", e); }
         }
       }
 
@@ -1107,10 +1142,45 @@
       document.getElementById('stopsContainer').innerHTML = '';
       document.getElementById('truckDocRows').innerHTML = '';
       
+      stagedTruckDocs = [];
+      document.getElementById('truckExistingDocsSection').classList.add('hidden');
+
       const dateField = document.getElementById('truckDate');
       if (dateField) dateField.value = defaultDate || new Date().toISOString().split('T')[0];
       
       document.getElementById('truckModal').classList.remove('hidden');
+    }
+
+    function renderStagedTruckDocs() {
+      const container = document.getElementById('truckExistingDocsList');
+      const section = document.getElementById('truckExistingDocsSection');
+      if (!container || !section) return;
+
+      if (stagedTruckDocs.length === 0) {
+        section.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+      }
+
+      section.classList.remove('hidden');
+      container.innerHTML = stagedTruckDocs.map((d, index) => `
+        <div class="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200 text-xs">
+          <div class="flex items-center gap-1.5 text-slate-700 truncate">
+            <i data-lucide="file-text" class="w-3.5 h-3.5 text-ifl-blue"></i>
+            <span class="font-semibold">[${d.type}]</span>
+            <span class="truncate">${d.name}</span>
+          </div>
+          <button type="button" onclick="removeStagedTruckDoc(${index})" class="text-red-500 hover:text-red-700 p-1" title="Delete document">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function removeStagedTruckDoc(index) {
+      stagedTruckDocs.splice(index, 1);
+      renderStagedTruckDocs();
     }
 
     function openEditTruckModal(id) {
@@ -1142,6 +1212,9 @@
       stopsContainer.innerHTML = '';
       (t.stops || []).forEach(s => addStopInput(s));
 
+      stagedTruckDocs = [...(t.docs || [])];
+      renderStagedTruckDocs();
+
       document.getElementById('truckModal').classList.remove('hidden');
       lucide.createIcons();
     }
@@ -1154,7 +1227,43 @@
       document.getElementById('editingResId').value = '';
       document.getElementById('resForm').reset();
       document.getElementById('resDocRows').innerHTML = '';
+      
+      stagedResDocs = [];
+      document.getElementById('resExistingDocsSection').classList.add('hidden');
+      
       document.getElementById('resModal').classList.remove('hidden');
+    }
+
+    function renderStagedResDocs() {
+      const container = document.getElementById('resExistingDocsList');
+      const section = document.getElementById('resExistingDocsSection');
+      if (!container || !section) return;
+
+      if (stagedResDocs.length === 0) {
+        section.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+      }
+
+      section.classList.remove('hidden');
+      container.innerHTML = stagedResDocs.map((d, index) => `
+        <div class="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200 text-xs">
+          <div class="flex items-center gap-1.5 text-slate-700 truncate">
+            <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i>
+            <span class="font-semibold">[${d.type}]</span>
+            <span class="truncate">${d.name}</span>
+          </div>
+          <button type="button" onclick="removeStagedResDoc(${index})" class="text-red-500 hover:text-red-700 p-1" title="Delete document">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function removeStagedResDoc(index) {
+      stagedResDocs.splice(index, 1);
+      renderStagedResDocs();
     }
 
     function openEditResModal(id) {
@@ -1178,12 +1287,16 @@
       }
       document.getElementById('resNotes').value = r.notes || '';
       document.getElementById('resDocRows').innerHTML = '';
+
+      stagedResDocs = [...(r.docs || [])];
+      renderStagedResDocs();
+
       document.getElementById('resModal').classList.remove('hidden');
     }
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
-    // === FORGIVING & BULLETPROOF TRUCK SAVE ===
+    // SAVE TRUCK WITH EDIT REMOVAL SUPPORT
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
@@ -1223,7 +1336,6 @@
           }
         }
 
-        // Upload attached docs safely
         const docRows = document.querySelectorAll('#truckDocRows .doc-row');
         const newDocs = [];
         for (const row of docRows) {
@@ -1236,8 +1348,8 @@
           }
         }
 
+        const combinedDocs = [...stagedTruckDocs, ...newDocs];
         const existingTruck = trucks.find(t => t.id === id);
-        const combinedDocs = existingTruck ? [...(existingTruck.docs || []), ...newDocs] : newDocs;
 
         const payload = {
           id,
@@ -1272,7 +1384,7 @@
       }
     }
 
-    // === FORGIVING & BULLETPROOF RESERVATION SAVE ===
+    // SAVE RESERVATION WITH EDIT REMOVAL SUPPORT
     async function saveReservation(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveResSubmit');
@@ -1301,9 +1413,7 @@
           }
         }
 
-        const existingRes = reservations.find(r => r.id === id);
-        const combinedDocs = existingRes ? [...(existingRes.docs || []), ...newDocs] : newDocs;
-
+        const combinedDocs = [...stagedResDocs, ...newDocs];
         const stopPayload = (stopComp || stopCity) ? { comp: stopComp, country: stopCountry, city: stopCity, cp: stopCP, arrived: false } : {};
 
         const payload = {
