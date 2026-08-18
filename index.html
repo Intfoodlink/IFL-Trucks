@@ -21,8 +21,11 @@
   <!-- Supabase Cloud SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // === CONFIGURACIÓN DE SUPABASE Y CONTRASEÑA DE EQUIPO ===
     const SUPABASE_URL = 'https://cidavpupdmepltxjheub.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FguJH96kcQbaoz0nlG5_Og_i5NkL3HV';
+    const TEAM_ACCESS_PASSWORD = 'IFL2026*'; // Puedes cambiar esta contraseña cuando quieras
+
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     tailwind.config = {
@@ -53,6 +56,38 @@
 </head>
 <body class="bg-watermark min-h-screen text-slate-800 font-sans antialiased flex flex-col relative">
 
+  <!-- PANTALLA DE BLOQUEO POR CONTRASEÑA -->
+  <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 text-center">
+      <div class="inline-flex border border-slate-200 px-4 py-2 rounded-2xl shadow-xs bg-white mb-4">
+        <span class="text-3xl font-black text-ifl-blue tracking-tighter">i<span class="text-ifl-yellow">FL</span></span>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900">Protected Workspace</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-6">Enter team access password to load shipment data & private documents.</p>
+      
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Access Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+            <input type="password" id="authPasswordInput" required placeholder="Enter password..." class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-action">
+          </div>
+          <p id="authErrorMsg" class="hidden text-[11px] font-bold text-red-600 mt-1.5 flex items-center gap-1">
+            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Incorrect password. Please try again.
+          </p>
+        </div>
+        <button type="submit" class="w-full bg-action hover:bg-action-hover text-white font-bold text-sm py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+          <span>Unlock Platform</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+      <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-1 text-[11px] text-slate-400">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+        <span>Confidential International Logistics Portal</span>
+      </div>
+    </div>
+  </div>
+
   <!-- AUTOCOMPLETE PRESETS -->
   <datalist id="companyHistory"></datalist>
   <datalist id="cityHistory"></datalist>
@@ -78,6 +113,9 @@
         <button onclick="openTruckModal()" class="bg-action hover:bg-action-hover text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-xs flex items-center gap-2 transition">
           <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
           <span>Publish Truck</span>
+        </button>
+        <button onclick="lockApp()" title="Lock Platform" class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-xs px-2.5 py-2 rounded-xl flex items-center gap-1 transition">
+          <i data-lucide="lock" class="w-4 h-4 text-slate-400"></i>
         </button>
       </div>
     </div>
@@ -453,9 +491,41 @@
     let currentLeafletMap = null;
     let currentlyFilteredTrucks = [];
 
-    // Temporary storage for files staged during editing
     let stagedTruckDocs = [];
     let stagedResDocs = [];
+
+    // === AUTHENTICATION & ACCESS CONTROL ===
+    function checkAuthOnLoad() {
+      const isAuth = sessionStorage.getItem('ifl_authenticated') === 'true';
+      const overlay = document.getElementById('authOverlay');
+      if (isAuth) {
+        overlay.classList.add('hidden');
+        loadCloudData();
+      } else {
+        overlay.classList.remove('hidden');
+      }
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const inputPass = document.getElementById('authPasswordInput').value;
+      const errorMsg = document.getElementById('authErrorMsg');
+
+      if (inputPass === TEAM_ACCESS_PASSWORD) {
+        sessionStorage.setItem('ifl_authenticated', 'true');
+        document.getElementById('authOverlay').classList.add('hidden');
+        errorMsg.classList.add('hidden');
+        loadCloudData();
+      } else {
+        errorMsg.classList.remove('hidden');
+      }
+    }
+
+    function lockApp() {
+      sessionStorage.removeItem('ifl_authenticated');
+      document.getElementById('authPasswordInput').value = '';
+      document.getElementById('authOverlay').classList.remove('hidden');
+    }
 
     const geoCoordsCache = {
       'london': [51.5074, -0.1278],
@@ -524,7 +594,6 @@
       });
     }
 
-    // CLOUD UPLOAD VIA SUPABASE STORAGE WITH FAILSAFE
     async function safeUploadDoc(file) {
       try {
         const fileExt = file.name.split('.').pop();
@@ -674,7 +743,6 @@
       }
     }
 
-    // ROBUST DIRECT FILE DOWNLOADER
     async function openOriginalDoc(url, fileName) {
       if (!url) {
         alert("File link unavailable.");
@@ -1296,7 +1364,6 @@
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
-    // SAVE TRUCK WITH EDIT REMOVAL SUPPORT
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
@@ -1384,7 +1451,6 @@
       }
     }
 
-    // SAVE RESERVATION WITH EDIT REMOVAL SUPPORT
     async function saveReservation(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveResSubmit');
@@ -1677,7 +1743,7 @@
 
     // INITIAL LAUNCH
     updateDatalists();
-    loadCloudData();
+    checkAuthOnLoad();
   </script>
 </body>
 </html>
