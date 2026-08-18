@@ -614,6 +614,7 @@
       });
     }
 
+    // CLOUD STORAGE UPLOAD (SAVES RELATIVE PATH FOR PRIVATE ACCESS)
     async function safeUploadDoc(file) {
       try {
         const fileExt = file.name.split('.').pop();
@@ -626,15 +627,108 @@
         });
 
         if (!error) {
-          const { data: { publicUrl } } = supabaseClient.storage.from('ifl_docs').getPublicUrl(filePath);
-          if (publicUrl) return publicUrl;
+          return filePath;
         }
       } catch (e) {
-        console.warn("Storage upload warning, fallback to base64.", e);
+        console.warn("Private storage upload fallback to base64.", e);
       }
 
       const b64 = await fileToBase64(file);
       return b64 || '';
+    }
+
+    // SECURE AUTHENTICATED FILE DOWNLOAD & OPEN (GDPR COMPLIANT)
+    async function openOriginalDoc(urlOrPath, fileName) {
+      if (!urlOrPath) {
+        alert("File reference unavailable.");
+        return;
+      }
+
+      try {
+        if (urlOrPath.startsWith('data:')) {
+          const res = await fetch(urlOrPath);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = fileName || 'document';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+          return;
+        }
+
+        let filePath = urlOrPath;
+        if (urlOrPath.includes('/ifl_docs/')) {
+          filePath = urlOrPath.split('/ifl_docs/')[1];
+        }
+
+        const { data, error } = await supabaseClient.storage.from('ifl_docs').download(filePath);
+
+        if (error) {
+          const { data: signedData, error: signError } = await supabaseClient.storage.from('ifl_docs').createSignedUrl(filePath, 60);
+          if (signError) throw signError;
+          window.open(signedData.signedUrl, '_blank');
+          return;
+        }
+
+        const blobUrl = URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName || 'document';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      } catch (err) {
+        console.error("Secure file download error:", err);
+        alert("Could not download file. Ensure your corporate session is active.");
+      }
+    }
+
+    async function downloadAllDocs(truckId) {
+      const truck = trucks.find(t => t.id === truckId);
+      const truckRes = reservations.filter(r => r.truckId === truckId);
+      const zip = new JSZip();
+
+      let hasFiles = false;
+      const allDocs = [...(truck?.docs || [])];
+      truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
+
+      for (const d of allDocs) {
+        if (d.url) {
+          try {
+            if (d.url.startsWith('data:')) {
+              const res = await fetch(d.url);
+              const blob = await res.blob();
+              zip.file(d.name, blob);
+              hasFiles = true;
+            } else {
+              let filePath = d.url;
+              if (d.url.includes('/ifl_docs/')) {
+                filePath = d.url.split('/ifl_docs/')[1];
+              }
+              const { data, error } = await supabaseClient.storage.from('ifl_docs').download(filePath);
+              if (!error && data) {
+                zip.file(d.name, data);
+                hasFiles = true;
+              }
+            }
+          } catch(e) { console.error("ZIP packaging error", e); }
+        }
+      }
+
+      if (!hasFiles) {
+        alert("No attached files found to archive.");
+        return;
+      }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(content);
+      link.download = `IFL_Docs_${truck.title}.zip`;
+      link.click();
     }
 
     async function loadCloudData() {
@@ -761,80 +855,6 @@
         renderTrucks();
         renderDetail();
       }
-    }
-
-    async function openOriginalDoc(url, fileName) {
-      if (!url) {
-        alert("File link unavailable.");
-        return;
-      }
-
-      if (url.startsWith('http')) {
-        try {
-          const res = await fetch(url);
-          const blob = await res.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = blobUrl;
-          link.download = fileName || 'document';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-        } catch(e) {
-          window.open(url, '_blank');
-        }
-      } else if (url.startsWith('data:')) {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = fileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-      }
-    }
-
-    async function downloadAllDocs(truckId) {
-      const truck = trucks.find(t => t.id === truckId);
-      const truckRes = reservations.filter(r => r.truckId === truckId);
-      const zip = new JSZip();
-
-      let hasFiles = false;
-      const allDocs = [...(truck?.docs || [])];
-      truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
-
-      for (const d of allDocs) {
-        if (d.url) {
-          try {
-            if (d.url.startsWith('http')) {
-              const res = await fetch(d.url);
-              const blob = await res.blob();
-              zip.file(d.name, blob);
-              hasFiles = true;
-            } else if (d.url.startsWith('data:')) {
-              const res = await fetch(d.url);
-              const blob = await res.blob();
-              zip.file(d.name, blob);
-              hasFiles = true;
-            }
-          } catch(e) { console.error("ZIP packaging error", e); }
-        }
-      }
-
-      if (!hasFiles) {
-        alert("No attached files to archive.");
-        return;
-      }
-
-      const content = await zip.generateAsync({ type: "blob" });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(content);
-      link.download = `IFL_Docs_${truck.title}.zip`;
-      link.click();
     }
 
     function renderTrucks() {
