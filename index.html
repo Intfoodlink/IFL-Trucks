@@ -200,7 +200,7 @@
       <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 min-h-[400px] sm:min-h-[600px]"></div>
     </div>
 
-    <!-- FILTERS VIEW WITH REPORTING & BACKUP -->
+    <!-- FILTERS VIEW -->
     <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
       <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
         <div>
@@ -280,15 +280,15 @@
       </div>
     </div>
 
-    <!-- ANALYTICS & EXECUTIVE REPORTING -->
+    <!-- ANALYTICS & KPIs (WITH FINANCIAL & SHIPMENT METRICS) -->
     <div id="analyticsView" class="hidden space-y-4 sm:space-y-6">
       <div class="border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 pb-4 border-b border-slate-100">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Operations Matrix
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity, Financial & Operational KPIs
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency and period logistics KPIs.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency, freight pricing, shipment types and volume metrics.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-between">
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1 rounded-xl text-xs">
@@ -309,22 +309,27 @@
           </div>
         </div>
 
-        <!-- KPI CARDS (CLEAN 3-CARD LAYOUT) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-6">
+        <!-- 4 KPI CARDS WITH FINANCIALS & SHIPMENT TYPES -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
             <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Average Load Saturation</span>
             <span id="kpiAvgOccupancy" class="text-xl sm:text-2xl font-black text-ifl-blue">0%</span>
             <span class="text-[9px] sm:text-[10px] text-slate-400 block mt-1">Trailer geometry basis</span>
           </div>
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Dispatched Shipments</span>
-            <span id="kpiTotalTrips" class="text-xl sm:text-2xl font-black text-slate-900">0</span>
-            <span class="text-[9px] sm:text-[10px] text-slate-400 block mt-1">Consolidations in period</span>
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Total Freight Spend</span>
+            <span id="kpiTotalSpend" class="text-xl sm:text-2xl font-black text-emerald-700">€0</span>
+            <span id="kpiAvgCostPerPallet" class="text-[9px] sm:text-[10px] text-slate-500 block mt-1">Avg €0.00 / pallet</span>
           </div>
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
             <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Total Pallets Moved</span>
-            <span id="kpiTotalPallets" class="text-xl sm:text-2xl font-black text-emerald-600">0</span>
+            <span id="kpiTotalPallets" class="text-xl sm:text-2xl font-black text-slate-900">0</span>
             <span id="kpiPalletBreakdown" class="text-[9px] sm:text-[10px] text-slate-500 block mt-1">0 EUR / 0 UK</span>
+          </div>
+          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Shipments & Types</span>
+            <span id="kpiTotalTrips" class="text-xl sm:text-2xl font-black text-amber-600">0</span>
+            <span id="kpiTopTempMode" class="text-[9px] sm:text-[10px] text-slate-500 block mt-1 truncate">Top mode: -</span>
           </div>
         </div>
 
@@ -332,9 +337,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Trailer Occupancy Progression (%)
+              <i data-lucide="pie-chart" class="w-4 h-4 text-ifl-blue"></i> Shipment Types & Temperature Modes
             </h3>
-            <div class="h-56 sm:h-64"><canvas id="chartOccupancy"></canvas></div>
+            <div class="h-56 sm:h-64"><canvas id="chartTempModes"></canvas></div>
           </div>
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
@@ -362,7 +367,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Coordinator</label><input type="text" id="truckAuthor" placeholder="e.g. Magda" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Trip Number (Auto)</label><input type="text" id="truckTitle" placeholder="e.g. 26-0001" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none font-bold text-ifl-blue focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Trip Reference / Cost</label><input type="text" id="truckPrice" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Price (€)</label><input type="text" id="truckPrice" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div>
             <label class="block font-semibold text-slate-600 mb-1">Overall Truck Mode</label>
             <select id="truckTempMode" class="w-full px-2.5 py-2 border border-slate-200 rounded-xl outline-none bg-white font-medium">
@@ -449,7 +454,7 @@
           </div>
         </div>
 
-        <!-- STOPS (WITH REORDERING UP/DOWN ARROWS) -->
+        <!-- STOPS -->
         <div class="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex justify-between items-center mb-2">
             <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops & Reordering</p>
@@ -458,7 +463,7 @@
           <div id="stopsContainer" class="space-y-2"></div>
         </div>
 
-        <!-- DESTINATION (WITH FAST EXTENSION BUTTON) -->
+        <!-- DESTINATION -->
         <div class="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <div class="flex justify-between items-center">
             <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
@@ -717,7 +722,7 @@
         </div>
 
         <!-- PRODUCT LIST FOR RESERVATIONS -->
-        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
           <div class="flex justify-between items-center mb-2">
             <div>
               <p class="font-bold text-slate-800 flex items-center gap-1.5">
@@ -813,6 +818,7 @@
     let resFilesBuffer = [];
 
     let chartOccInstance = null;
+    let chartTempModesInstance = null;
     let chartVolumeBarInstance = null;
 
     // === NATIVE AUTHENTICATION ===
@@ -988,7 +994,7 @@
       await loadRoutePresets();
     }
 
-    // === CONVERT DESTINATION TO INTERMEDIATE STOP (EXTEND ROUTE) ===
+    // === CONVERT DESTINATION TO INTERMEDIATE STOP ===
     function convertDestToIntermediateStop() {
       const curComp = document.getElementById('truckDestComp').value;
       const curCity = document.getElementById('truckDestCity').value;
@@ -1414,12 +1420,15 @@
       });
 
       const totalPallets = totalEUR + totalUK;
+      const priceNum = parseFloat((truck.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+      const unitCost = totalPallets > 0 && priceNum > 0 ? (priceNum / totalPallets) : 0;
+
       const ratio = (totalEUR / 33) + (totalUK / 26);
       const pct = Math.round(ratio * 100);
       const remRatio = Math.max(0, 1 - ratio);
       
       let color = pct <= 60 ? '#10B981' : pct <= 80 ? '#EAB308' : pct < 100 ? '#F97316' : '#DC2626';
-      return { totalEUR, totalUK, totalPallets, pct, freeEUR: Math.floor(remRatio * 33), freeUK: Math.floor(remRatio * 26), color, isOverCapacity: pct >= 100 };
+      return { totalEUR, totalUK, totalPallets, pct, freeEUR: Math.floor(remRatio * 33), freeUK: Math.floor(remRatio * 26), color, isOverCapacity: pct >= 100, unitCost, priceNum };
     }
 
     function switchTab(tab) {
@@ -1465,6 +1474,7 @@
       }
     }
 
+    // === ANALYTICS & EXECUTIVE REPORTING (WITH PRICES & TEMP MODES) ===
     function renderAnalyticsDashboard() {
       const timeframe = document.getElementById('analyticsTimeframe')?.value || 'all';
       const now = new Date();
@@ -1491,58 +1501,71 @@
       let totalEUR = 0;
       let totalUK = 0;
       let totalOccupancySum = 0;
+      let totalSpend = 0;
+      const tempModesCount = {};
 
       filtered.forEach(t => {
         const stats = calculateLoad(t);
         totalEUR += stats.totalEUR;
         totalUK += stats.totalUK;
         totalOccupancySum += stats.pct;
+        totalSpend += stats.priceNum;
+
+        const mode = t.tempMode || 'Ambient';
+        tempModesCount[mode] = (tempModesCount[mode] || 0) + 1;
       });
 
       const totalPallets = totalEUR + totalUK;
       const avgOcc = filtered.length > 0 ? Math.round(totalOccupancySum / filtered.length) : 0;
+      const avgCostPerPallet = totalPallets > 0 && totalSpend > 0 ? (totalSpend / totalPallets).toFixed(2) : '0.00';
+
+      // Find top temp mode
+      let topMode = '-';
+      let maxCount = 0;
+      for (const [m, count] of Object.entries(tempModesCount)) {
+        if (count > maxCount) {
+          maxCount = count;
+          topMode = m;
+        }
+      }
 
       document.getElementById('kpiAvgOccupancy').innerText = `${avgOcc}%`;
-      document.getElementById('kpiTotalTrips').innerText = filtered.length;
+      document.getElementById('kpiTotalSpend').innerText = `€${totalSpend.toLocaleString()}`;
+      document.getElementById('kpiAvgCostPerPallet').innerText = `Avg €${avgCostPerPallet} / pallet`;
       document.getElementById('kpiTotalPallets').innerText = totalPallets;
       document.getElementById('kpiPalletBreakdown').innerText = `${totalEUR} EUR / ${totalUK} UK Pallets`;
+      document.getElementById('kpiTotalTrips').innerText = filtered.length;
+      document.getElementById('kpiTopTempMode').innerText = `Top mode: ${topMode}`;
 
-      renderOccupancyChart(filtered);
+      renderTempModesChart(tempModesCount);
       renderVolumeBarChart(filtered);
       lucide.createIcons();
     }
 
-    function renderOccupancyChart(filteredTrucks) {
-      const ctx = document.getElementById('chartOccupancy')?.getContext('2d');
+    function renderTempModesChart(tempModesCount) {
+      const ctx = document.getElementById('chartTempModes')?.getContext('2d');
       if (!ctx) return;
 
-      if (chartOccInstance) chartOccInstance.destroy();
+      if (chartTempModesInstance) chartTempModesInstance.destroy();
 
-      const sorted = [...filteredTrucks].sort((a,b) => (a.departureDate || '').localeCompare(b.departureDate || '')).slice(-10);
-      const labels = sorted.map(t => `${t.title} (${(t.departureDate || '').slice(5)})`);
-      const dataOcc = sorted.map(t => calculateLoad(t).pct);
+      const labels = Object.keys(tempModesCount);
+      const data = Object.values(tempModesCount);
 
-      chartOccInstance = new Chart(ctx, {
-        type: 'line',
+      chartTempModesInstance = new Chart(ctx, {
+        type: 'doughnut',
         data: {
           labels,
           datasets: [{
-            label: 'Occupancy %',
-            data: dataOcc,
-            borderColor: '#1E40AF',
-            backgroundColor: 'rgba(30, 64, 175, 0.1)',
-            fill: true,
-            tension: 0.3,
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: '#EA0A2A'
+            data,
+            backgroundColor: ['#1E40AF', '#EAB308', '#10B981', '#EA0A2A', '#8B5CF6'],
+            borderWidth: 2
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          scales: {
-            y: { min: 0, max: 100, ticks: { callback: v => `${v}%` } }
+          plugins: {
+            legend: { position: 'bottom' }
           }
         }
       });
@@ -1697,7 +1720,7 @@
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
                 <span class="text-xs font-bold px-2 py-0.5 bg-blue-50 text-ifl-blue rounded border border-blue-200">${truck.tempMode || 'Ambient'}</span>
                 <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
-                ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Ref: ${truck.price}</span>` : ''}
+                ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
               </div>
               <h2 class="text-lg sm:text-2xl font-black text-slate-900 leading-tight">${truck.origin} ➔ ${truck.destination}</h2>
               <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Trip #: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
@@ -1759,7 +1782,7 @@
             </div>
           </div>
 
-          <!-- METRICS (CLEAN 3-CARD LAYOUT) -->
+          <!-- METRICS -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mt-4">
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy</p><p class="text-xl sm:text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR Pallets (Max 33)</p><p class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[10px] font-normal text-emerald-600">(~${stats.freeEUR} free)</span></p></div>
@@ -2019,7 +2042,6 @@
       }
     }
 
-    // === STOPS BUILDER WITH UP/DOWN REORDERING ===
     function addStopInput(stopData = null) {
       const container = document.getElementById('stopsContainer');
       if (!container) return;
@@ -2642,6 +2664,7 @@
             "Origin": t.origin,
             "Destination": t.destination,
             "Departure Date": t.departureDate,
+            "Total Price": t.price || '-',
             "Total EUR Pallets": stats.totalEUR,
             "Total UK Pallets": stats.totalUK,
             "Occupancy %": `${stats.pct}%`,
@@ -2666,6 +2689,7 @@
             "Final Destination": `${t.destComp || ''} (${t.destination})`,
             "Intermediate Stops": stopsSummary,
             "Departure Date": `${t.departureDate} ${t.departureTime || ''}`,
+            "Total Trip Price": t.price || '-',
             "Total Saturation %": `${stats.pct}%`,
             "Role / Type": "Publisher Initial Load",
             "Booker / Partner": t.author,
@@ -2690,6 +2714,7 @@
               "Final Destination": t.destination,
               "Intermediate Stops": "-",
               "Departure Date": t.departureDate,
+              "Total Trip Price": "-",
               "Total Saturation %": "-",
               "Role / Type": "Reserved Space",
               "Booker / Partner": `${r.author} (${r.partnerType || 'Partner'}: ${r.partnerName || 'N/A'})`,
@@ -2729,11 +2754,11 @@
       doc.text(`Generated on: ${new Date().toLocaleString('en-GB')} | Report Level: ${type.toUpperCase()}`, 14, 21);
 
       if (type === 'simple') {
-        const headers = [["Trip #", "Coordinator", "Route", "Departure", "Mode", "Sanitary Docs", "EUR / UK", "Load %", "Status"]];
+        const headers = [["Trip #", "Coordinator", "Route", "Departure", "Mode", "Price", "Sanitary Docs", "EUR / UK", "Load %", "Status"]];
         const rows = listToExport.map(t => {
           const stats = calculateLoad(t);
           const docsSummary = [t.reqEHC ? 'EHC' : '', t.reqAttestation ? 'Attest.' : ''].filter(Boolean).join('+') || 'None';
-          return [t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate, t.tempMode || 'Ambient', docsSummary, `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
+          return [t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate, t.tempMode || 'Ambient', t.price || '-', docsSummary, `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
         });
 
         doc.autoTable({
@@ -2745,7 +2770,7 @@
           styles: { fontSize: 8 }
         });
       } else {
-        const headers = [["Trip #", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "Mode", "EUR", "UK", "Sanitary", "SKUs"]];
+        const headers = [["Trip #", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "Mode", "Price", "EUR", "UK", "Sanitary", "SKUs"]];
         const rows = [];
 
         listToExport.forEach(t => {
@@ -2755,7 +2780,7 @@
           
           rows.push([
             t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate,
-            `${t.author} (Publisher)`, "-", t.tempMode || 'Ambient', t.eurQty || 0, t.ukQty || 0, tripSanitary, prodsSummary
+            `${t.author} (Publisher)`, "-", t.tempMode || 'Ambient', t.price || '-', t.eurQty || 0, t.ukQty || 0, tripSanitary, prodsSummary
           ]);
 
           tripRes.forEach(r => {
@@ -2764,7 +2789,7 @@
             rows.push([
               "", "", "", "",
               `${r.author} (${r.partnerName || 'Client'})`, r.projectNo || '-',
-              r.tempMode || 'Ambient', r.eurQty || 0, r.ukQty || 0, resSanitary, resProdsSummary
+              r.tempMode || 'Ambient', "-", r.eurQty || 0, r.ukQty || 0, resSanitary, resProdsSummary
             ]);
           });
         });
