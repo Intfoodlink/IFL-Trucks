@@ -15,6 +15,8 @@
   <!-- jsPDF & AutoTable (PDF Generation) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <!-- Chart.js for Executive Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Leaflet CSS & JS for Route Mapping -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -49,6 +51,7 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%231E40AF' d='M224 96l64 96 128-32-64 160 96 96H64l32-160 96-32 32-128z'/%3E%3C/svg%3E"); z-index: 0;
     }
     #routeMap { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+    .dropzone-active { border-color: #ea0a2a !important; background-color: #fef2f2 !important; }
   </style>
 </head>
 <body class="bg-watermark min-h-screen text-slate-800 font-sans antialiased flex flex-col relative">
@@ -97,6 +100,13 @@
   <datalist id="companyHistory"></datalist>
   <datalist id="cityHistory"></datalist>
   <datalist id="postcodeHistory"></datalist>
+  <datalist id="productCodePresets">
+    <option value="PHF0120">PHF0120 - Packaging / Boxes</option>
+    <option value="KK0030">KK0030 - Sauces / Marinara</option>
+    <option value="FL0085">FL0085 - Flour & Sugar Pallets</option>
+    <option value="OIL044">OIL044 - Vegetable Frying Oil</option>
+    <option value="CHOC99">CHOC99 - Confectionery Mix</option>
+  </datalist>
 
   <!-- TOP HEADER -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
@@ -107,7 +117,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Cloud Freight Planner, Route Mapper & File Archive</p>
+          <p class="text-[11px] text-slate-400">Freight Hub, Route Optimization & Management Analytics</p>
         </div>
       </div>
 
@@ -144,7 +154,10 @@
           <i data-lucide="calendar" class="w-4 h-4"></i> Monthly Calendar
         </button>
         <button onclick="switchTab('filters')" id="tabFilters" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Advanced Search & Filters
+          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Search & Manifests
+        </button>
+        <button onclick="switchTab('analytics')" id="tabAnalytics" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics & Reporting
         </button>
       </div>
     </div>
@@ -154,7 +167,7 @@
       <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-5 flex flex-col h-[85vh] shadow-xs bg-white">
         <div class="relative mb-4">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-          <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by plate, route, partner, stop..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
+          <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by plate, route, product code, partner..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
         </div>
         <div id="trucksList" class="overflow-y-auto space-y-3 pr-1 flex-1"></div>
       </section>
@@ -255,9 +268,80 @@
         </table>
       </div>
     </div>
+
+    <!-- NEW TAB: ANALYTICS & EXECUTIVE REPORTING -->
+    <div id="analyticsView" class="hidden space-y-6">
+      <div class="border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Performance Matrix
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency, trailer saturation metrics, and period reporting.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1 rounded-xl text-xs">
+              <label class="font-semibold text-slate-600 px-2">Timeframe:</label>
+              <select id="analyticsTimeframe" onchange="renderAnalyticsDashboard()" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none font-semibold">
+                <option value="all">All-Time Cumulative</option>
+                <option value="this_year">Current Year</option>
+                <option value="q1">Q1 (Jan - Mar)</option>
+                <option value="q2">Q2 (Apr - Jun)</option>
+                <option value="q3">Q3 (Jul - Sep)</option>
+                <option value="q4">Q4 (Oct - Dec)</option>
+                <option value="last_30">Last 30 Days</option>
+              </select>
+            </div>
+            <button onclick="exportExcelReport('full')" class="bg-action hover:bg-action-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Report
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Average Load Saturation</span>
+            <span id="kpiAvgOccupancy" class="text-2xl font-black text-ifl-blue">0%</span>
+            <span class="text-[10px] text-slate-400 block mt-1">Trailer geometry basis (33 EUR / 26 UK)</span>
+          </div>
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Dispatched Shipments</span>
+            <span id="kpiTotalTrips" class="text-2xl font-black text-slate-900">0</span>
+            <span class="text-[10px] text-slate-400 block mt-1">Consolidations logged in period</span>
+          </div>
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Total Pallets Moved</span>
+            <span id="kpiTotalPallets" class="text-2xl font-black text-emerald-600">0</span>
+            <span id="kpiPalletBreakdown" class="text-[10px] text-slate-500 block mt-1">0 EUR / 0 UK</span>
+          </div>
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Cumulative Freight Cost</span>
+            <span id="kpiTotalSpend" class="text-2xl font-black text-slate-800">€0</span>
+            <span class="text-[10px] text-slate-400 block mt-1">Declared transport budget</span>
+          </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="p-4 rounded-xl border border-slate-200 bg-white">
+            <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
+              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Load Occupancy Progression (%)
+            </h3>
+            <div class="h-64"><canvas id="chartOccupancy"></canvas></div>
+          </div>
+          <div class="p-4 rounded-xl border border-slate-200 bg-white">
+            <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-ifl-yellow"></i> Cargo Types & Pallet Distribution
+            </h3>
+            <div class="h-64"><canvas id="chartPalletTypes"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <!-- TRUCK MODAL -->
+  <!-- TRUCK MODAL WITH DRAG & DROP AND PRODUCT LINES -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -278,24 +362,36 @@
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
-        <!-- ORIGIN -->
+        <!-- ORIGIN WITH SMART COUNTRY SELECTOR (EUROPE + MIDDLE EAST) -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
           <div class="grid grid-cols-3 gap-2">
             <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
-            <select id="truckOriginCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="France">France</option>
-              <option value="Spain">Spain</option>
-              <option value="Germany">Germany</option>
-              <option value="Netherlands">Netherlands</option>
-              <option value="Belgium">Belgium</option>
-              <option value="Other">Other</option>
+            <select id="truckOriginCountry" onchange="autoFormatPostcodeHint('truckOriginCountry', 'truckOriginCP')" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white font-medium">
+              <optgroup label="Europe">
+                <option value="United Kingdom" selected>United Kingdom (UK)</option>
+                <option value="Spain">Spain (ES)</option>
+                <option value="France">France (FR)</option>
+                <option value="Germany">Germany (DE)</option>
+                <option value="Netherlands">Netherlands (NL)</option>
+                <option value="Belgium">Belgium (BE)</option>
+                <option value="Italy">Italy (IT)</option>
+                <option value="Poland">Poland (PL)</option>
+                <option value="Portugal">Portugal (PT)</option>
+                <option value="Ireland">Ireland (IE)</option>
+              </optgroup>
+              <optgroup label="Middle East & Gulf">
+                <option value="Qatar">Qatar (QA)</option>
+                <option value="United Arab Emirates">United Arab Emirates (UAE/Dubai)</option>
+                <option value="Saudi Arabia">Saudi Arabia (KSA)</option>
+                <option value="Kuwait">Kuwait (KW)</option>
+              </optgroup>
+              <option value="Other">Other Global Hub</option>
             </select>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <input type="text" id="truckOriginCity" list="cityHistory" placeholder="City / Municipality / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
-            <input type="text" id="truckOriginCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckOriginCP" list="postcodeHistory" placeholder="Postal Code / Area Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
           </div>
         </div>
 
@@ -313,19 +409,31 @@
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
           <div class="grid grid-cols-3 gap-2">
             <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
-            <select id="truckDestCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
-              <option value="Spain">Spain</option>
-              <option value="France">France</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="Germany">Germany</option>
-              <option value="Netherlands">Netherlands</option>
-              <option value="Belgium">Belgium</option>
-              <option value="Other">Other</option>
+            <select id="truckDestCountry" onchange="autoFormatPostcodeHint('truckDestCountry', 'truckDestCP')" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white font-medium">
+              <optgroup label="Europe">
+                <option value="Spain" selected>Spain (ES)</option>
+                <option value="France">France (FR)</option>
+                <option value="United Kingdom">United Kingdom (UK)</option>
+                <option value="Germany">Germany (DE)</option>
+                <option value="Netherlands">Netherlands (NL)</option>
+                <option value="Belgium">Belgium (BE)</option>
+                <option value="Italy">Italy (IT)</option>
+                <option value="Poland">Poland (PL)</option>
+                <option value="Portugal">Portugal (PT)</option>
+                <option value="Ireland">Ireland (IE)</option>
+              </optgroup>
+              <optgroup label="Middle East & Gulf">
+                <option value="Qatar">Qatar (QA)</option>
+                <option value="United Arab Emirates">United Arab Emirates (UAE/Dubai)</option>
+                <option value="Saudi Arabia">Saudi Arabia (KSA)</option>
+                <option value="Kuwait">Kuwait (KW)</option>
+              </optgroup>
+              <option value="Other">Other Global Destination</option>
             </select>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <input type="text" id="truckDestCity" list="cityHistory" placeholder="City / Municipality / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
-            <input type="text" id="truckDestCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+            <input type="text" id="truckDestCP" list="postcodeHistory" placeholder="Postal Code / Area Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
           </div>
         </div>
 
@@ -351,19 +459,42 @@
           </div>
         </div>
 
-        <!-- EXISTING ATTACHED FILES WITH REMOVE BUTTON -->
+        <!-- NEW FEATURE: ITEMIZED PRODUCT LIST & INVOICE LINKING (OPTIONAL) -->
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <p class="font-bold text-slate-800 flex items-center gap-1.5">
+                <i data-lucide="boxes" class="w-3.5 h-3.5 text-ifl-blue"></i> Itemized Products / Stock Codes (Optional)
+              </p>
+              <span class="text-[10px] text-slate-400">Add SKUs (e.g. PHF0120, KK0030) and tie them to invoice numbers</span>
+            </div>
+            <button type="button" onclick="addProductRow('truckProductContainer')" class="text-[11px] text-action font-bold flex items-center gap-1">
+              <i data-lucide="plus" class="w-3 h-3"></i> Add SKU
+            </button>
+          </div>
+          <div id="truckProductContainer" class="space-y-2"></div>
+        </div>
+
+        <!-- EXISTING ATTACHED FILES -->
         <div id="truckExistingDocsSection" class="hidden p-3.5 border border-slate-200 rounded-xl bg-slate-50">
           <p class="font-bold text-slate-700 mb-2">Manage Uploaded Documents:</p>
           <div id="truckExistingDocsList" class="space-y-1.5"></div>
         </div>
 
-        <!-- NEW ATTACHMENTS -->
+        <!-- NEW ATTACHMENTS (DRAG & DROP + MULTI-FILE UPLOAD) -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
-          <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach New Documents (PDF, Excel, Word, Images):</p>
-            <button type="button" onclick="addDocRow('truckDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
+          <p class="font-bold text-slate-700 mb-2">Attach Real Documents (PDF, Excel, Word, Images):</p>
+          
+          <div id="truckDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'truckDropzone', 'truckPendingFiles')" class="border-2 border-dashed border-slate-200 hover:border-action rounded-xl p-4 text-center cursor-pointer bg-slate-50/50 transition">
+            <input type="file" id="truckFileInput" multiple onchange="handleFileSelect(event, 'truckPendingFiles')" class="hidden">
+            <div onclick="document.getElementById('truckFileInput').click()" class="space-y-1">
+              <i data-lucide="upload-cloud" class="w-6 h-6 text-slate-400 mx-auto"></i>
+              <p class="text-xs font-semibold text-slate-700">Drag & Drop files here, or <span class="text-action underline font-bold">browse</span></p>
+              <p class="text-[10px] text-slate-400">Supports multiple files simultaneously (PDF, XLSX, DOCX, PNG, JPG)</p>
+            </div>
           </div>
-          <div id="truckDocRows" class="space-y-2"></div>
+          
+          <div id="truckPendingFiles" class="space-y-2 mt-3"></div>
         </div>
 
         <div>
@@ -428,6 +559,21 @@
           </div>
         </div>
 
+        <!-- PRODUCT LIST FOR RESERVATIONS -->
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <p class="font-bold text-slate-800 flex items-center gap-1.5">
+                <i data-lucide="boxes" class="w-3.5 h-3.5 text-ifl-yellow"></i> Product SKUs & Invoice Association (Optional)
+              </p>
+            </div>
+            <button type="button" onclick="addProductRow('resProductContainer')" class="text-[11px] text-action font-bold flex items-center gap-1">
+              <i data-lucide="plus" class="w-3 h-3"></i> Add SKU
+            </button>
+          </div>
+          <div id="resProductContainer" class="space-y-2"></div>
+        </div>
+
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700">Requested Stop / Delivery Point (Optional)</p>
           <div class="grid grid-cols-3 gap-2">
@@ -437,6 +583,7 @@
               <option value="France">France</option>
               <option value="United Kingdom">United Kingdom</option>
               <option value="Germany">Germany</option>
+              <option value="Qatar">Qatar</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -446,19 +593,23 @@
           </div>
         </div>
 
-        <!-- EXISTING ATTACHED FILES WITH REMOVE BUTTON -->
+        <!-- EXISTING ATTACHED FILES -->
         <div id="resExistingDocsSection" class="hidden p-3.5 border border-slate-200 rounded-xl bg-slate-50">
           <p class="font-bold text-slate-700 mb-2">Manage Uploaded Documents:</p>
           <div id="resExistingDocsList" class="space-y-1.5"></div>
         </div>
 
-        <!-- NEW ATTACHMENTS -->
+        <!-- NEW ATTACHMENTS (DRAG & DROP) -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
-          <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700">Attach Documents (PDF, Excel, Word, Images):</p>
-            <button type="button" onclick="addDocRow('resDocRows')" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Document</button>
+          <p class="font-bold text-slate-700 mb-2">Attach Real Documents (PDF, Excel, Word, Images):</p>
+          <div id="resDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'resDropzone', 'resPendingFiles')" class="border-2 border-dashed border-slate-200 hover:border-action rounded-xl p-4 text-center cursor-pointer bg-slate-50/50 transition">
+            <input type="file" id="resFileInput" multiple onchange="handleFileSelect(event, 'resPendingFiles')" class="hidden">
+            <div onclick="document.getElementById('resFileInput').click()" class="space-y-1">
+              <i data-lucide="upload-cloud" class="w-6 h-6 text-slate-400 mx-auto"></i>
+              <p class="text-xs font-semibold text-slate-700">Drag & Drop files here, or <span class="text-action underline font-bold">browse</span></p>
+            </div>
           </div>
-          <div id="resDocRows" class="space-y-2"></div>
+          <div id="resPendingFiles" class="space-y-2 mt-3"></div>
         </div>
 
         <div>
@@ -476,8 +627,8 @@
   <script>
     const initialDirectory = {
       companies: ['Mercamadrid Hub', 'IFL Depot London', 'Central Foods Distribution', 'Logistique Nord Calais', 'Lille Logistics Centre'],
-      cities: ['London, UK', 'Calais, France', 'Madrid, Spain', 'Birmingham, UK', 'Lille, France', 'Dover, UK', 'Paris, France', 'Valencia, Spain'],
-      postcodes: ['28053', 'E16 2PX', 'B1 1AA', '62100', '59000', 'CT16 1JA', '94150']
+      cities: ['London, UK', 'Calais, France', 'Madrid, Spain', 'Birmingham, UK', 'Lille, France', 'Dover, UK', 'Paris, France', 'Valencia, Spain', 'Doha, Qatar', 'Dubai, UAE'],
+      postcodes: ['28053', 'E16 2PX', 'B1 1AA', '62100', '59000', 'CT16 1JA', '94150', 'PO Box 1234']
     };
 
     let trucks = [];
@@ -499,6 +650,16 @@
 
     let stagedTruckDocs = [];
     let stagedResDocs = [];
+    let stagedTruckProducts = [];
+    let stagedResProducts = [];
+    
+    // File drop buffers
+    let truckFilesBuffer = [];
+    let resFilesBuffer = [];
+
+    // Chart instances
+    let chartOccInstance = null;
+    let chartPalletInstance = null;
 
     // === NATIVE AUTHENTICATION (SUPABASE AUTH) ===
     async function checkAuthSession() {
@@ -547,6 +708,113 @@
       document.getElementById('authOverlay').classList.remove('hidden');
     }
 
+    // === DRAG & DROP MULTI-FILE HANDLING ===
+    function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dropzone-active'); }
+    function handleDragLeave(e) { e.currentTarget.classList.remove('dropzone-active'); }
+    
+    function handleDrop(e, dropzoneId, containerId) {
+      e.preventDefault();
+      document.getElementById(dropzoneId).classList.remove('dropzone-active');
+      const files = Array.from(e.dataTransfer.files);
+      addFilesToBuffer(files, containerId);
+    }
+
+    function handleFileSelect(e, containerId) {
+      const files = Array.from(e.target.files);
+      addFilesToBuffer(files, containerId);
+    }
+
+    function addFilesToBuffer(files, containerId) {
+      const isTruck = containerId === 'truckPendingFiles';
+      const targetBuffer = isTruck ? truckFilesBuffer : resFilesBuffer;
+
+      files.forEach(file => {
+        targetBuffer.push({ file, type: 'Invoice', customName: file.name });
+      });
+      renderPendingFiles(containerId);
+    }
+
+    function renderPendingFiles(containerId) {
+      const container = document.getElementById(containerId);
+      const isTruck = containerId === 'truckPendingFiles';
+      const buffer = isTruck ? truckFilesBuffer : resFilesBuffer;
+      container.innerHTML = '';
+
+      buffer.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs';
+        div.innerHTML = `
+          <div class="flex items-center gap-2 truncate flex-1">
+            <i data-lucide="file" class="w-3.5 h-3.5 text-action flex-shrink-0"></i>
+            <span class="truncate font-semibold">${item.file.name}</span>
+            <span class="text-[10px] text-slate-400">(${(item.file.size / 1024).toFixed(1)} KB)</span>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <select onchange="${isTruck ? 'truckFilesBuffer' : 'resFilesBuffer'}[${index}].type = this.value" class="px-2 py-1 bg-white border border-slate-200 rounded text-xs outline-none">
+              <option value="Invoice" ${item.type === 'Invoice' ? 'selected' : ''}>Invoice</option>
+              <option value="Packing List" ${item.type === 'Packing List' ? 'selected' : ''}>Packing List</option>
+              <option value="CMR" ${item.type === 'CMR' ? 'selected' : ''}>CMR</option>
+              <option value="Spec Sheet" ${item.type === 'Spec Sheet' ? 'selected' : ''}>Spec Sheet</option>
+              <option value="Other" ${item.type === 'Other' ? 'selected' : ''}>Other</option>
+            </select>
+            <button type="button" onclick="removePendingFile(${index}, '${containerId}')" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    function removePendingFile(index, containerId) {
+      if (containerId === 'truckPendingFiles') truckFilesBuffer.splice(index, 1);
+      else resFilesBuffer.splice(index, 1);
+      renderPendingFiles(containerId);
+    }
+
+    // === PRODUCT LINES BUILDER (OPTIONAL SKUs) ===
+    function addProductRow(containerId, prod = null) {
+      const container = document.getElementById(containerId);
+      const div = document.createElement('div');
+      div.className = 'grid grid-cols-12 gap-2 items-center product-row bg-white p-2 rounded-lg border border-slate-200 text-xs';
+      
+      const codeVal = prod?.code || '';
+      const descVal = prod?.desc || '';
+      const qtyVal = prod?.qty || '';
+      const invVal = prod?.invoiceRef || '';
+
+      div.innerHTML = `
+        <div class="col-span-3">
+          <input type="text" list="productCodePresets" placeholder="Code (e.g. PHF0120)" value="${codeVal}" class="prod-code w-full px-2 py-1 border border-slate-200 rounded outline-none font-bold text-slate-800">
+        </div>
+        <div class="col-span-4">
+          <input type="text" placeholder="Product / Description" value="${descVal}" class="prod-desc w-full px-2 py-1 border border-slate-200 rounded outline-none text-slate-700">
+        </div>
+        <div class="col-span-2">
+          <input type="text" placeholder="Qty / Units" value="${qtyVal}" class="prod-qty w-full px-2 py-1 border border-slate-200 rounded outline-none text-slate-700">
+        </div>
+        <div class="col-span-2">
+          <input type="text" placeholder="Linked Inv #" value="${invVal}" class="prod-invoice w-full px-2 py-1 border border-slate-200 rounded outline-none text-emerald-700 font-semibold">
+        </div>
+        <div class="col-span-1 text-center">
+          <button type="button" onclick="this.closest('.product-row').remove()" class="text-slate-400 hover:text-red-500"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+        </div>
+      `;
+      container.appendChild(div);
+      lucide.createIcons();
+    }
+
+    function autoFormatPostcodeHint(countrySelectId, postcodeFieldId) {
+      const country = document.getElementById(countrySelectId).value;
+      const input = document.getElementById(postcodeFieldId);
+      if (country === 'United Kingdom') input.placeholder = 'e.g. EN3 7QJ / CM9 4XD';
+      else if (country === 'Spain') input.placeholder = 'e.g. 28020 / 46001';
+      else if (country === 'France') input.placeholder = 'e.g. 75001 / 59000';
+      else if (country === 'Qatar') input.placeholder = 'e.g. Zone 55 / PO Box 1234';
+      else if (country === 'United Arab Emirates') input.placeholder = 'e.g. Dubai Investment Park';
+      else input.placeholder = 'Postal Code / Area Code';
+    }
+
+    // GEOCODING & MAP ENGINE
     const geoCoordsCache = {
       'london': [51.5074, -0.1278],
       'enfield': [51.6538, -0.0799],
@@ -560,7 +828,8 @@
       'paris': [48.8566, 2.3522],
       'valencia': [39.4699, -0.3763],
       'barcelona': [41.3851, 2.1734],
-      'manchester': [53.4808, -2.2426]
+      'doha': [25.2854, 51.5310],
+      'dubai': [25.2048, 55.2708]
     };
 
     function extractSearchLocation(rawText) {
@@ -594,12 +863,12 @@
           geoCoordsCache[cacheKey] = coords;
           return coords;
         }
-      } catch (e) {
-        console.warn("Geocoding fallback:", e);
-      }
+      } catch (e) {}
 
       const str = `${cityText || ''} ${countryText || ''}`.toLowerCase();
-      if (str.includes('spain') || str.includes('españa') || str.includes('madrid') || str.includes('28820') || str.includes('coslada')) return [40.4260, -3.5656];
+      if (str.includes('qatar') || str.includes('doha')) return [25.2854, 51.5310];
+      if (str.includes('dubai') || str.includes('emirates')) return [25.2048, 55.2708];
+      if (str.includes('spain') || str.includes('madrid') || str.includes('28820') || str.includes('coslada')) return [40.4260, -3.5656];
       if (str.includes('essex') || str.includes('maldon') || str.includes('enfield') || str.includes('uk')) return [51.7311, 0.6759];
 
       return [50.9513, 1.8587];
@@ -614,7 +883,6 @@
       });
     }
 
-    // CLOUD STORAGE UPLOAD (SAVES RELATIVE PATH FOR PRIVATE ACCESS)
     async function safeUploadDoc(file) {
       try {
         const fileExt = file.name.split('.').pop();
@@ -626,18 +894,15 @@
           upsert: true
         });
 
-        if (!error) {
-          return filePath;
-        }
+        if (!error) return filePath;
       } catch (e) {
-        console.warn("Private storage upload fallback to base64.", e);
+        console.warn("Storage upload fallback.", e);
       }
 
       const b64 = await fileToBase64(file);
       return b64 || '';
     }
 
-    // SECURE AUTHENTICATED FILE DOWNLOAD & OPEN (GDPR COMPLIANT)
     async function openOriginalDoc(urlOrPath, fileName) {
       if (!urlOrPath) {
         alert("File reference unavailable.");
@@ -682,8 +947,8 @@
         document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
       } catch (err) {
-        console.error("Secure file download error:", err);
-        alert("Could not download file. Ensure your corporate session is active.");
+        console.error("Secure download error:", err);
+        alert("Error downloading secure file. Ensure session is active.");
       }
     }
 
@@ -706,9 +971,7 @@
               hasFiles = true;
             } else {
               let filePath = d.url;
-              if (d.url.includes('/ifl_docs/')) {
-                filePath = d.url.split('/ifl_docs/')[1];
-              }
+              if (d.url.includes('/ifl_docs/')) filePath = d.url.split('/ifl_docs/')[1];
               const { data, error } = await supabaseClient.storage.from('ifl_docs').download(filePath);
               if (!error && data) {
                 zip.file(d.name, data);
@@ -720,7 +983,7 @@
       }
 
       if (!hasFiles) {
-        alert("No attached files found to archive.");
+        alert("No attached files to archive.");
         return;
       }
 
@@ -743,6 +1006,7 @@
             destComp: t.dest_comp || '', destination: t.destination || 'Hub (TBD)', destCountry: t.dest_country || 'Spain', destCP: t.dest_cp || '',
             stops: Array.isArray(t.stops) ? t.stops : [], departureDate: t.departure_date || new Date().toISOString().split('T')[0], departureTime: t.departure_time || '',
             eurQty: Number(t.eur_qty) || 0, eurDesc: t.eur_desc || '', ukQty: Number(t.uk_qty) || 0, ukDesc: t.uk_desc || '',
+            products: Array.isArray(t.products) ? t.products : [],
             notes: t.notes || '', docs: Array.isArray(t.docs) ? t.docs : [], status: t.status || 'active'
           }));
         }
@@ -752,6 +1016,7 @@
             id: r.id, truckId: r.truck_id, author: r.author || 'Booker', projectNo: r.project_no || '',
             partnerType: r.partner_type || 'Client', partnerName: r.partner_name || '',
             eurQty: Number(r.eur_qty) || 0, eurDesc: r.eur_desc || '', ukQty: Number(r.uk_qty) || 0, ukDesc: r.uk_desc || '',
+            products: Array.isArray(r.products) ? r.products : [],
             stop: (r.stop && typeof r.stop === 'object') ? r.stop : {}, notes: r.notes || '', docs: Array.isArray(r.docs) ? r.docs : []
           }));
         }
@@ -762,6 +1027,7 @@
 
         renderTrucks();
         renderDetail();
+        if (currentTab === 'analytics') renderAnalyticsDashboard();
       } catch (err) {
         console.error("Cloud Sync Error:", err);
       }
@@ -827,17 +1093,20 @@
       const tabComp = document.getElementById('tabCompleted');
       const tabCal = document.getElementById('tabCalendar');
       const tabFilt = document.getElementById('tabFilters');
+      const tabAna = document.getElementById('tabAnalytics');
       
       const workspace = document.getElementById('workspaceView');
       const calendarView = document.getElementById('calendarView');
       const filters = document.getElementById('filtersView');
+      const analytics = document.getElementById('analyticsView');
 
-      [tabAct, tabComp, tabCal, tabFilt].forEach(btn => {
+      [tabAct, tabComp, tabCal, tabFilt, tabAna].forEach(btn => {
         if(btn) btn.className = 'pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2';
       });
       if(workspace) workspace.classList.add('hidden');
       if(calendarView) calendarView.classList.add('hidden');
       if(filters) filters.classList.add('hidden');
+      if(analytics) analytics.classList.add('hidden');
 
       if (tab === 'calendar') {
         if(tabCal) tabCal.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
@@ -847,6 +1116,10 @@
         if(tabFilt) tabFilt.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
         if(filters) filters.classList.remove('hidden');
         applyAdvancedFilters();
+      } else if (tab === 'analytics') {
+        if(tabAna) tabAna.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(analytics) analytics.classList.remove('hidden');
+        renderAnalyticsDashboard();
       } else {
         if(workspace) workspace.classList.remove('hidden');
         const targetBtn = tab === 'active' ? tabAct : tabComp;
@@ -857,14 +1130,130 @@
       }
     }
 
+    // === ANALYTICS & EXECUTIVE REPORTING LOGIC ===
+    function renderAnalyticsDashboard() {
+      const timeframe = document.getElementById('analyticsTimeframe')?.value || 'all';
+      const now = new Date();
+      const currentYear = now.getFullYear();
+
+      const filtered = trucks.filter(t => {
+        if (!t.departureDate) return true;
+        const d = new Date(t.departureDate);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1; // 1-12
+
+        if (timeframe === 'this_year') return y === currentYear;
+        if (timeframe === 'q1') return y === currentYear && m >= 1 && m <= 3;
+        if (timeframe === 'q2') return y === currentYear && m >= 4 && m <= 6;
+        if (timeframe === 'q3') return y === currentYear && m >= 7 && m <= 9;
+        if (timeframe === 'q4') return y === currentYear && m >= 10 && m <= 12;
+        if (timeframe === 'last_30') {
+          const diffDays = (now - d) / (1000 * 60 * 60 * 24);
+          return diffDays >= 0 && diffDays <= 30;
+        }
+        return true;
+      });
+
+      let totalEUR = 0;
+      let totalUK = 0;
+      let totalOccupancySum = 0;
+      let totalSpend = 0;
+
+      filtered.forEach(t => {
+        const stats = calculateLoad(t);
+        totalEUR += stats.totalEUR;
+        totalUK += stats.totalUK;
+        totalOccupancySum += stats.pct;
+
+        const priceNum = parseFloat((t.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+        totalSpend += priceNum;
+      });
+
+      const avgOcc = filtered.length > 0 ? Math.round(totalOccupancySum / filtered.length) : 0;
+
+      document.getElementById('kpiAvgOccupancy').innerText = `${avgOcc}%`;
+      document.getElementById('kpiTotalTrips').innerText = filtered.length;
+      document.getElementById('kpiTotalPallets').innerText = totalEUR + totalUK;
+      document.getElementById('kpiPalletBreakdown').innerText = `${totalEUR} EUR / ${totalUK} UK Pallets`;
+      document.getElementById('kpiTotalSpend').innerText = `€${totalSpend.toLocaleString()}`;
+
+      // Render Charts
+      renderOccupancyChart(filtered);
+      renderPalletTypeChart(totalEUR, totalUK);
+      lucide.createIcons();
+    }
+
+    function renderOccupancyChart(filteredTrucks) {
+      const ctx = document.getElementById('chartOccupancy')?.getContext('2d');
+      if (!ctx) return;
+
+      if (chartOccInstance) chartOccInstance.destroy();
+
+      const sorted = [...filteredTrucks].sort((a,b) => (a.departureDate || '').localeCompare(b.departureDate || '')).slice(-10);
+      const labels = sorted.map(t => `${t.title} (${t.departureDate.slice(5)})`);
+      const dataOcc = sorted.map(t => calculateLoad(t).pct);
+
+      chartOccInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Occupancy %',
+            data: dataOcc,
+            borderColor: '#1E40AF',
+            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#EA0A2A'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 100, ticks: { callback: v => `${v}%` } }
+          }
+        }
+      });
+    }
+
+    function renderPalletTypeChart(eur, uk) {
+      const ctx = document.getElementById('chartPalletTypes')?.getContext('2d');
+      if (!ctx) return;
+
+      if (chartPalletInstance) chartPalletInstance.destroy();
+
+      chartPalletInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['EUR Pallets', 'UK Pallets'],
+          datasets: [{
+            data: [eur || 1, uk || 1],
+            backgroundColor: ['#1E40AF', '#EAB308'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
     function renderTrucks() {
       const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
       const currentList = trucks.filter(t => t.status === currentTab);
       
       const filtered = currentList.filter(t => {
         const tripRes = reservations.filter(r => r.truckId === t.id);
-        const resQuery = tripRes.map(r => `${r.author} ${r.projectNo || ''} ${r.partnerName || ''}`).join(' ').toLowerCase();
-        const mainQuery = `${t.title} ${t.origin} ${t.destination} ${t.author} ${t.price || ''}`.toLowerCase();
+        const resQuery = tripRes.map(r => `${r.author} ${r.projectNo || ''} ${r.partnerName || ''} ${(r.products || []).map(p => p.code).join(' ')}`).join(' ').toLowerCase();
+        const prodQuery = (t.products || []).map(p => `${p.code} ${p.desc} ${p.invoiceRef || ''}`).join(' ').toLowerCase();
+        const mainQuery = `${t.title} ${t.origin} ${t.destination} ${t.author} ${t.price || ''} ${prodQuery}`.toLowerCase();
         return mainQuery.includes(search) || resQuery.includes(search);
       });
 
@@ -933,7 +1322,7 @@
                 <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
                 ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
               </div>
-              <h2 class="text-2xl font-black text-slate-900">${truck.origin} ➔ ${truck.destination}</h2>
+              <h2 class="text-2xl font-black text-slate-900">${truck.origin} (${truck.originCountry || ''}) ➔ ${truck.destination} (${truck.destCountry || ''})</h2>
               <p class="text-sm text-slate-500 mt-1">Ref: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
             </div>
             <div class="flex items-center gap-2">
@@ -950,7 +1339,7 @@
           <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map" class="w-4 h-4 text-action"></i> Visual Route Itinerary</span>
-              <span class="text-[10px] text-slate-400">OpenStreetMap Free Engine</span>
+              <span class="text-[10px] text-slate-400">OpenStreetMap Engine</span>
             </div>
             <div id="routeMap"></div>
           </div>
@@ -959,14 +1348,13 @@
           <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Route Stops & Checkpoint Status</h4>
             <div class="space-y-2">
-              
               <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full ${hasDeparted ? 'bg-blue-600' : 'bg-amber-500'}"></span>
                   <div><strong>Origin:</strong> ${truck.originComp ? truck.originComp + ' - ' : ''}${truck.origin} ${truck.originCP ? `(${truck.originCP})` : ''}</div>
                 </div>
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded ${hasDeparted ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-800'}">
-                  ${hasDeparted ? 'Departed' : 'Scheduled / Pending Departure'}
+                  ${hasDeparted ? 'Departed' : 'Scheduled / Pending'}
                 </span>
               </div>
 
@@ -1004,7 +1392,7 @@
           <!-- BULK DOWNLOAD -->
           ${allDocs.length > 0 ? `
             <div class="mt-4 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-              <span class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="archive" class="w-4 h-4 text-action"></i> Trip File Archive (${allDocs.length} files)</span>
+              <span class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="archive" class="w-4 h-4 text-action"></i> Secure Trip File Archive (${allDocs.length} files)</span>
               <button onclick="downloadAllDocs('${truck.id}')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-2xs">
                 <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-action"></i> Download All as ZIP
               </button>
@@ -1013,7 +1401,7 @@
         </div>
 
         <div class="mt-6">
-          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest</h3>
+          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest & Products</h3>
           <div class="space-y-4">
             
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm space-y-3">
@@ -1025,6 +1413,24 @@
                 ${truck.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.eurDesc || 'EUR Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.eurQty} EUR Pallets</span></div>` : ''}
                 ${truck.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.ukDesc || 'UK Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.ukQty} UK Pallets</span></div>` : ''}
               </div>
+
+              <!-- Product items badge display -->
+              ${(truck.products && truck.products.length > 0) ? `
+                <div class="mt-2 pt-2 border-t border-slate-200/60">
+                  <span class="text-[11px] font-bold text-slate-600 block mb-1.5">Registered SKUs / Products:</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${truck.products.map(p => `
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs">
+                        <strong class="text-ifl-blue">${p.code}</strong>
+                        <span class="text-slate-600">${p.desc || ''}</span>
+                        ${p.qty ? `<span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-bold">${p.qty}</span>` : ''}
+                        ${p.invoiceRef ? `<span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">Inv: ${p.invoiceRef}</span>` : ''}
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
               ${truck.notes ? `<div class="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200"><strong class="text-slate-800">Remarks:</strong> ${truck.notes}</div>` : ''}
               ${(truck.docs && truck.docs.length > 0) ? `
                 <div class="flex flex-wrap gap-2 pt-1">
@@ -1057,6 +1463,21 @@
                   ${r.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.eurDesc || 'EUR Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.eurQty} EUR Pallets</span></div>` : ''}
                   ${r.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.ukDesc || 'UK Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.ukQty} UK Pallets</span></div>` : ''}
                 </div>
+
+                ${(r.products && r.products.length > 0) ? `
+                  <div class="mt-2 pt-2 border-t border-slate-100">
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">Booked SKUs:</span>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${r.products.map(p => `
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-xs">
+                          <strong class="text-slate-800">${p.code}</strong>
+                          <span class="text-slate-600">${p.desc || ''}</span>
+                          ${p.invoiceRef ? `<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 rounded">Inv: ${p.invoiceRef}</span>` : ''}
+                        </span>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
 
                 ${r.notes ? `<div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><strong class="text-slate-800">Notes:</strong> ${r.notes}</div>` : ''}
                 
@@ -1184,26 +1605,6 @@
       }
     }
 
-    function addDocRow(containerId) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      const div = document.createElement('div');
-      div.className = 'grid grid-cols-12 gap-2 items-center doc-row bg-slate-50 p-2 rounded-lg border border-slate-200';
-      div.innerHTML = `
-        <select class="col-span-5 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none doc-type bg-white">
-          <option value="Invoice">Invoice</option>
-          <option value="Packing List">Packing List</option>
-          <option value="Product Specifications">Product Specifications</option>
-          <option value="CMR">CMR</option>
-          <option value="Other">Other</option>
-        </select>
-        <input type="file" class="col-span-6 py-1 text-xs doc-file">
-        <button type="button" onclick="this.parentElement.remove()" class="col-span-1 text-slate-400 hover:text-red-500 flex justify-center"><i data-lucide="trash" class="w-4 h-4"></i></button>
-      `;
-      container.appendChild(div);
-      lucide.createIcons();
-    }
-
     function addStopInput(stopData = null) {
       const container = document.getElementById('stopsContainer');
       if (!container) return;
@@ -1218,19 +1619,22 @@
       div.innerHTML = `
         <div class="grid grid-cols-3 gap-2">
           <input type="text" list="companyHistory" value="${compVal}" placeholder="Company Name (Optional)" class="stop-comp col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
-          <select class="stop-country px-2 py-1 border rounded-lg text-xs outline-none bg-white">
+          <select class="stop-country px-2 py-1 border rounded-lg text-xs outline-none bg-white font-medium">
             <option value="United Kingdom" ${countryVal === 'United Kingdom' ? 'selected' : ''}>United Kingdom</option>
             <option value="France" ${countryVal === 'France' ? 'selected' : ''}>France</option>
             <option value="Spain" ${countryVal === 'Spain' ? 'selected' : ''}>Spain</option>
             <option value="Germany" ${countryVal === 'Germany' ? 'selected' : ''}>Germany</option>
+            <option value="Netherlands" ${countryVal === 'Netherlands' ? 'selected' : ''}>Netherlands</option>
             <option value="Belgium" ${countryVal === 'Belgium' ? 'selected' : ''}>Belgium</option>
+            <option value="Qatar" ${countryVal === 'Qatar' ? 'selected' : ''}>Qatar</option>
+            <option value="United Arab Emirates" ${countryVal === 'United Arab Emirates' ? 'selected' : ''}>UAE</option>
             <option value="Other" ${countryVal === 'Other' ? 'selected' : ''}>Other</option>
           </select>
         </div>
         <div class="grid grid-cols-3 gap-2">
           <input type="text" list="cityHistory" value="${cityVal}" placeholder="City / Address" class="stop-city col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
           <div class="flex gap-1">
-            <input type="text" list="postcodeHistory" value="${cpVal}" placeholder="CP" class="stop-cp flex-1 px-2 py-1 border rounded-lg text-xs outline-none">
+            <input type="text" list="postcodeHistory" value="${cpVal}" placeholder="CP / Code" class="stop-cp flex-1 px-2 py-1 border rounded-lg text-xs outline-none">
             <button type="button" onclick="this.closest('.stop-item').remove()" class="text-slate-400 hover:text-red-500 px-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
           </div>
         </div>
@@ -1248,7 +1652,9 @@
       document.getElementById('editingTruckId').value = '';
       document.getElementById('truckForm').reset();
       document.getElementById('stopsContainer').innerHTML = '';
-      document.getElementById('truckDocRows').innerHTML = '';
+      document.getElementById('truckProductContainer').innerHTML = '';
+      document.getElementById('truckPendingFiles').innerHTML = '';
+      truckFilesBuffer = [];
       
       stagedTruckDocs = [];
       document.getElementById('truckExistingDocsSection').classList.add('hidden');
@@ -1314,11 +1720,17 @@
       document.getElementById('truckUK').value = t.ukQty || 0;
       document.getElementById('truckUKDesc').value = t.ukDesc || '';
       document.getElementById('truckNotes').value = t.notes || '';
-      document.getElementById('truckDocRows').innerHTML = '';
-
+      
       const stopsContainer = document.getElementById('stopsContainer');
       stopsContainer.innerHTML = '';
       (t.stops || []).forEach(s => addStopInput(s));
+
+      const prodContainer = document.getElementById('truckProductContainer');
+      prodContainer.innerHTML = '';
+      (t.products || []).forEach(p => addProductRow('truckProductContainer', p));
+
+      document.getElementById('truckPendingFiles').innerHTML = '';
+      truckFilesBuffer = [];
 
       stagedTruckDocs = [...(t.docs || [])];
       renderStagedTruckDocs();
@@ -1334,7 +1746,9 @@
       document.getElementById('resModalTitle').innerText = 'Book Pallets';
       document.getElementById('editingResId').value = '';
       document.getElementById('resForm').reset();
-      document.getElementById('resDocRows').innerHTML = '';
+      document.getElementById('resProductContainer').innerHTML = '';
+      document.getElementById('resPendingFiles').innerHTML = '';
+      resFilesBuffer = [];
       
       stagedResDocs = [];
       document.getElementById('resExistingDocsSection').classList.add('hidden');
@@ -1394,7 +1808,13 @@
         document.getElementById('resStopCity').value = r.stop.city || r.stop.addr || '';
       }
       document.getElementById('resNotes').value = r.notes || '';
-      document.getElementById('resDocRows').innerHTML = '';
+      
+      const prodContainer = document.getElementById('resProductContainer');
+      prodContainer.innerHTML = '';
+      (r.products || []).forEach(p => addProductRow('resProductContainer', p));
+
+      document.getElementById('resPendingFiles').innerHTML = '';
+      resFilesBuffer = [];
 
       stagedResDocs = [...(r.docs || [])];
       renderStagedResDocs();
@@ -1404,6 +1824,7 @@
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
+    // === SAVE FUNCTIONS WITH DRAG & DROP AND PRODUCTS ===
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
@@ -1443,16 +1864,22 @@
           }
         }
 
-        const docRows = document.querySelectorAll('#truckDocRows .doc-row');
+        // Collect Products
+        const prodRows = document.querySelectorAll('#truckProductContainer .product-row');
+        const products = [];
+        prodRows.forEach(row => {
+          const code = row.querySelector('.prod-code')?.value.trim() || '';
+          const desc = row.querySelector('.prod-desc')?.value.trim() || '';
+          const qty = row.querySelector('.prod-qty')?.value.trim() || '';
+          const invoiceRef = row.querySelector('.prod-invoice')?.value.trim() || '';
+          if (code || desc || invoiceRef) products.push({ code, desc, qty, invoiceRef });
+        });
+
+        // Upload dropped files from buffer
         const newDocs = [];
-        for (const row of docRows) {
-          const fileInput = row.querySelector('.doc-file');
-          const docType = row.querySelector('.doc-type')?.value || 'Document';
-          if (fileInput && fileInput.files[0]) {
-            const file = fileInput.files[0];
-            const fileUrl = await safeUploadDoc(file);
-            newDocs.push({ type: docType, name: file.name, url: fileUrl });
-          }
+        for (const item of truckFilesBuffer) {
+          const fileUrl = await safeUploadDoc(item.file);
+          newDocs.push({ type: item.type, name: item.file.name, url: fileUrl });
         }
 
         const combinedDocs = [...stagedTruckDocs, ...newDocs];
@@ -1472,6 +1899,7 @@
           eur_desc: document.getElementById('truckEURDesc').value.trim(),
           uk_qty: Number(document.getElementById('truckUK').value) || 0,
           uk_desc: document.getElementById('truckUKDesc').value.trim(),
+          products,
           notes: document.getElementById('truckNotes').value.trim(),
           docs: combinedDocs,
           status: existingTruck ? existingTruck.status : 'active'
@@ -1480,6 +1908,7 @@
         const { error } = await supabaseClient.from('trucks').upsert(payload);
         if (error) console.error("Supabase Save Warning:", error);
         
+        truckFilesBuffer = [];
         closeTruckModal();
         await loadCloudData();
         switchTab('active');
@@ -1507,16 +1936,22 @@
 
         if (stopComp || stopCity || stopCP) addDirectoryEntry(stopComp, stopCity, stopCP);
 
-        const docRows = document.querySelectorAll('#resDocRows .doc-row');
+        // Collect Products
+        const prodRows = document.querySelectorAll('#resProductContainer .product-row');
+        const products = [];
+        prodRows.forEach(row => {
+          const code = row.querySelector('.prod-code')?.value.trim() || '';
+          const desc = row.querySelector('.prod-desc')?.value.trim() || '';
+          const qty = row.querySelector('.prod-qty')?.value.trim() || '';
+          const invoiceRef = row.querySelector('.prod-invoice')?.value.trim() || '';
+          if (code || desc || invoiceRef) products.push({ code, desc, qty, invoiceRef });
+        });
+
+        // Upload dropped files from buffer
         const newDocs = [];
-        for (const row of docRows) {
-          const fileInput = row.querySelector('.doc-file');
-          const docType = row.querySelector('.doc-type')?.value || 'Document';
-          if (fileInput && fileInput.files[0]) {
-            const file = fileInput.files[0];
-            const fileUrl = await safeUploadDoc(file);
-            newDocs.push({ type: docType, name: file.name, url: fileUrl });
-          }
+        for (const item of resFilesBuffer) {
+          const fileUrl = await safeUploadDoc(item.file);
+          newDocs.push({ type: item.type, name: item.file.name, url: fileUrl });
         }
 
         const combinedDocs = [...stagedResDocs, ...newDocs];
@@ -1533,6 +1968,7 @@
           eur_desc: document.getElementById('resEURDesc').value.trim(),
           uk_qty: Number(document.getElementById('resUK').value) || 0,
           uk_desc: document.getElementById('resUKDesc').value.trim(),
+          products,
           stop: stopPayload,
           notes: document.getElementById('resNotes').value.trim(),
           docs: combinedDocs
@@ -1541,6 +1977,7 @@
         const { error } = await supabaseClient.from('reservations').upsert(payload);
         if (error) console.error("Supabase Reservation Warning:", error);
 
+        resFilesBuffer = [];
         closeResModal();
         await loadCloudData();
       } catch(err) {
@@ -1630,15 +2067,16 @@
     }
 
     function exportExcelReport(type) {
-      if (currentlyFilteredTrucks.length === 0) {
-        alert("No filtered data to export.");
+      if (trucks.length === 0) {
+        alert("No freight data to export.");
         return;
       }
 
+      const listToExport = currentlyFilteredTrucks.length > 0 ? currentlyFilteredTrucks : trucks;
       let dataToExport = [];
 
       if (type === 'simple') {
-        dataToExport = currentlyFilteredTrucks.map(t => {
+        dataToExport = listToExport.map(t => {
           const stats = calculateLoad(t);
           return {
             "Trip Ref / Plate": t.title,
@@ -1654,10 +2092,11 @@
           };
         });
       } else {
-        currentlyFilteredTrucks.forEach(t => {
+        listToExport.forEach(t => {
           const stats = calculateLoad(t);
           const tripRes = reservations.filter(r => r.truckId === t.id);
           const stopsSummary = (t.stops || []).map(s => `${s.comp || ''} ${s.city || s.addr}`).join(' | ') || 'None';
+          const prodsSummary = (t.products || []).map(p => `${p.code} (Inv:${p.invoiceRef || '-'})`).join(', ') || 'None';
 
           dataToExport.push({
             "Trip Ref / Plate": t.title,
@@ -1673,14 +2112,14 @@
             "Booker / Partner": t.author,
             "Project #": "-",
             "EUR Pallets": t.eurQty || 0,
-            "EUR Description": t.eurDesc || '',
             "UK Pallets": t.ukQty || 0,
-            "UK Description": t.ukDesc || '',
+            "Associated SKUs & Invoices": prodsSummary,
             "Booking Notes": t.notes || '',
             "Attached Docs": (t.docs || []).map(d => d.name).join(', ') || 'None'
           });
 
           tripRes.forEach(r => {
+            const resProdsSummary = (r.products || []).map(p => `${p.code} (Inv:${p.invoiceRef || '-'})`).join(', ') || 'None';
             dataToExport.push({
               "Trip Ref / Plate": t.title,
               "Trip Status": t.status,
@@ -1695,9 +2134,8 @@
               "Booker / Partner": `${r.author} (${r.partnerType || 'Partner'}: ${r.partnerName || 'N/A'})`,
               "Project #": r.projectNo || '-',
               "EUR Pallets": r.eurQty || 0,
-              "EUR Description": r.eurDesc || '',
               "UK Pallets": r.ukQty || 0,
-              "UK Description": r.ukDesc || '',
+              "Associated SKUs & Invoices": resProdsSummary,
               "Booking Notes": `${r.notes || ''} ${r.stop?.city ? `[Stop: ${r.stop.city}]` : ''}`,
               "Attached Docs": (r.docs || []).map(d => d.name).join(', ') || 'None'
             });
@@ -1712,8 +2150,9 @@
     }
 
     function exportPDFReport(type) {
-      if (currentlyFilteredTrucks.length === 0) {
-        alert("No filtered data to export.");
+      const listToExport = currentlyFilteredTrucks.length > 0 ? currentlyFilteredTrucks : trucks;
+      if (listToExport.length === 0) {
+        alert("No freight data to export.");
         return;
       }
 
@@ -1730,7 +2169,7 @@
 
       if (type === 'simple') {
         const headers = [["Trip Ref", "Coordinator", "Origin", "Destination", "Departure", "Price", "EUR / UK", "Load %", "Status"]];
-        const rows = currentlyFilteredTrucks.map(t => {
+        const rows = listToExport.map(t => {
           const stats = calculateLoad(t);
           return [t.title, t.author, t.origin, t.destination, t.departureDate, t.price || '-', `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
         });
@@ -1744,23 +2183,25 @@
           styles: { fontSize: 8 }
         });
       } else {
-        const headers = [["Trip", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "EUR", "UK", "Notes & Stops"]];
+        const headers = [["Trip", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "EUR", "UK", "SKUs / Invoices", "Notes & Stops"]];
         const rows = [];
 
-        currentlyFilteredTrucks.forEach(t => {
+        listToExport.forEach(t => {
           const tripRes = reservations.filter(r => r.truckId === t.id);
+          const prodsSummary = (t.products || []).map(p => `${p.code}`).join(', ') || '-';
           
           rows.push([
             t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate,
-            `${t.author} (Publisher)`, "-", t.eurQty || 0, t.ukQty || 0,
+            `${t.author} (Publisher)`, "-", t.eurQty || 0, t.ukQty || 0, prodsSummary,
             t.notes || 'None'
           ]);
 
           tripRes.forEach(r => {
+            const resProdsSummary = (r.products || []).map(p => `${p.code}`).join(', ') || '-';
             rows.push([
               "", "", "", "",
               `${r.author} (${r.partnerName || 'Client'})`, r.projectNo || '-',
-              r.eurQty || 0, r.ukQty || 0,
+              r.eurQty || 0, r.ukQty || 0, resProdsSummary,
               `${r.notes || ''} ${r.stop?.city ? `[Stop: ${r.stop.city}]` : ''}`
             ]);
           });
