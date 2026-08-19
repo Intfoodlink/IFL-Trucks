@@ -117,7 +117,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Freight Hub, Route Optimization & Cost Allocation Portal</p>
+          <p class="text-[11px] text-slate-400">Freight Hub, Multi-Temp Routing & Cost Allocation Portal</p>
         </div>
       </div>
 
@@ -355,7 +355,7 @@
     </div>
   </main>
 
-  <!-- TRUCK MODAL (WITH PRESETS & AUTO-NUMBERING) -->
+  <!-- TRUCK MODAL (PRESET MOVED DOWN, MULTI-TEMP & CLEANED) -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -365,38 +365,19 @@
         <button onclick="closeTruckModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <!-- ROUTE PRESETS QUICK SELECTOR -->
-      <div class="mb-4 p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <i data-lucide="bookmark" class="w-4 h-4 text-ifl-blue"></i>
-          <span class="text-xs font-bold text-slate-800">Quick Route Preset:</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <select id="routePresetSelect" onchange="applyRoutePreset(this.value)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none font-medium">
-            <option value="">-- Choose a standard route --</option>
-            <option value="enfield_coslada">Enfield / Maldon (UK) ➔ Coslada / Mercamadrid (ES)</option>
-            <option value="lille_madrid">Lille Depot (FR) ➔ Madrid Hub (ES)</option>
-            <option value="dover_valencia">Dover Port (UK) ➔ Valencia (ES)</option>
-            <option value="london_qatar">London Depot (UK) ➔ Doha Air/Sea Hub (Qatar)</option>
-          </select>
-          <button type="button" onclick="saveCurrentAsPreset()" title="Save current values as new preset" class="bg-white hover:bg-slate-100 text-ifl-blue border border-slate-200 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Save Preset
-          </button>
-        </div>
-      </div>
-
       <form id="truckForm" onsubmit="saveTruck(event)" class="space-y-4 text-xs">
         <input type="hidden" id="editingTruckId" value="">
         <div class="grid grid-cols-4 gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Coordinator</label><input type="text" id="truckAuthor" placeholder="e.g. Magda" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Trip Number (Auto)</label><input type="text" id="truckTitle" placeholder="e.g. 26-0001" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none font-bold text-ifl-blue focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Trip Total Cost</label><input type="text" id="truckPrice" oninput="calculateUnitCostPreview()" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Total Cost</label><input type="text" id="truckPrice" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Temperature / Mode</label>
+            <label class="block font-semibold text-slate-600 mb-1">Overall Truck Mode</label>
             <select id="truckTempMode" class="w-full px-2.5 py-2 border border-slate-200 rounded-xl outline-none bg-white font-medium">
               <option value="Ambient">Ambient</option>
               <option value="Chilled (+2ºC / +4ºC)">Chilled (+2ºC / +4ºC)</option>
               <option value="Frozen (-18ºC)">Frozen (-18ºC)</option>
+              <option value="Multi-Temp / Dual (Ambient + Frozen/Chilled)">Multi-Temp / Dual (Mixed)</option>
               <option value="Dry Goods / Packaging">Dry Goods / Packaging</option>
             </select>
           </div>
@@ -405,6 +386,26 @@
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" onchange="generateSequentialTripNumber()" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+        </div>
+
+        <!-- ROUTE PRESETS QUICK SELECTOR (MOVED BELOW HEADER FIELDS) -->
+        <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="bookmark" class="w-4 h-4 text-ifl-blue"></i>
+            <span class="text-xs font-bold text-slate-800">Quick Route Preset:</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="routePresetSelect" onchange="applyRoutePreset(this.value)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none font-medium">
+              <option value="">-- Choose a standard route --</option>
+              <option value="enfield_coslada">Enfield / Maldon (UK) ➔ Coslada / Mercamadrid (ES)</option>
+              <option value="lille_madrid">Lille Depot (FR) ➔ Madrid Hub (ES)</option>
+              <option value="dover_valencia">Dover Port (UK) ➔ Valencia (ES)</option>
+              <option value="london_qatar">London Depot (UK) ➔ Doha Air/Sea Hub (Qatar)</option>
+            </select>
+            <button type="button" onclick="saveCurrentAsPreset()" title="Save current values as new preset" class="bg-white hover:bg-slate-100 text-ifl-blue border border-slate-200 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Save Preset
+            </button>
+          </div>
         </div>
 
         <!-- ORIGIN -->
@@ -480,29 +481,40 @@
           </div>
         </div>
 
-        <!-- PALLET CARGO ALLOCATION WITH LIVE UNIT COST -->
+        <!-- PALLET ALLOCATION WITH PER-ROW TEMPERATURE SELECTOR -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
-          <div class="flex justify-between items-center">
-            <p class="font-bold text-slate-800">Initial Pallet Allocation:</p>
-            <span id="previewUnitCostBadge" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Unit Cost: €0.00 / Pallet</span>
-          </div>
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="w-1/3"><span class="font-bold block text-xs">EUR Pallets</span></div>
+          <p class="font-bold text-slate-800">Initial Pallet Allocation:</p>
+          
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="w-1/4"><span class="font-bold block text-xs">EUR Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckEUR', -1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="truckEUR" oninput="calculateUnitCostPreview()" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckEUR', 1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+              <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+            <select id="truckEURTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
+              <option value="Ambient">Ambient</option>
+              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+              <option value="Frozen (-18ºC)">Frozen</option>
+              <option value="Dry Goods / Packaging">Dry Goods</option>
+            </select>
+            <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="w-1/4"><span class="font-bold block text-xs">UK Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckUK', -1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="truckUK" oninput="calculateUnitCostPreview()" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckUK', 1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+              <button type="button" onclick="adjustQty('truckUK', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckUK', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+            <select id="truckUKTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
+              <option value="Ambient">Ambient</option>
+              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+              <option value="Frozen (-18ºC)">Frozen</option>
+              <option value="Dry Goods / Packaging">Dry Goods</option>
+            </select>
+            <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
 
@@ -584,7 +596,7 @@
             <input type="text" id="resPartnerName" list="companyHistory" placeholder="Optional" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Temperature / Mode</label>
+            <label class="block font-semibold text-slate-600 mb-1">Booking Mode</label>
             <select id="resTempMode" class="w-full px-2.5 py-2 border border-slate-200 rounded-xl outline-none bg-white font-medium">
               <option value="Ambient">Ambient</option>
               <option value="Chilled (+2ºC / +4ºC)">Chilled (+2ºC / +4ºC)</option>
@@ -596,23 +608,37 @@
 
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Pallets to Book:</p>
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="w-1/3"><span class="font-bold block text-xs">EUR Pallets</span></div>
+          
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="w-1/4"><span class="font-bold block text-xs">EUR Pallets</span></div>
             <div class="flex items-center gap-1.5">
               <button type="button" onclick="adjustQty('resEUR', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
               <input type="number" id="resEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
               <button type="button" onclick="adjustQty('resEUR', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="resEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+            <select id="resEURTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
+              <option value="Ambient">Ambient</option>
+              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+              <option value="Frozen (-18ºC)">Frozen</option>
+              <option value="Dry Goods / Packaging">Dry Goods</option>
+            </select>
+            <input type="text" id="resEURDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="w-1/4"><span class="font-bold block text-xs">UK Pallets</span></div>
             <div class="flex items-center gap-1.5">
               <button type="button" onclick="adjustQty('resUK', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
               <input type="number" id="resUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
               <button type="button" onclick="adjustQty('resUK', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="resUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+            <select id="resUKTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
+              <option value="Ambient">Ambient</option>
+              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+              <option value="Frozen (-18ºC)">Frozen</option>
+              <option value="Dry Goods / Packaging">Dry Goods</option>
+            </select>
+            <input type="text" id="resUKDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
 
@@ -764,7 +790,7 @@
       document.getElementById('authOverlay').classList.remove('hidden');
     }
 
-    // === SEQUENTIAL TRIP NUMBER GENERATOR (26-0001, 26-0002... 2027-0001...) ===
+    // === SEQUENTIAL TRIP NUMBER GENERATOR ===
     function generateSequentialTripNumber() {
       const dateVal = document.getElementById('truckDate').value || new Date().toISOString().split('T')[0];
       const yearFull = new Date(dateVal).getFullYear();
@@ -886,23 +912,6 @@
       await supabaseClient.from('route_presets').insert(newPreset);
       alert("Route preset saved successfully!");
       await loadRoutePresets();
-    }
-
-    // === LIVE COST PER PALLET PREVIEW ===
-    function calculateUnitCostPreview() {
-      const priceStr = document.getElementById('truckPrice').value || '';
-      const price = parseFloat(priceStr.replace(/[^0-9.-]+/g, '')) || 0;
-      const eur = parseInt(document.getElementById('truckEUR').value, 10) || 0;
-      const uk = parseInt(document.getElementById('truckUK').value, 10) || 0;
-      const totalPallets = eur + uk;
-
-      const badge = document.getElementById('previewUnitCostBadge');
-      if (totalPallets > 0 && price > 0) {
-        const unit = (price / totalPallets).toFixed(2);
-        badge.innerText = `Unit Cost: €${unit} / Pallet (${totalPallets} pallets)`;
-      } else {
-        badge.innerText = `Unit Cost: €0.00 / Pallet`;
-      }
     }
 
     // === DRAG & DROP MULTI-FILE HANDLING ===
@@ -1199,7 +1208,7 @@
       link.click();
     }
 
-    // === BACKUP COMPLETO DE BASE DE DATOS (GDPR / COMPLIANCE) ===
+    // === FULL DATABASE BACKUP (JSON / GDPR COMPLIANCE) ===
     function downloadFullDatabaseBackup() {
       const backupData = {
         exportedAt: new Date().toISOString(),
@@ -1229,7 +1238,7 @@
 
         if (cloudTrucks) {
           trucks = cloudTrucks.map(t => ({
-            id: t.id, author: t.author || 'Logistics Team', title: t.title || 'TRIP-REF', price: t.price || '',
+            id: t.id, author: t.author || 'Logistics Team', title: t.title || '26-0001', price: t.price || '',
             originComp: t.origin_comp || '', origin: t.origin || 'Hub (TBD)', originCountry: t.origin_country || 'United Kingdom', originCP: t.origin_cp || '',
             destComp: t.dest_comp || '', destination: t.destination || 'Hub (TBD)', destCountry: t.dest_country || 'Spain', destCP: t.dest_cp || '',
             stops: Array.isArray(t.stops) ? t.stops : [], departureDate: t.departure_date || new Date().toISOString().split('T')[0], departureTime: t.departure_time || '',
@@ -1449,7 +1458,6 @@
       });
     }
 
-    // NEW FINANCIAL CHART: SPEND VS PALLET VOLUME
     function renderCostVolumeChart(filteredTrucks) {
       const ctx = document.getElementById('chartCostVolume')?.getContext('2d');
       if (!ctx) return;
@@ -1679,6 +1687,7 @@
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-slate-900">${truck.author}</span>
                   <span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span>
+                  <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-semibold">${truck.tempMode || 'Ambient'}</span>
                 </div>
                 ${stats.unitCost > 0 ? `<span class="text-xs font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">Allocated Cost: €${((truck.eurQty + truck.ukQty) * stats.unitCost).toFixed(2)}</span>` : ''}
               </div>
@@ -1727,7 +1736,7 @@
                     <div class="flex items-center gap-2">
                       <span class="font-bold text-slate-900">${r.author}</span>
                       <span class="text-[10px] bg-yellow-100 text-amber-800 font-bold px-2 py-0.5 rounded">Booker</span>
-                      <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">${r.tempMode || 'Ambient'}</span>
+                      <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200 font-medium">${r.tempMode || 'Ambient'}</span>
                       ${r.projectNo ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Project: ${r.projectNo}</span>` : ''}
                       ${r.partnerName ? `<span class="text-[11px] font-medium text-slate-500">(${r.partnerType || 'Partner'}: <strong class="text-slate-800">${r.partnerName}</strong>)</span>` : ''}
                     </div>
@@ -1954,7 +1963,6 @@
       document.getElementById('truckUK').value = 0;
 
       generateSequentialTripNumber();
-      calculateUnitCostPreview();
 
       document.getElementById('truckModal').classList.remove('hidden');
       lucide.createIcons();
@@ -2030,7 +2038,6 @@
 
       stagedTruckDocs = [...(t.docs || [])];
       renderStagedTruckDocs();
-      calculateUnitCostPreview();
 
       document.getElementById('truckModal').classList.remove('hidden');
       lucide.createIcons();
@@ -2168,7 +2175,6 @@
           }
         }
 
-        // Collect Products
         const prodRows = document.querySelectorAll('#truckProductContainer .product-row');
         const products = [];
         prodRows.forEach(row => {
@@ -2179,7 +2185,6 @@
           if (code || desc || invoiceRef) products.push({ code, desc, qty, invoiceRef });
         });
 
-        // Upload dropped files from buffer
         const newDocs = [];
         for (const item of truckFilesBuffer) {
           const fileUrl = await safeUploadDoc(item.file);
@@ -2196,7 +2201,6 @@
         const totalPallets = eurQty + ukQty;
         const costPerPallet = totalPallets > 0 && priceNum > 0 ? (priceNum / totalPallets) : 0;
 
-        // Construct Audit Event
         const isNew = !existingTruck;
         const auditAction = isNew ? `Trip created with initial ${eurQty} EUR / ${ukQty} UK pallets` : `Trip updated (${departureDate}, ${priceStr || 'No cost'})`;
         const updatedAuditLog = [...(existingTruck?.auditLog || []), {
@@ -2264,7 +2268,6 @@
 
         if (stopComp || stopCity || stopCP) addDirectoryEntry(stopComp, stopCity, stopCP);
 
-        // Collect Products
         const prodRows = document.querySelectorAll('#resProductContainer .product-row');
         const products = [];
         prodRows.forEach(row => {
@@ -2275,7 +2278,6 @@
           if (code || desc || invoiceRef) products.push({ code, desc, qty, invoiceRef });
         });
 
-        // Upload dropped files from buffer
         const newDocs = [];
         for (const item of resFilesBuffer) {
           const fileUrl = await safeUploadDoc(item.file);
@@ -2317,7 +2319,6 @@
           throw error;
         }
 
-        // Log audit into parent truck
         if (currentTruck) {
           const isNewRes = !reservations.find(r => r.id === id);
           const newAudit = [...(currentTruck.auditLog || []), {
@@ -2406,7 +2407,6 @@
 
         if (statusFilter !== 'all' && t.status !== statusFilter) return false;
 
-        // Retention Filter
         if (retentionFilter !== 'all' && t.departureDate) {
           const d = new Date(t.departureDate);
           const yearsDiff = (now - d) / (1000 * 60 * 60 * 24 * 365.25);
