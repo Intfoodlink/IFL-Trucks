@@ -269,7 +269,7 @@
       </div>
     </div>
 
-    <!-- NEW TAB: ANALYTICS & EXECUTIVE REPORTING -->
+    <!-- ANALYTICS & EXECUTIVE REPORTING -->
     <div id="analyticsView" class="hidden space-y-6">
       <div class="border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
@@ -341,7 +341,7 @@
     </div>
   </main>
 
-  <!-- TRUCK MODAL WITH DRAG & DROP AND PRODUCT LINES -->
+  <!-- TRUCK MODAL -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -362,7 +362,7 @@
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
-        <!-- ORIGIN WITH SMART COUNTRY SELECTOR (EUROPE + MIDDLE EAST) -->
+        <!-- ORIGIN -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
           <div class="grid grid-cols-3 gap-2">
@@ -382,7 +382,7 @@
               </optgroup>
               <optgroup label="Middle East & Gulf">
                 <option value="Qatar">Qatar (QA)</option>
-                <option value="United Arab Emirates">United Arab Emirates (UAE/Dubai)</option>
+                <option value="United Arab Emirates">United Arab Emirates (UAE)</option>
                 <option value="Saudi Arabia">Saudi Arabia (KSA)</option>
                 <option value="Kuwait">Kuwait (KW)</option>
               </optgroup>
@@ -424,7 +424,7 @@
               </optgroup>
               <optgroup label="Middle East & Gulf">
                 <option value="Qatar">Qatar (QA)</option>
-                <option value="United Arab Emirates">United Arab Emirates (UAE/Dubai)</option>
+                <option value="United Arab Emirates">United Arab Emirates (UAE)</option>
                 <option value="Saudi Arabia">Saudi Arabia (KSA)</option>
                 <option value="Kuwait">Kuwait (KW)</option>
               </optgroup>
@@ -442,24 +442,24 @@
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">EUR Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
-              <input type="number" id="truckEUR" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+              <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckUK', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
-              <input type="number" id="truckUK" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckUK', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+              <button type="button" onclick="adjustQty('truckUK', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckUK', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
 
-        <!-- NEW FEATURE: ITEMIZED PRODUCT LIST & INVOICE LINKING (OPTIONAL) -->
+        <!-- PRODUCT LIST SECTION -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
           <div class="flex justify-between items-center mb-2">
             <div>
@@ -481,7 +481,7 @@
           <div id="truckExistingDocsList" class="space-y-1.5"></div>
         </div>
 
-        <!-- NEW ATTACHMENTS (DRAG & DROP + MULTI-FILE UPLOAD) -->
+        <!-- NEW ATTACHMENTS (DRAG & DROP) -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
           <p class="font-bold text-slate-700 mb-2">Attach Real Documents (PDF, Excel, Word, Images):</p>
           
@@ -542,20 +542,20 @@
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">EUR Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('resEUR', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
-              <input type="number" id="resEUR" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('resEUR', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+              <button type="button" onclick="adjustQty('resEUR', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="resEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('resEUR', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="resEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="resEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('resUK', -1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">-</button>
-              <input type="number" id="resUK" min="0" value="0" class="w-14 text-center py-1 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('resUK', 1)" class="w-7 h-7 bg-white border border-slate-300 font-bold rounded-lg">+</button>
+              <button type="button" onclick="adjustQty('resUK', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="resUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('resUK', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
-            <input type="text" id="resUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1 bg-white border border-slate-200 rounded-lg outline-none">
+            <input type="text" id="resUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
 
@@ -650,8 +650,6 @@
 
     let stagedTruckDocs = [];
     let stagedResDocs = [];
-    let stagedTruckProducts = [];
-    let stagedResProducts = [];
     
     // File drop buffers
     let truckFilesBuffer = [];
@@ -706,6 +704,16 @@
       await supabaseClient.auth.signOut();
       document.getElementById('loginPasswordInput').value = '';
       document.getElementById('authOverlay').classList.remove('hidden');
+    }
+
+    // === ACCIONES DE INCREMENTO / DECREMENTO ROBUSTAS ===
+    function adjustQty(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let val = parseInt(el.value, 10);
+      if (isNaN(val)) val = 0;
+      val = Math.max(0, val + delta);
+      el.value = val;
     }
 
     // === DRAG & DROP MULTI-FILE HANDLING ===
@@ -771,7 +779,7 @@
       renderPendingFiles(containerId);
     }
 
-    // === PRODUCT LINES BUILDER (OPTIONAL SKUs) ===
+    // === PRODUCT LINES BUILDER ===
     function addProductRow(containerId, prod = null) {
       const container = document.getElementById(containerId);
       const div = document.createElement('div');
@@ -814,7 +822,6 @@
       else input.placeholder = 'Postal Code / Area Code';
     }
 
-    // GEOCODING & MAP ENGINE
     const geoCoordsCache = {
       'london': [51.5074, -0.1278],
       'enfield': [51.6538, -0.0799],
@@ -996,8 +1003,13 @@
 
     async function loadCloudData() {
       try {
-        const { data: cloudTrucks } = await supabaseClient.from('trucks').select('*').order('created_at', { ascending: false });
-        const { data: cloudRes } = await supabaseClient.from('reservations').select('*');
+        const { data: cloudTrucks, error: truckErr } = await supabaseClient.from('trucks').select('*').order('created_at', { ascending: false });
+        const { data: cloudRes, error: resErr } = await supabaseClient.from('reservations').select('*');
+
+        if (truckErr) {
+          console.error("Error loading trucks:", truckErr);
+          alert("Error loading trucks: " + truckErr.message);
+        }
 
         if (cloudTrucks) {
           trucks = cloudTrucks.map(t => ({
@@ -1053,13 +1065,6 @@
       
       try { localStorage.setItem('ifl_cloud_directory', JSON.stringify(directory)); } catch(e){}
       updateDatalists();
-    }
-
-    function adjustQty(id, delta) {
-      const el = document.getElementById(id);
-      let val = (Number(el.value) || 0) + delta;
-      if (val < 0) val = 0;
-      el.value = val;
     }
 
     function getDynamicStatus(truck) {
@@ -1140,7 +1145,7 @@
         if (!t.departureDate) return true;
         const d = new Date(t.departureDate);
         const y = d.getFullYear();
-        const m = d.getMonth() + 1; // 1-12
+        const m = d.getMonth() + 1;
 
         if (timeframe === 'this_year') return y === currentYear;
         if (timeframe === 'q1') return y === currentYear && m >= 1 && m <= 3;
@@ -1177,7 +1182,6 @@
       document.getElementById('kpiPalletBreakdown').innerText = `${totalEUR} EUR / ${totalUK} UK Pallets`;
       document.getElementById('kpiTotalSpend').innerText = `€${totalSpend.toLocaleString()}`;
 
-      // Render Charts
       renderOccupancyChart(filtered);
       renderPalletTypeChart(totalEUR, totalUK);
       lucide.createIcons();
@@ -1190,7 +1194,7 @@
       if (chartOccInstance) chartOccInstance.destroy();
 
       const sorted = [...filteredTrucks].sort((a,b) => (a.departureDate || '').localeCompare(b.departureDate || '')).slice(-10);
-      const labels = sorted.map(t => `${t.title} (${t.departureDate.slice(5)})`);
+      const labels = sorted.map(t => `${t.title} (${(t.departureDate || '').slice(5)})`);
       const dataOcc = sorted.map(t => calculateLoad(t).pct);
 
       chartOccInstance = new Chart(ctx, {
@@ -1230,7 +1234,7 @@
         data: {
           labels: ['EUR Pallets', 'UK Pallets'],
           datasets: [{
-            data: [eur || 1, uk || 1],
+            data: [eur || (uk ? 0 : 1), uk || (eur ? 0 : 1)],
             backgroundColor: ['#1E40AF', '#EAB308'],
             borderWidth: 2
           }]
@@ -1662,7 +1666,11 @@
       const dateField = document.getElementById('truckDate');
       if (dateField) dateField.value = defaultDate || new Date().toISOString().split('T')[0];
       
+      document.getElementById('truckEUR').value = 0;
+      document.getElementById('truckUK').value = 0;
+
       document.getElementById('truckModal').classList.remove('hidden');
+      lucide.createIcons();
     }
 
     function renderStagedTruckDocs() {
@@ -1752,8 +1760,12 @@
       
       stagedResDocs = [];
       document.getElementById('resExistingDocsSection').classList.add('hidden');
+
+      document.getElementById('resEUR').value = 0;
+      document.getElementById('resUK').value = 0;
       
       document.getElementById('resModal').classList.remove('hidden');
+      lucide.createIcons();
     }
 
     function renderStagedResDocs() {
@@ -1820,11 +1832,12 @@
       renderStagedResDocs();
 
       document.getElementById('resModal').classList.remove('hidden');
+      lucide.createIcons();
     }
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
-    // === SAVE FUNCTIONS WITH DRAG & DROP AND PRODUCTS ===
+    // === SAVE FUNCTIONS ===
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
@@ -1892,12 +1905,13 @@
           price: document.getElementById('truckPrice').value.trim(),
           origin_comp: originComp, origin, origin_cp: originCP,
           dest_comp: destComp, destination: dest, dest_cp: destCP,
+          origin_country: originCountry, dest_country: destCountry,
           stops,
           departure_date: departureDate,
           departure_time: document.getElementById('truckTime').value,
-          eur_qty: Number(document.getElementById('truckEUR').value) || 0,
+          eur_qty: parseInt(document.getElementById('truckEUR').value, 10) || 0,
           eur_desc: document.getElementById('truckEURDesc').value.trim(),
-          uk_qty: Number(document.getElementById('truckUK').value) || 0,
+          uk_qty: parseInt(document.getElementById('truckUK').value, 10) || 0,
           uk_desc: document.getElementById('truckUKDesc').value.trim(),
           products,
           notes: document.getElementById('truckNotes').value.trim(),
@@ -1906,7 +1920,10 @@
         };
 
         const { error } = await supabaseClient.from('trucks').upsert(payload);
-        if (error) console.error("Supabase Save Warning:", error);
+        if (error) {
+          alert("Error saving truck: " + error.message);
+          throw error;
+        }
         
         truckFilesBuffer = [];
         closeTruckModal();
@@ -1964,9 +1981,9 @@
           project_no: document.getElementById('resProjectNo').value.trim(),
           partner_type: document.getElementById('resPartnerType').value,
           partner_name: document.getElementById('resPartnerName').value.trim(),
-          eur_qty: Number(document.getElementById('resEUR').value) || 0,
+          eur_qty: parseInt(document.getElementById('resEUR').value, 10) || 0,
           eur_desc: document.getElementById('resEURDesc').value.trim(),
-          uk_qty: Number(document.getElementById('resUK').value) || 0,
+          uk_qty: parseInt(document.getElementById('resUK').value, 10) || 0,
           uk_desc: document.getElementById('resUKDesc').value.trim(),
           products,
           stop: stopPayload,
@@ -1975,7 +1992,10 @@
         };
 
         const { error } = await supabaseClient.from('reservations').upsert(payload);
-        if (error) console.error("Supabase Reservation Warning:", error);
+        if (error) {
+          alert("Error saving booking: " + error.message);
+          throw error;
+        }
 
         resFilesBuffer = [];
         closeResModal();
