@@ -63,7 +63,7 @@
         <span class="text-3xl font-black text-ifl-blue tracking-tighter">i<span class="text-ifl-yellow">FL</span></span>
       </div>
       <h2 class="text-xl font-bold text-slate-900">Corporate Sign In</h2>
-      <p class="text-xs text-slate-500 mt-1 mb-6">Enter your authorized IFL credentials to securely access transport operations.</p>
+      <p class="text-xs text-slate-500 mt-1 mb-6">Enter your authorized IFL credentials to access freight planning and manifests.</p>
       
       <form onsubmit="handleUserLogin(event)" class="space-y-4 text-left">
         <div>
@@ -117,7 +117,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Freight Hub, Route Optimization & Management Analytics</p>
+          <p class="text-[11px] text-slate-400">Freight Hub, Route Optimization & Cost Allocation Portal</p>
         </div>
       </div>
 
@@ -128,7 +128,7 @@
         </div>
         <button onclick="openTruckModal()" class="bg-action hover:bg-action-hover text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-xs flex items-center gap-2 transition">
           <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
-          <span>Publish Truck</span>
+          <span>Publish Trip</span>
         </button>
         <button onclick="handleUserSignOut()" title="Sign Out" class="border border-slate-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-slate-600 font-semibold text-xs px-3 py-2 rounded-xl flex items-center gap-1 transition">
           <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -157,7 +157,7 @@
           <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Search & Manifests
         </button>
         <button onclick="switchTab('analytics')" id="tabAnalytics" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
-          <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics & Reporting
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics & KPIs
         </button>
       </div>
     </div>
@@ -167,7 +167,7 @@
       <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-5 flex flex-col h-[85vh] shadow-xs bg-white">
         <div class="relative mb-4">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-          <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by plate, route, product code, partner..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
+          <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by trip #, route, partner, SKU..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
         </div>
         <div id="trucksList" class="overflow-y-auto space-y-3 pr-1 flex-1"></div>
       </section>
@@ -186,7 +186,7 @@
             <button onclick="prevMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i></button>
             <button onclick="nextMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i></button>
           </div>
-          <span class="text-xs text-slate-400 italic">Click any day cell to publish a truck</span>
+          <span class="text-xs text-slate-400 italic">Click any day cell to publish a trip</span>
         </div>
         <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Reservations
@@ -199,21 +199,26 @@
       <div id="calendarGrid" class="grid grid-cols-7 gap-2 min-h-[600px]"></div>
     </div>
 
-    <!-- FILTERS VIEW WITH REPORTING SYSTEM -->
+    <!-- FILTERS VIEW WITH REPORTING & BACKUP -->
     <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
       <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
         <div>
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-action"></i> Shipment Directory & Custom Reports</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Filter loads and export executive or detailed spreadsheets & PDF manifests.</p>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-action"></i> Shipment Directory & Data Management</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Filter loads, export full financial manifests and create GDPR database backups.</p>
         </div>
         <div class="flex items-center gap-2">
+          <!-- BACKUP & ARCHIVE TOOLS -->
+          <button onclick="downloadFullDatabaseBackup()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-2xs">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i> Full DB Backup (JSON)
+          </button>
+
           <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
-            <span class="text-[11px] font-bold text-slate-500 px-2">Reports:</span>
+            <span class="text-[11px] font-bold text-slate-500 px-2">Export:</span>
             <button onclick="exportExcelReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
               <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Excel (Simple)
             </button>
             <button onclick="exportExcelReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
-              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Excel (Full)
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Excel (Financial)
             </button>
             <button onclick="exportPDFReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
               <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-600"></i> PDF (Simple)
@@ -230,17 +235,17 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 text-xs">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6 text-xs">
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Departure Date Range</label>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="date" id="filterFromDate" onchange="applyAdvancedFilters()" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
-            <input type="date" id="filterToDate" onchange="applyAdvancedFilters()" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <div class="grid grid-cols-2 gap-1.5">
+            <input type="date" id="filterFromDate" onchange="applyAdvancedFilters()" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg outline-none">
+            <input type="date" id="filterToDate" onchange="applyAdvancedFilters()" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg outline-none">
           </div>
         </div>
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Route / Hub</label>
-          <input type="text" id="filterRoute" oninput="applyAdvancedFilters()" placeholder="Origin, Destination or CP" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg outline-none">
+          <input type="text" id="filterRoute" oninput="applyAdvancedFilters()" placeholder="Origin, Dest, CP..." class="w-full px-3 py-1.5 border border-slate-200 rounded-lg outline-none">
         </div>
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Project # / Client / User</label>
@@ -254,14 +259,23 @@
             <option value="completed">Completed</option>
           </select>
         </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Retention Policy</label>
+          <select id="filterRetention" onchange="applyAdvancedFilters()" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg outline-none bg-white font-medium text-slate-700">
+            <option value="all">All History</option>
+            <option value="within_2y">Recent (&lt; 2 Years)</option>
+            <option value="older_2y">Archived (&gt; 2 Years)</option>
+            <option value="older_5y">Archived (&gt; 5 Years - Tax Audit)</option>
+          </select>
+        </div>
       </div>
 
       <div class="overflow-x-auto border border-slate-200 rounded-xl">
         <table class="w-full text-left text-xs text-slate-600">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
             <tr>
-              <th class="p-3">Reference</th><th class="p-3">Coordinator</th><th class="p-3">Route</th><th class="p-3">Departure</th>
-              <th class="p-3">Price</th><th class="p-3">Pallets</th><th class="p-3">Occupancy</th><th class="p-3">Status</th><th class="p-3 text-right">Action</th>
+              <th class="p-3">Trip #</th><th class="p-3">Coordinator</th><th class="p-3">Route</th><th class="p-3">Departure</th>
+              <th class="p-3">Mode</th><th class="p-3">Price</th><th class="p-3">Cost/Pallet</th><th class="p-3">Occupancy</th><th class="p-3">Status</th><th class="p-3 text-right">Action</th>
             </tr>
           </thead>
           <tbody id="filteredTableBody" class="divide-y divide-slate-100"></tbody>
@@ -275,9 +289,9 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
           <div>
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Performance Matrix
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Financial Matrix
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency, trailer saturation metrics, and period reporting.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency, unit costs per pallet, and period financial KPIs.</p>
           </div>
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1 rounded-xl text-xs">
@@ -316,9 +330,9 @@
             <span id="kpiPalletBreakdown" class="text-[10px] text-slate-500 block mt-1">0 EUR / 0 UK</span>
           </div>
           <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Cumulative Freight Cost</span>
-            <span id="kpiTotalSpend" class="text-2xl font-black text-slate-800">€0</span>
-            <span class="text-[10px] text-slate-400 block mt-1">Declared transport budget</span>
+            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Avg Cost / Pallet</span>
+            <span id="kpiAvgCostPerPallet" class="text-2xl font-black text-slate-800">€0</span>
+            <span id="kpiTotalSpend" class="text-[10px] text-slate-500 block mt-1">Total spend: €0</span>
           </div>
         </div>
 
@@ -326,39 +340,70 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Load Occupancy Progression (%)
+              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Trailer Occupancy Progression (%)
             </h3>
             <div class="h-64"><canvas id="chartOccupancy"></canvas></div>
           </div>
           <div class="p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-              <i data-lucide="pie-chart" class="w-4 h-4 text-ifl-yellow"></i> Cargo Types & Pallet Distribution
+              <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-600"></i> Freight Spend vs Pallet Volume
             </h3>
-            <div class="h-64"><canvas id="chartPalletTypes"></canvas></div>
+            <div class="h-64"><canvas id="chartCostVolume"></canvas></div>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- TRUCK MODAL -->
+  <!-- TRUCK MODAL (WITH PRESETS & AUTO-NUMBERING) -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div class="flex items-center gap-2">
-          <i data-lucide="truck" class="w-5 h-5 text-action"></i><h3 id="truckModalTitle" class="text-base font-bold text-slate-900">Publish New Route</h3>
+          <i data-lucide="truck" class="w-5 h-5 text-action"></i><h3 id="truckModalTitle" class="text-base font-bold text-slate-900">Publish New Trip</h3>
         </div>
         <button onclick="closeTruckModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
+
+      <!-- ROUTE PRESETS QUICK SELECTOR -->
+      <div class="mb-4 p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="bookmark" class="w-4 h-4 text-ifl-blue"></i>
+          <span class="text-xs font-bold text-slate-800">Quick Route Preset:</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="routePresetSelect" onchange="applyRoutePreset(this.value)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none font-medium">
+            <option value="">-- Choose a standard route --</option>
+            <option value="enfield_coslada">Enfield / Maldon (UK) ➔ Coslada / Mercamadrid (ES)</option>
+            <option value="lille_madrid">Lille Depot (FR) ➔ Madrid Hub (ES)</option>
+            <option value="dover_valencia">Dover Port (UK) ➔ Valencia (ES)</option>
+            <option value="london_qatar">London Depot (UK) ➔ Doha Air/Sea Hub (Qatar)</option>
+          </select>
+          <button type="button" onclick="saveCurrentAsPreset()" title="Save current values as new preset" class="bg-white hover:bg-slate-100 text-ifl-blue border border-slate-200 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Save Preset
+          </button>
+        </div>
+      </div>
+
       <form id="truckForm" onsubmit="saveTruck(event)" class="space-y-4 text-xs">
         <input type="hidden" id="editingTruckId" value="">
-        <div class="grid grid-cols-3 gap-3">
-          <div><label class="block font-semibold text-slate-600 mb-1">Coordinator Name</label><input type="text" id="truckAuthor" placeholder="e.g. Magda" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Truck Plate / Ref</label><input type="text" id="truckTitle" placeholder="Auto TRIP-XXXX if empty" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Trip Price</label><input type="text" id="truckPrice" placeholder="e.g. €1,450" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+        <div class="grid grid-cols-4 gap-3">
+          <div><label class="block font-semibold text-slate-600 mb-1">Coordinator</label><input type="text" id="truckAuthor" placeholder="e.g. Magda" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Number (Auto)</label><input type="text" id="truckTitle" placeholder="e.g. 26-0001" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none font-bold text-ifl-blue focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Total Cost</label><input type="text" id="truckPrice" oninput="calculateUnitCostPreview()" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Temperature / Mode</label>
+            <select id="truckTempMode" class="w-full px-2.5 py-2 border border-slate-200 rounded-xl outline-none bg-white font-medium">
+              <option value="Ambient">Ambient</option>
+              <option value="Chilled (+2ºC / +4ºC)">Chilled (+2ºC / +4ºC)</option>
+              <option value="Frozen (-18ºC)">Frozen (-18ºC)</option>
+              <option value="Dry Goods / Packaging">Dry Goods / Packaging</option>
+            </select>
+          </div>
         </div>
+
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" onchange="generateSequentialTripNumber()" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
@@ -377,7 +422,6 @@
                 <option value="Belgium">Belgium (BE)</option>
                 <option value="Italy">Italy (IT)</option>
                 <option value="Poland">Poland (PL)</option>
-                <option value="Portugal">Portugal (PT)</option>
                 <option value="Ireland">Ireland (IE)</option>
               </optgroup>
               <optgroup label="Middle East & Gulf">
@@ -419,7 +463,6 @@
                 <option value="Belgium">Belgium (BE)</option>
                 <option value="Italy">Italy (IT)</option>
                 <option value="Poland">Poland (PL)</option>
-                <option value="Portugal">Portugal (PT)</option>
                 <option value="Ireland">Ireland (IE)</option>
               </optgroup>
               <optgroup label="Middle East & Gulf">
@@ -428,7 +471,7 @@
                 <option value="Saudi Arabia">Saudi Arabia (KSA)</option>
                 <option value="Kuwait">Kuwait (KW)</option>
               </optgroup>
-              <option value="Other">Other Global Destination</option>
+              <option value="Other">Other Destination</option>
             </select>
           </div>
           <div class="grid grid-cols-3 gap-2">
@@ -437,23 +480,27 @@
           </div>
         </div>
 
+        <!-- PALLET CARGO ALLOCATION WITH LIVE UNIT COST -->
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
-          <p class="font-bold text-slate-800">Pallet Cargo Allocation:</p>
+          <div class="flex justify-between items-center">
+            <p class="font-bold text-slate-800">Initial Pallet Allocation:</p>
+            <span id="previewUnitCostBadge" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Unit Cost: €0.00 / Pallet</span>
+          </div>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">EUR Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="truckEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+              <button type="button" onclick="adjustQty('truckEUR', -1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckEUR" oninput="calculateUnitCostPreview()" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckEUR', 1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
             <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <div class="w-1/3"><span class="font-bold block text-xs">UK Pallets</span></div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckUK', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="truckUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckUK', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+              <button type="button" onclick="adjustQty('truckUK', -1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckUK" oninput="calculateUnitCostPreview()" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckUK', 1); calculateUnitCostPreview();" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
             </div>
             <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="w-1/3 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
           </div>
@@ -466,7 +513,7 @@
               <p class="font-bold text-slate-800 flex items-center gap-1.5">
                 <i data-lucide="boxes" class="w-3.5 h-3.5 text-ifl-blue"></i> Itemized Products / Stock Codes (Optional)
               </p>
-              <span class="text-[10px] text-slate-400">Add SKUs (e.g. PHF0120, KK0030) and tie them to invoice numbers</span>
+              <span class="text-[10px] text-slate-400">Add SKUs (e.g. PHF0120, KK0030) and link to invoice numbers</span>
             </div>
             <button type="button" onclick="addProductRow('truckProductContainer')" class="text-[11px] text-action font-bold flex items-center gap-1">
               <i data-lucide="plus" class="w-3 h-3"></i> Add SKU
@@ -524,7 +571,7 @@
           <div><label class="block font-semibold text-slate-600 mb-1">Booker Name</label><input type="text" id="resAuthor" placeholder="e.g. Colin" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Project Number (Ref)</label><input type="text" id="resProjectNo" placeholder="Optional (e.g. PRJ-2026-01)" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block font-semibold text-slate-600 mb-1">Partner Type</label>
             <select id="resPartnerType" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none bg-white">
@@ -536,7 +583,17 @@
             <label class="block font-semibold text-slate-600 mb-1">Client / Supplier Name</label>
             <input type="text" id="resPartnerName" list="companyHistory" placeholder="Optional" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action">
           </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Temperature / Mode</label>
+            <select id="resTempMode" class="w-full px-2.5 py-2 border border-slate-200 rounded-xl outline-none bg-white font-medium">
+              <option value="Ambient">Ambient</option>
+              <option value="Chilled (+2ºC / +4ºC)">Chilled (+2ºC / +4ºC)</option>
+              <option value="Frozen (-18ºC)">Frozen (-18ºC)</option>
+              <option value="Dry Goods / Packaging">Dry Goods / Packaging</option>
+            </select>
+          </div>
         </div>
+
         <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Pallets to Book:</p>
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
@@ -633,6 +690,7 @@
 
     let trucks = [];
     let reservations = [];
+    let customRoutePresets = [];
     
     let rawDir = null;
     try { rawDir = JSON.parse(localStorage.getItem('ifl_cloud_directory')); } catch(e) { rawDir = null; }
@@ -651,13 +709,11 @@
     let stagedTruckDocs = [];
     let stagedResDocs = [];
     
-    // File drop buffers
     let truckFilesBuffer = [];
     let resFilesBuffer = [];
 
-    // Chart instances
     let chartOccInstance = null;
-    let chartPalletInstance = null;
+    let chartCostVolumeInstance = null;
 
     // === NATIVE AUTHENTICATION (SUPABASE AUTH) ===
     async function checkAuthSession() {
@@ -668,7 +724,8 @@
       if (session) {
         overlay.classList.add('hidden');
         if (userDisplay) userDisplay.innerText = session.user.email;
-        loadCloudData();
+        await loadRoutePresets();
+        await loadCloudData();
       } else {
         overlay.classList.remove('hidden');
       }
@@ -696,7 +753,8 @@
       } else {
         document.getElementById('authOverlay').classList.add('hidden');
         document.getElementById('userEmailDisplay').innerText = data.user.email;
-        loadCloudData();
+        await loadRoutePresets();
+        await loadCloudData();
       }
     }
 
@@ -706,14 +764,145 @@
       document.getElementById('authOverlay').classList.remove('hidden');
     }
 
-    // === ACCIONES DE INCREMENTO / DECREMENTO ROBUSTAS ===
-    function adjustQty(id, delta) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      let val = parseInt(el.value, 10);
-      if (isNaN(val)) val = 0;
-      val = Math.max(0, val + delta);
-      el.value = val;
+    // === SEQUENTIAL TRIP NUMBER GENERATOR (26-0001, 26-0002... 2027-0001...) ===
+    function generateSequentialTripNumber() {
+      const dateVal = document.getElementById('truckDate').value || new Date().toISOString().split('T')[0];
+      const yearFull = new Date(dateVal).getFullYear();
+      const yearPrefix = yearFull === 2026 ? "26" : String(yearFull);
+
+      const yearTrucks = trucks.filter(t => {
+        if (!t.title) return false;
+        return t.title.startsWith(`${yearPrefix}-`);
+      });
+
+      let maxSeq = 0;
+      yearTrucks.forEach(t => {
+        const parts = t.title.split('-');
+        if (parts.length === 2) {
+          const num = parseInt(parts[1], 10);
+          if (!isNaN(num) && num > maxSeq) maxSeq = num;
+        }
+      });
+
+      const nextNum = String(maxSeq + 1).padStart(4, '0');
+      const generatedTitle = `${yearPrefix}-${nextNum}`;
+      
+      const titleInput = document.getElementById('truckTitle');
+      if (!titleInput.value || titleInput.value.includes('-')) {
+        titleInput.value = generatedTitle;
+      }
+    }
+
+    // === ROUTE PRESETS LOGIC ===
+    const standardPresets = {
+      enfield_coslada: {
+        originComp: "IFL Enfield Hub", originCity: "Enfield, London", originCountry: "United Kingdom", originCP: "EN3 7QJ",
+        destComp: "Transnatur S.A.", destCity: "Coslada, Madrid", destCountry: "Spain", destCP: "28820",
+        tempMode: "Ambient"
+      },
+      lille_madrid: {
+        originComp: "Logistique Nord", originCity: "Lille", originCountry: "France", originCP: "59000",
+        destComp: "Mercamadrid Central", destCity: "Madrid", destCountry: "Spain", destCP: "28053",
+        tempMode: "Chilled (+2ºC / +4ºC)"
+      },
+      dover_valencia: {
+        originComp: "Dover Freight Terminal", originCity: "Dover", originCountry: "United Kingdom", originCP: "CT16 1JA",
+        destComp: "Levante Distribution", destCity: "Valencia", destCountry: "Spain", destCP: "46001",
+        tempMode: "Ambient"
+      },
+      london_qatar: {
+        originComp: "IFL Global Logistics", originCity: "London Gateway", originCountry: "United Kingdom", originCP: "SS17 9DY",
+        destComp: "Doha Port Logistics Zone", destCity: "Doha", destCountry: "Qatar", destCP: "Zone 55",
+        tempMode: "Dry Goods / Packaging"
+      }
+    };
+
+    async function loadRoutePresets() {
+      try {
+        const { data } = await supabaseClient.from('route_presets').select('*');
+        if (data) {
+          customRoutePresets = data;
+          const select = document.getElementById('routePresetSelect');
+          if (select) {
+            data.forEach(p => {
+              const opt = document.createElement('option');
+              opt.value = `custom_${p.id}`;
+              opt.innerText = `⭐ ${p.title}`;
+              select.appendChild(opt);
+            });
+          }
+        }
+      } catch (e) { console.warn("Could not load custom presets", e); }
+    }
+
+    function applyRoutePreset(key) {
+      if (!key) return;
+      let preset = standardPresets[key];
+      if (!preset && key.startsWith('custom_')) {
+        const id = key.replace('custom_', '');
+        preset = customRoutePresets.find(x => x.id === id);
+      }
+      if (!preset) return;
+
+      document.getElementById('truckOriginComp').value = preset.originComp || preset.origin_comp || '';
+      document.getElementById('truckOriginCity').value = preset.originCity || preset.origin_city || '';
+      document.getElementById('truckOriginCountry').value = preset.originCountry || preset.origin_country || 'United Kingdom';
+      document.getElementById('truckOriginCP').value = preset.originCP || preset.origin_cp || '';
+
+      document.getElementById('truckDestComp').value = preset.destComp || preset.dest_comp || '';
+      document.getElementById('truckDestCity').value = preset.destCity || preset.dest_city || '';
+      document.getElementById('truckDestCountry').value = preset.destCountry || preset.dest_country || 'Spain';
+      document.getElementById('truckDestCP').value = preset.destCP || preset.dest_cp || '';
+
+      if (preset.tempMode || preset.temp_mode) {
+        document.getElementById('truckTempMode').value = preset.tempMode || preset.temp_mode;
+      }
+    }
+
+    async function saveCurrentAsPreset() {
+      const orig = document.getElementById('truckOriginCity').value;
+      const dest = document.getElementById('truckDestCity').value;
+      if (!orig || !dest) {
+        alert("Please specify at least origin and destination cities to save a preset.");
+        return;
+      }
+      const title = prompt("Enter a memorable name for this Route Preset:", `${orig} ➔ ${dest}`);
+      if (!title) return;
+
+      const newPreset = {
+        id: 'preset_' + Date.now(),
+        title,
+        origin_comp: document.getElementById('truckOriginComp').value,
+        origin_city: orig,
+        origin_country: document.getElementById('truckOriginCountry').value,
+        origin_cp: document.getElementById('truckOriginCP').value,
+        dest_comp: document.getElementById('truckDestComp').value,
+        dest_city: dest,
+        dest_country: document.getElementById('truckDestCountry').value,
+        dest_cp: document.getElementById('truckDestCP').value,
+        temp_mode: document.getElementById('truckTempMode').value
+      };
+
+      await supabaseClient.from('route_presets').insert(newPreset);
+      alert("Route preset saved successfully!");
+      await loadRoutePresets();
+    }
+
+    // === LIVE COST PER PALLET PREVIEW ===
+    function calculateUnitCostPreview() {
+      const priceStr = document.getElementById('truckPrice').value || '';
+      const price = parseFloat(priceStr.replace(/[^0-9.-]+/g, '')) || 0;
+      const eur = parseInt(document.getElementById('truckEUR').value, 10) || 0;
+      const uk = parseInt(document.getElementById('truckUK').value, 10) || 0;
+      const totalPallets = eur + uk;
+
+      const badge = document.getElementById('previewUnitCostBadge');
+      if (totalPallets > 0 && price > 0) {
+        const unit = (price / totalPallets).toFixed(2);
+        badge.innerText = `Unit Cost: €${unit} / Pallet (${totalPallets} pallets)`;
+      } else {
+        badge.innerText = `Unit Cost: €0.00 / Pallet`;
+      }
     }
 
     // === DRAG & DROP MULTI-FILE HANDLING ===
@@ -777,6 +966,15 @@
       if (containerId === 'truckPendingFiles') truckFilesBuffer.splice(index, 1);
       else resFilesBuffer.splice(index, 1);
       renderPendingFiles(containerId);
+    }
+
+    function adjustQty(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let val = parseInt(el.value, 10);
+      if (isNaN(val)) val = 0;
+      val = Math.max(0, val + delta);
+      el.value = val;
     }
 
     // === PRODUCT LINES BUILDER ===
@@ -1001,15 +1199,33 @@
       link.click();
     }
 
+    // === BACKUP COMPLETO DE BASE DE DATOS (GDPR / COMPLIANCE) ===
+    function downloadFullDatabaseBackup() {
+      const backupData = {
+        exportedAt: new Date().toISOString(),
+        exportedBy: document.getElementById('userEmailDisplay').innerText,
+        totalTrucks: trucks.length,
+        totalReservations: reservations.length,
+        trucks,
+        reservations,
+        routePresets: customRoutePresets
+      };
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `IFL_Database_Full_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     async function loadCloudData() {
       try {
         const { data: cloudTrucks, error: truckErr } = await supabaseClient.from('trucks').select('*').order('created_at', { ascending: false });
         const { data: cloudRes, error: resErr } = await supabaseClient.from('reservations').select('*');
 
-        if (truckErr) {
-          console.error("Error loading trucks:", truckErr);
-          alert("Error loading trucks: " + truckErr.message);
-        }
+        if (truckErr) console.error("Error loading trucks:", truckErr);
 
         if (cloudTrucks) {
           trucks = cloudTrucks.map(t => ({
@@ -1019,6 +1235,9 @@
             stops: Array.isArray(t.stops) ? t.stops : [], departureDate: t.departure_date || new Date().toISOString().split('T')[0], departureTime: t.departure_time || '',
             eurQty: Number(t.eur_qty) || 0, eurDesc: t.eur_desc || '', ukQty: Number(t.uk_qty) || 0, ukDesc: t.uk_desc || '',
             products: Array.isArray(t.products) ? t.products : [],
+            tempMode: t.temp_mode || 'Ambient',
+            auditLog: Array.isArray(t.audit_log) ? t.audit_log : [],
+            costPerPallet: Number(t.cost_per_pallet) || 0,
             notes: t.notes || '', docs: Array.isArray(t.docs) ? t.docs : [], status: t.status || 'active'
           }));
         }
@@ -1029,6 +1248,8 @@
             partnerType: r.partner_type || 'Client', partnerName: r.partner_name || '',
             eurQty: Number(r.eur_qty) || 0, eurDesc: r.eur_desc || '', ukQty: Number(r.uk_qty) || 0, ukDesc: r.uk_desc || '',
             products: Array.isArray(r.products) ? r.products : [],
+            tempMode: r.temp_mode || 'Ambient',
+            allocatedCost: Number(r.allocated_cost) || 0,
             stop: (r.stop && typeof r.stop === 'object') ? r.stop : {}, notes: r.notes || '', docs: Array.isArray(r.docs) ? r.docs : []
           }));
         }
@@ -1084,12 +1305,16 @@
         totalUK += Number(r.ukQty) || 0;
       });
 
+      const totalPallets = totalEUR + totalUK;
+      const priceNum = parseFloat((truck.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+      const unitCost = totalPallets > 0 && priceNum > 0 ? (priceNum / totalPallets) : 0;
+
       const ratio = (totalEUR / 33) + (totalUK / 26);
       const pct = Math.round(ratio * 100);
       const remRatio = Math.max(0, 1 - ratio);
       
       let color = pct <= 60 ? '#10B981' : pct <= 80 ? '#EAB308' : pct < 100 ? '#F97316' : '#DC2626';
-      return { totalEUR, totalUK, pct, freeEUR: Math.floor(remRatio * 33), freeUK: Math.floor(remRatio * 26), color, isOverCapacity: pct >= 100 };
+      return { totalEUR, totalUK, totalPallets, pct, freeEUR: Math.floor(remRatio * 33), freeUK: Math.floor(remRatio * 26), color, isOverCapacity: pct >= 100, unitCost, priceNum };
     }
 
     function switchTab(tab) {
@@ -1169,21 +1394,22 @@
         totalEUR += stats.totalEUR;
         totalUK += stats.totalUK;
         totalOccupancySum += stats.pct;
-
-        const priceNum = parseFloat((t.price || '').replace(/[^0-9.-]+/g, '')) || 0;
-        totalSpend += priceNum;
+        totalSpend += stats.priceNum;
       });
 
+      const totalPallets = totalEUR + totalUK;
       const avgOcc = filtered.length > 0 ? Math.round(totalOccupancySum / filtered.length) : 0;
+      const avgCostPerPallet = totalPallets > 0 && totalSpend > 0 ? (totalSpend / totalPallets).toFixed(2) : '0.00';
 
       document.getElementById('kpiAvgOccupancy').innerText = `${avgOcc}%`;
       document.getElementById('kpiTotalTrips').innerText = filtered.length;
-      document.getElementById('kpiTotalPallets').innerText = totalEUR + totalUK;
+      document.getElementById('kpiTotalPallets').innerText = totalPallets;
       document.getElementById('kpiPalletBreakdown').innerText = `${totalEUR} EUR / ${totalUK} UK Pallets`;
-      document.getElementById('kpiTotalSpend').innerText = `€${totalSpend.toLocaleString()}`;
+      document.getElementById('kpiAvgCostPerPallet').innerText = `€${avgCostPerPallet}`;
+      document.getElementById('kpiTotalSpend').innerText = `Total spend: €${totalSpend.toLocaleString()}`;
 
       renderOccupancyChart(filtered);
-      renderPalletTypeChart(totalEUR, totalUK);
+      renderCostVolumeChart(filtered);
       lucide.createIcons();
     }
 
@@ -1223,27 +1449,46 @@
       });
     }
 
-    function renderPalletTypeChart(eur, uk) {
-      const ctx = document.getElementById('chartPalletTypes')?.getContext('2d');
+    // NEW FINANCIAL CHART: SPEND VS PALLET VOLUME
+    function renderCostVolumeChart(filteredTrucks) {
+      const ctx = document.getElementById('chartCostVolume')?.getContext('2d');
       if (!ctx) return;
 
-      if (chartPalletInstance) chartPalletInstance.destroy();
+      if (chartCostVolumeInstance) chartCostVolumeInstance.destroy();
 
-      chartPalletInstance = new Chart(ctx, {
-        type: 'doughnut',
+      const sorted = [...filteredTrucks].sort((a,b) => (a.departureDate || '').localeCompare(b.departureDate || '')).slice(-8);
+      const labels = sorted.map(t => t.title);
+      const spendData = sorted.map(t => calculateLoad(t).priceNum);
+      const palletData = sorted.map(t => calculateLoad(t).totalPallets);
+
+      chartCostVolumeInstance = new Chart(ctx, {
+        type: 'bar',
         data: {
-          labels: ['EUR Pallets', 'UK Pallets'],
-          datasets: [{
-            data: [eur || (uk ? 0 : 1), uk || (eur ? 0 : 1)],
-            backgroundColor: ['#1E40AF', '#EAB308'],
-            borderWidth: 2
-          }]
+          labels,
+          datasets: [
+            {
+              label: 'Total Pallets',
+              data: palletData,
+              backgroundColor: '#1E40AF',
+              yAxisID: 'y'
+            },
+            {
+              label: 'Trip Spend (€)',
+              data: spendData,
+              type: 'line',
+              borderColor: '#10B981',
+              backgroundColor: '#10B981',
+              borderWidth: 2,
+              yAxisID: 'y1'
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom' }
+          scales: {
+            y: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Pallets' } },
+            y1: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Cost (€)' } }
           }
         }
       });
@@ -1257,13 +1502,13 @@
         const tripRes = reservations.filter(r => r.truckId === t.id);
         const resQuery = tripRes.map(r => `${r.author} ${r.projectNo || ''} ${r.partnerName || ''} ${(r.products || []).map(p => p.code).join(' ')}`).join(' ').toLowerCase();
         const prodQuery = (t.products || []).map(p => `${p.code} ${p.desc} ${p.invoiceRef || ''}`).join(' ').toLowerCase();
-        const mainQuery = `${t.title} ${t.origin} ${t.destination} ${t.author} ${t.price || ''} ${prodQuery}`.toLowerCase();
+        const mainQuery = `${t.title} ${t.origin} ${t.destination} ${t.author} ${t.price || ''} ${t.tempMode || ''} ${prodQuery}`.toLowerCase();
         return mainQuery.includes(search) || resQuery.includes(search);
       });
 
       const container = document.getElementById('trucksList');
       if (!container) return;
-      container.innerHTML = filtered.length === 0 ? `<p class="text-xs text-slate-400 text-center py-16">No loads found.</p>` : '';
+      container.innerHTML = filtered.length === 0 ? `<p class="text-xs text-slate-400 text-center py-16">No trips found.</p>` : '';
 
       filtered.forEach(truck => {
         const stats = calculateLoad(truck);
@@ -1278,6 +1523,7 @@
             <div class="flex items-center gap-1.5">
               <i data-lucide="truck" class="w-4 h-4 text-action"></i>
               <span class="font-bold text-sm text-slate-900">${truck.title}</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">${truck.tempMode || 'Ambient'}</span>
             </div>
             <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
           </div>
@@ -1323,11 +1569,12 @@
             <div>
               <div class="flex items-center gap-2 mb-1">
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
+                <span class="text-xs font-bold px-2 py-0.5 bg-blue-50 text-ifl-blue rounded border border-blue-200">${truck.tempMode || 'Ambient'}</span>
                 <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
                 ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
               </div>
               <h2 class="text-2xl font-black text-slate-900">${truck.origin} (${truck.originCountry || ''}) ➔ ${truck.destination} (${truck.destCountry || ''})</h2>
-              <p class="text-sm text-slate-500 mt-1">Ref: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
+              <p class="text-sm text-slate-500 mt-1">Trip Number: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
             </div>
             <div class="flex items-center gap-2">
               ${truck.status === 'active' ? `
@@ -1386,11 +1633,30 @@
             </div>
           </div>
 
-          <!-- METRICS -->
-          <div class="grid grid-cols-3 gap-3 mt-4">
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy Gauge</p><p class="text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
+          <!-- METRICS & COST ALLOCATION -->
+          <div class="grid grid-cols-4 gap-3 mt-4">
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy</p><p class="text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR (Max 33)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeEUR})</span></p></div>
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">UK (Max 26)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalUK} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeUK})</span></p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Cost / Pallet</p><p class="text-2xl font-black text-emerald-700 mt-1">€${stats.unitCost.toFixed(2)}</p></div>
+          </div>
+
+          <!-- AUDIT LOG VIEWER -->
+          <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            <details class="cursor-pointer">
+              <summary class="font-bold text-slate-700 flex items-center justify-between">
+                <span class="flex items-center gap-1.5"><i data-lucide="history" class="w-3.5 h-3.5 text-ifl-blue"></i> Traceability & Audit Trail (${(truck.auditLog || []).length} events)</span>
+                <span class="text-[10px] text-slate-400 font-normal">Click to view change log</span>
+              </summary>
+              <div class="mt-2.5 pt-2 border-t border-slate-200 space-y-1.5 max-h-36 overflow-y-auto">
+                ${(truck.auditLog && truck.auditLog.length > 0) ? truck.auditLog.map(log => `
+                  <div class="text-[11px] text-slate-600 flex items-center justify-between bg-white p-1.5 rounded border border-slate-100">
+                    <div><strong class="text-slate-800">${log.user}</strong>: ${log.action}</div>
+                    <span class="text-[10px] text-slate-400">${new Date(log.timestamp).toLocaleString('en-GB')}</span>
+                  </div>
+                `).join('') : '<p class="text-[11px] text-slate-400 py-1">No modifications logged yet.</p>'}
+              </div>
+            </details>
           </div>
 
           <!-- BULK DOWNLOAD -->
@@ -1405,14 +1671,18 @@
         </div>
 
         <div class="mt-6">
-          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest & Products</h3>
+          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest, Costs & Products</h3>
           <div class="space-y-4">
             
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm space-y-3">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-900">${truck.author}</span>
-                <span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-900">${truck.author}</span>
+                  <span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span>
+                </div>
+                ${stats.unitCost > 0 ? `<span class="text-xs font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">Allocated Cost: €${((truck.eurQty + truck.ukQty) * stats.unitCost).toFixed(2)}</span>` : ''}
               </div>
+
               <div class="space-y-1.5 pl-3 border-l-2 border-ifl-blue">
                 ${truck.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.eurDesc || 'EUR Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.eurQty} EUR Pallets</span></div>` : ''}
                 ${truck.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.ukDesc || 'UK Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.ukQty} UK Pallets</span></div>` : ''}
@@ -1447,66 +1717,72 @@
               ` : ''}
             </div>
 
-            <!-- Team Reservations -->
-            ${truckRes.map(r => `
-              <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
-                <div class="flex justify-between items-center">
-                  <div class="flex items-center gap-2">
-                    <span class="font-bold text-slate-900">${r.author}</span>
-                    <span class="text-[10px] bg-yellow-100 text-amber-800 font-bold px-2 py-0.5 rounded">Booker</span>
-                    ${r.projectNo ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Project: ${r.projectNo}</span>` : ''}
-                    ${r.partnerName ? `<span class="text-[11px] font-medium text-slate-500">(${r.partnerType || 'Partner'}: <strong class="text-slate-800">${r.partnerName}</strong>)</span>` : ''}
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <button onclick="openEditResModal('${r.id}')" class="text-slate-400 hover:text-action"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                    <button onclick="cancelReservation('${r.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
-                  </div>
-                </div>
-
-                <div class="space-y-1.5 pl-3 border-l-2 border-ifl-yellow">
-                  ${r.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.eurDesc || 'EUR Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.eurQty} EUR Pallets</span></div>` : ''}
-                  ${r.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.ukDesc || 'UK Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.ukQty} UK Pallets</span></div>` : ''}
-                </div>
-
-                ${(r.products && r.products.length > 0) ? `
-                  <div class="mt-2 pt-2 border-t border-slate-100">
-                    <span class="text-[11px] font-bold text-slate-600 block mb-1">Booked SKUs:</span>
-                    <div class="flex flex-wrap gap-1.5">
-                      ${r.products.map(p => `
-                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-xs">
-                          <strong class="text-slate-800">${p.code}</strong>
-                          <span class="text-slate-600">${p.desc || ''}</span>
-                          ${p.invoiceRef ? `<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 rounded">Inv: ${p.invoiceRef}</span>` : ''}
-                        </span>
-                      `).join('')}
+            <!-- Team Reservations with Allocated Cost -->
+            ${truckRes.map(r => {
+              const resPallets = r.eurQty + r.ukQty;
+              const resCost = (resPallets * stats.unitCost).toFixed(2);
+              return `
+                <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
+                  <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-slate-900">${r.author}</span>
+                      <span class="text-[10px] bg-yellow-100 text-amber-800 font-bold px-2 py-0.5 rounded">Booker</span>
+                      <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">${r.tempMode || 'Ambient'}</span>
+                      ${r.projectNo ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Project: ${r.projectNo}</span>` : ''}
+                      ${r.partnerName ? `<span class="text-[11px] font-medium text-slate-500">(${r.partnerType || 'Partner'}: <strong class="text-slate-800">${r.partnerName}</strong>)</span>` : ''}
+                    </div>
+                    <div class="flex items-center gap-3">
+                      ${stats.unitCost > 0 ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">Cost: €${resCost}</span>` : ''}
+                      <button onclick="openEditResModal('${r.id}')" class="text-slate-400 hover:text-action"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                      <button onclick="cancelReservation('${r.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
                     </div>
                   </div>
-                ` : ''}
 
-                ${r.notes ? `<div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><strong class="text-slate-800">Notes:</strong> ${r.notes}</div>` : ''}
-                
-                ${r.stop && (r.stop.city || r.stop.addr) ? `
-                  <div class="flex items-center justify-between p-2 bg-yellow-50/60 border border-yellow-200 rounded-lg text-xs">
-                    <p class="text-amber-800 font-medium">
-                      <i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Requested Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.city || r.stop.addr} ${r.stop.cp ? `(${r.stop.cp})` : ''}
-                    </p>
-                    <button onclick="toggleResStopArrived('${r.id}')" class="text-[10px] font-bold px-2.5 py-0.5 rounded-md border transition ${r.stop.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 hover:border-emerald-500'}">
-                      ${r.stop.arrived ? '✓ Arrived' : 'Mark Arrived'}
-                    </button>
+                  <div class="space-y-1.5 pl-3 border-l-2 border-ifl-yellow">
+                    ${r.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.eurDesc || 'EUR Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.eurQty} EUR Pallets</span></div>` : ''}
+                    ${r.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.ukDesc || 'UK Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.ukQty} UK Pallets</span></div>` : ''}
                   </div>
-                ` : ''}
 
-                ${(r.docs && r.docs.length > 0) ? `
-                  <div class="flex flex-wrap gap-2 pt-1">
-                    ${r.docs.map(d => `
-                      <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
-                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
+                  ${(r.products && r.products.length > 0) ? `
+                    <div class="mt-2 pt-2 border-t border-slate-100">
+                      <span class="text-[11px] font-bold text-slate-600 block mb-1">Booked SKUs:</span>
+                      <div class="flex flex-wrap gap-1.5">
+                        ${r.products.map(p => `
+                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-xs">
+                            <strong class="text-slate-800">${p.code}</strong>
+                            <span class="text-slate-600">${p.desc || ''}</span>
+                            ${p.invoiceRef ? `<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 rounded">Inv: ${p.invoiceRef}</span>` : ''}
+                          </span>
+                        `).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  ${r.notes ? `<div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><strong class="text-slate-800">Notes:</strong> ${r.notes}</div>` : ''}
+                  
+                  ${r.stop && (r.stop.city || r.stop.addr) ? `
+                    <div class="flex items-center justify-between p-2 bg-yellow-50/60 border border-yellow-200 rounded-lg text-xs">
+                      <p class="text-amber-800 font-medium">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Requested Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.city || r.stop.addr} ${r.stop.cp ? `(${r.stop.cp})` : ''}
+                      </p>
+                      <button onclick="toggleResStopArrived('${r.id}')" class="text-[10px] font-bold px-2.5 py-0.5 rounded-md border transition ${r.stop.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 hover:border-emerald-500'}">
+                        ${r.stop.arrived ? '✓ Arrived' : 'Mark Arrived'}
                       </button>
-                    `).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            `).join('')}
+                    </div>
+                  ` : ''}
+
+                  ${(r.docs && r.docs.length > 0) ? `
+                    <div class="flex flex-wrap gap-2 pt-1">
+                      ${r.docs.map(d => `
+                        <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                          <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
+                        </button>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
       `;
@@ -1568,7 +1844,15 @@
       const truck = trucks.find(t => t.id === truckId);
       if (!truck || !truck.stops) return;
       truck.stops[stopIndex].arrived = !truck.stops[stopIndex].arrived;
-      await supabaseClient.from('trucks').update({ stops: truck.stops }).eq('id', truckId);
+
+      const userEmail = document.getElementById('userEmailDisplay').innerText;
+      const newAudit = [...(truck.auditLog || []), {
+        action: `Stop ${stopIndex + 1} marked as ${truck.stops[stopIndex].arrived ? 'Arrived' : 'Pending'}`,
+        user: userEmail,
+        timestamp: new Date().toISOString()
+      }];
+
+      await supabaseClient.from('trucks').update({ stops: truck.stops, audit_log: newAudit }).eq('id', truckId);
       await loadCloudData();
     }
 
@@ -1652,7 +1936,7 @@
     function inspectTripDirectly(id) { selectedTruckId = id; const t = trucks.find(x => x.id === id); if (t) switchTab(t.status); }
 
     function openTruckModal(defaultDate = null) {
-      document.getElementById('truckModalTitle').innerText = 'Publish Route';
+      document.getElementById('truckModalTitle').innerText = 'Publish Trip';
       document.getElementById('editingTruckId').value = '';
       document.getElementById('truckForm').reset();
       document.getElementById('stopsContainer').innerHTML = '';
@@ -1668,6 +1952,9 @@
       
       document.getElementById('truckEUR').value = 0;
       document.getElementById('truckUK').value = 0;
+
+      generateSequentialTripNumber();
+      calculateUnitCostPreview();
 
       document.getElementById('truckModal').classList.remove('hidden');
       lucide.createIcons();
@@ -1708,11 +1995,12 @@
     function openEditTruckModal(id) {
       const t = trucks.find(x => x.id === id);
       if(!t) return;
-      document.getElementById('truckModalTitle').innerText = 'Edit Route';
+      document.getElementById('truckModalTitle').innerText = 'Edit Trip';
       document.getElementById('editingTruckId').value = t.id;
       document.getElementById('truckAuthor').value = t.author || '';
       document.getElementById('truckTitle').value = t.title || '';
       document.getElementById('truckPrice').value = t.price || '';
+      document.getElementById('truckTempMode').value = t.tempMode || 'Ambient';
       document.getElementById('truckDate').value = t.departureDate || new Date().toISOString().split('T')[0];
       document.getElementById('truckTime').value = t.departureTime || '';
       document.getElementById('truckOriginComp').value = t.originComp || '';
@@ -1742,6 +2030,7 @@
 
       stagedTruckDocs = [...(t.docs || [])];
       renderStagedTruckDocs();
+      calculateUnitCostPreview();
 
       document.getElementById('truckModal').classList.remove('hidden');
       lucide.createIcons();
@@ -1809,6 +2098,7 @@
       document.getElementById('resProjectNo').value = r.projectNo || '';
       document.getElementById('resPartnerType').value = r.partnerType || 'Client';
       document.getElementById('resPartnerName').value = r.partnerName || '';
+      document.getElementById('resTempMode').value = r.tempMode || 'Ambient';
       document.getElementById('resEUR').value = r.eurQty || 0;
       document.getElementById('resEURDesc').value = r.eurDesc || '';
       document.getElementById('resUK').value = r.ukQty || 0;
@@ -1837,7 +2127,7 @@
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
-    // === SAVE FUNCTIONS ===
+    // === SAVE FUNCTIONS WITH AUDIT TRAIL LOGGING ===
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
@@ -1846,9 +2136,10 @@
 
       try {
         const id = document.getElementById('editingTruckId').value || ('t_' + Date.now());
+        const userEmail = document.getElementById('userEmailDisplay').innerText;
         
         let author = document.getElementById('truckAuthor').value.trim() || 'Logistics Team';
-        let plate = document.getElementById('truckTitle').value.trim() || ('TRIP-' + Math.floor(1000 + Math.random() * 9000));
+        let plate = document.getElementById('truckTitle').value.trim() || '26-0001';
         let departureDate = document.getElementById('truckDate').value || new Date().toISOString().split('T')[0];
 
         const originComp = document.getElementById('truckOriginComp').value.trim();
@@ -1898,22 +2189,41 @@
         const combinedDocs = [...stagedTruckDocs, ...newDocs];
         const existingTruck = trucks.find(t => t.id === id);
 
+        const eurQty = parseInt(document.getElementById('truckEUR').value, 10) || 0;
+        const ukQty = parseInt(document.getElementById('truckUK').value, 10) || 0;
+        const priceStr = document.getElementById('truckPrice').value.trim();
+        const priceNum = parseFloat(priceStr.replace(/[^0-9.-]+/g, '')) || 0;
+        const totalPallets = eurQty + ukQty;
+        const costPerPallet = totalPallets > 0 && priceNum > 0 ? (priceNum / totalPallets) : 0;
+
+        // Construct Audit Event
+        const isNew = !existingTruck;
+        const auditAction = isNew ? `Trip created with initial ${eurQty} EUR / ${ukQty} UK pallets` : `Trip updated (${departureDate}, ${priceStr || 'No cost'})`;
+        const updatedAuditLog = [...(existingTruck?.auditLog || []), {
+          action: auditAction,
+          user: userEmail,
+          timestamp: new Date().toISOString()
+        }];
+
         const payload = {
           id,
           author,
           title: plate,
-          price: document.getElementById('truckPrice').value.trim(),
+          price: priceStr,
+          temp_mode: document.getElementById('truckTempMode').value,
           origin_comp: originComp, origin, origin_cp: originCP,
           dest_comp: destComp, destination: dest, dest_cp: destCP,
           origin_country: originCountry, dest_country: destCountry,
           stops,
           departure_date: departureDate,
           departure_time: document.getElementById('truckTime').value,
-          eur_qty: parseInt(document.getElementById('truckEUR').value, 10) || 0,
+          eur_qty: eurQty,
           eur_desc: document.getElementById('truckEURDesc').value.trim(),
-          uk_qty: parseInt(document.getElementById('truckUK').value, 10) || 0,
+          uk_qty: ukQty,
           uk_desc: document.getElementById('truckUKDesc').value.trim(),
+          cost_per_pallet: costPerPallet,
           products,
+          audit_log: updatedAuditLog,
           notes: document.getElementById('truckNotes').value.trim(),
           docs: combinedDocs,
           status: existingTruck ? existingTruck.status : 'active'
@@ -1921,7 +2231,7 @@
 
         const { error } = await supabaseClient.from('trucks').upsert(payload);
         if (error) {
-          alert("Error saving truck: " + error.message);
+          alert("Error saving trip: " + error.message);
           throw error;
         }
         
@@ -1945,6 +2255,7 @@
 
       try {
         const id = document.getElementById('editingResId').value || ('r_' + Date.now());
+        const userEmail = document.getElementById('userEmailDisplay').innerText;
         const author = document.getElementById('resAuthor').value.trim() || 'Team Booker';
         const stopComp = document.getElementById('resStopComp').value.trim();
         const stopCountry = document.getElementById('resStopCountry').value;
@@ -1974,6 +2285,13 @@
         const combinedDocs = [...stagedResDocs, ...newDocs];
         const stopPayload = (stopComp || stopCity) ? { comp: stopComp, country: stopCountry, city: stopCity, cp: stopCP, arrived: false } : {};
 
+        const eurQty = parseInt(document.getElementById('resEUR').value, 10) || 0;
+        const ukQty = parseInt(document.getElementById('resUK').value, 10) || 0;
+
+        const currentTruck = trucks.find(t => t.id === selectedTruckId);
+        const stats = currentTruck ? calculateLoad(currentTruck) : { unitCost: 0 };
+        const allocatedCost = (eurQty + ukQty) * stats.unitCost;
+
         const payload = {
           id,
           truck_id: selectedTruckId,
@@ -1981,10 +2299,12 @@
           project_no: document.getElementById('resProjectNo').value.trim(),
           partner_type: document.getElementById('resPartnerType').value,
           partner_name: document.getElementById('resPartnerName').value.trim(),
-          eur_qty: parseInt(document.getElementById('resEUR').value, 10) || 0,
+          temp_mode: document.getElementById('resTempMode').value,
+          eur_qty: eurQty,
           eur_desc: document.getElementById('resEURDesc').value.trim(),
-          uk_qty: parseInt(document.getElementById('resUK').value, 10) || 0,
+          uk_qty: ukQty,
           uk_desc: document.getElementById('resUKDesc').value.trim(),
+          allocated_cost: allocatedCost,
           products,
           stop: stopPayload,
           notes: document.getElementById('resNotes').value.trim(),
@@ -1995,6 +2315,17 @@
         if (error) {
           alert("Error saving booking: " + error.message);
           throw error;
+        }
+
+        // Log audit into parent truck
+        if (currentTruck) {
+          const isNewRes = !reservations.find(r => r.id === id);
+          const newAudit = [...(currentTruck.auditLog || []), {
+            action: isNewRes ? `Booking created by ${author} (${eurQty} EUR / ${ukQty} UK)` : `Booking updated by ${author}`,
+            user: userEmail,
+            timestamp: new Date().toISOString()
+          }];
+          await supabaseClient.from('trucks').update({ audit_log: newAudit }).eq('id', selectedTruckId);
         }
 
         resFilesBuffer = [];
@@ -2012,7 +2343,14 @@
       const t = trucks.find(x => x.id === id);
       if (t) {
         const nextStatus = t.status === 'active' ? 'completed' : 'active';
-        await supabaseClient.from('trucks').update({ status: nextStatus }).eq('id', id);
+        const userEmail = document.getElementById('userEmailDisplay').innerText;
+        const newAudit = [...(t.auditLog || []), {
+          action: `Trip status changed to ${nextStatus.toUpperCase()}`,
+          user: userEmail,
+          timestamp: new Date().toISOString()
+        }];
+
+        await supabaseClient.from('trucks').update({ status: nextStatus, audit_log: newAudit }).eq('id', id);
         await loadCloudData();
         switchTab(nextStatus);
       }
@@ -2027,6 +2365,19 @@
 
     async function cancelReservation(id) {
       if (confirm('Cancel booking from cloud?')) {
+        const res = reservations.find(r => r.id === id);
+        if (res) {
+          const parentTruck = trucks.find(t => t.id === res.truckId);
+          if (parentTruck) {
+            const userEmail = document.getElementById('userEmailDisplay').innerText;
+            const newAudit = [...(parentTruck.auditLog || []), {
+              action: `Booking cancelled for ${res.author} (${res.eurQty + res.ukQty} pallets)`,
+              user: userEmail,
+              timestamp: new Date().toISOString()
+            }];
+            await supabaseClient.from('trucks').update({ audit_log: newAudit }).eq('id', res.truckId);
+          }
+        }
         await supabaseClient.from('reservations').delete().eq('id', id);
         await loadCloudData();
       }
@@ -2038,6 +2389,9 @@
       const routeQuery = (document.getElementById('filterRoute')?.value || '').toLowerCase();
       const userQuery = (document.getElementById('filterUser')?.value || '').toLowerCase();
       const statusFilter = document.getElementById('filterStatus')?.value || 'all';
+      const retentionFilter = document.getElementById('filterRetention')?.value || 'all';
+
+      const now = new Date();
 
       currentlyFilteredTrucks = trucks.filter(t => {
         if (fromDate && t.departureDate < fromDate) return false;
@@ -2051,12 +2405,22 @@
         if (userQuery && !searchPool.includes(userQuery)) return false;
 
         if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+
+        // Retention Filter
+        if (retentionFilter !== 'all' && t.departureDate) {
+          const d = new Date(t.departureDate);
+          const yearsDiff = (now - d) / (1000 * 60 * 60 * 24 * 365.25);
+          if (retentionFilter === 'within_2y' && yearsDiff > 2) return false;
+          if (retentionFilter === 'older_2y' && yearsDiff <= 2) return false;
+          if (retentionFilter === 'older_5y' && yearsDiff <= 5) return false;
+        }
+
         return true;
       });
 
       const tbody = document.getElementById('filteredTableBody');
       if (!tbody) return;
-      tbody.innerHTML = currentlyFilteredTrucks.length === 0 ? '<tr><td colspan="9" class="text-center py-8 text-slate-400">No matching trips found.</td></tr>' : '';
+      tbody.innerHTML = currentlyFilteredTrucks.length === 0 ? '<tr><td colspan="10" class="text-center py-8 text-slate-400">No matching trips found.</td></tr>' : '';
 
       currentlyFilteredTrucks.forEach(t => {
         const stats = calculateLoad(t);
@@ -2067,8 +2431,9 @@
           <td class="p-3 font-medium text-slate-700">${t.author}</td>
           <td class="p-3 text-slate-800">${t.origin} ➔ ${t.destination}</td>
           <td class="p-3 text-slate-500">${t.departureDate}</td>
+          <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">${t.tempMode || 'Ambient'}</span></td>
           <td class="p-3 font-bold text-emerald-700">${t.price || '-'}</td>
-          <td class="p-3 font-semibold text-slate-700">${stats.totalEUR} EUR / ${stats.totalUK} UK</td>
+          <td class="p-3 font-bold text-slate-700">€${stats.unitCost.toFixed(2)}</td>
           <td class="p-3"><span class="font-bold" style="color: ${stats.color}">${stats.pct}%</span></td>
           <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded ${t.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-ifl-blue'}">${t.status}</span></td>
           <td class="p-3 text-right"><button onclick="inspectTripDirectly('${t.id}')" class="text-action font-bold hover:underline">Inspect</button></td>
@@ -2083,6 +2448,7 @@
       if(document.getElementById('filterRoute')) document.getElementById('filterRoute').value = '';
       if(document.getElementById('filterUser')) document.getElementById('filterUser').value = '';
       if(document.getElementById('filterStatus')) document.getElementById('filterStatus').value = 'all';
+      if(document.getElementById('filterRetention')) document.getElementById('filterRetention').value = 'all';
       applyAdvancedFilters();
     }
 
@@ -2099,12 +2465,14 @@
         dataToExport = listToExport.map(t => {
           const stats = calculateLoad(t);
           return {
-            "Trip Ref / Plate": t.title,
+            "Trip #": t.title,
             "Coordinator": t.author,
+            "Mode / Temp": t.tempMode || 'Ambient',
             "Origin": t.origin,
             "Destination": t.destination,
             "Departure Date": t.departureDate,
-            "Price": t.price || '-',
+            "Total Price": t.price || '-',
+            "Unit Cost / Pallet": `€${stats.unitCost.toFixed(2)}`,
             "Total EUR Pallets": stats.totalEUR,
             "Total UK Pallets": stats.totalUK,
             "Occupancy %": `${stats.pct}%`,
@@ -2119,20 +2487,23 @@
           const prodsSummary = (t.products || []).map(p => `${p.code} (Inv:${p.invoiceRef || '-'})`).join(', ') || 'None';
 
           dataToExport.push({
-            "Trip Ref / Plate": t.title,
+            "Trip #": t.title,
             "Trip Status": t.status,
             "Coordinator": t.author,
+            "Temperature Mode": t.tempMode || 'Ambient',
             "Origin Hub": `${t.originComp || ''} (${t.origin})`,
             "Final Destination": `${t.destComp || ''} (${t.destination})`,
             "Intermediate Stops": stopsSummary,
             "Departure Date": `${t.departureDate} ${t.departureTime || ''}`,
-            "Trip Price": t.price || '-',
+            "Total Trip Price": t.price || '-',
+            "Unit Cost / Pallet": `€${stats.unitCost.toFixed(2)}`,
             "Total Saturation %": `${stats.pct}%`,
             "Role / Type": "Publisher Initial Load",
             "Booker / Partner": t.author,
             "Project #": "-",
             "EUR Pallets": t.eurQty || 0,
             "UK Pallets": t.ukQty || 0,
+            "Allocated Order Cost": `€${((t.eurQty + t.ukQty) * stats.unitCost).toFixed(2)}`,
             "Associated SKUs & Invoices": prodsSummary,
             "Booking Notes": t.notes || '',
             "Attached Docs": (t.docs || []).map(d => d.name).join(', ') || 'None'
@@ -2140,21 +2511,26 @@
 
           tripRes.forEach(r => {
             const resProdsSummary = (r.products || []).map(p => `${p.code} (Inv:${p.invoiceRef || '-'})`).join(', ') || 'None';
+            const resPallets = r.eurQty + r.ukQty;
+            const resCost = (resPallets * stats.unitCost).toFixed(2);
             dataToExport.push({
-              "Trip Ref / Plate": t.title,
+              "Trip #": t.title,
               "Trip Status": t.status,
               "Coordinator": t.author,
+              "Temperature Mode": r.tempMode || t.tempMode || 'Ambient',
               "Origin Hub": t.origin,
               "Final Destination": t.destination,
               "Intermediate Stops": "-",
               "Departure Date": t.departureDate,
-              "Trip Price": "-",
+              "Total Trip Price": "-",
+              "Unit Cost / Pallet": `€${stats.unitCost.toFixed(2)}`,
               "Total Saturation %": "-",
               "Role / Type": "Reserved Space",
               "Booker / Partner": `${r.author} (${r.partnerType || 'Partner'}: ${r.partnerName || 'N/A'})`,
               "Project #": r.projectNo || '-',
               "EUR Pallets": r.eurQty || 0,
               "UK Pallets": r.ukQty || 0,
+              "Allocated Order Cost": `€${resCost}`,
               "Associated SKUs & Invoices": resProdsSummary,
               "Booking Notes": `${r.notes || ''} ${r.stop?.city ? `[Stop: ${r.stop.city}]` : ''}`,
               "Attached Docs": (r.docs || []).map(d => d.name).join(', ') || 'None'
@@ -2181,17 +2557,17 @@
 
       doc.setFontSize(14);
       doc.setTextColor(30, 64, 175);
-      doc.text("INTERNATIONAL FOOD LINK - FREIGHT SHIPMENT REPORT", 14, 15);
+      doc.text("INTERNATIONAL FOOD LINK - FREIGHT SHIPMENT & COST REPORT", 14, 15);
       
       doc.setFontSize(9);
       doc.setTextColor(100);
       doc.text(`Generated on: ${new Date().toLocaleString('en-GB')} | Report Level: ${type.toUpperCase()}`, 14, 21);
 
       if (type === 'simple') {
-        const headers = [["Trip Ref", "Coordinator", "Origin", "Destination", "Departure", "Price", "EUR / UK", "Load %", "Status"]];
+        const headers = [["Trip #", "Coordinator", "Route", "Departure", "Mode", "Price", "Cost/Pallet", "EUR / UK", "Load %", "Status"]];
         const rows = listToExport.map(t => {
           const stats = calculateLoad(t);
-          return [t.title, t.author, t.origin, t.destination, t.departureDate, t.price || '-', `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
+          return [t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate, t.tempMode || 'Ambient', t.price || '-', `€${stats.unitCost.toFixed(2)}`, `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
         });
 
         doc.autoTable({
@@ -2203,26 +2579,26 @@
           styles: { fontSize: 8 }
         });
       } else {
-        const headers = [["Trip", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "EUR", "UK", "SKUs / Invoices", "Notes & Stops"]];
+        const headers = [["Trip #", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "Mode", "EUR", "UK", "Cost Alloc.", "SKUs"]];
         const rows = [];
 
         listToExport.forEach(t => {
+          const stats = calculateLoad(t);
           const tripRes = reservations.filter(r => r.truckId === t.id);
           const prodsSummary = (t.products || []).map(p => `${p.code}`).join(', ') || '-';
           
           rows.push([
             t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate,
-            `${t.author} (Publisher)`, "-", t.eurQty || 0, t.ukQty || 0, prodsSummary,
-            t.notes || 'None'
+            `${t.author} (Publisher)`, "-", t.tempMode || 'Ambient', t.eurQty || 0, t.ukQty || 0, `€${((t.eurQty + t.ukQty) * stats.unitCost).toFixed(2)}`, prodsSummary
           ]);
 
           tripRes.forEach(r => {
             const resProdsSummary = (r.products || []).map(p => `${p.code}`).join(', ') || '-';
+            const resCost = ((r.eurQty + r.ukQty) * stats.unitCost).toFixed(2);
             rows.push([
               "", "", "", "",
               `${r.author} (${r.partnerName || 'Client'})`, r.projectNo || '-',
-              r.eurQty || 0, r.ukQty || 0, resProdsSummary,
-              `${r.notes || ''} ${r.stop?.city ? `[Stop: ${r.stop.city}]` : ''}`
+              r.tempMode || 'Ambient', r.eurQty || 0, r.ukQty || 0, `€${resCost}`, resProdsSummary
             ]);
           });
         });
