@@ -52,7 +52,6 @@
     }
     #routeMap { height: 260px; width: 100%; border-radius: 0.75rem; z-index: 10; }
     .dropzone-active { border-color: #ea0a2a !important; background-color: #fef2f2 !important; }
-    /* Hide scrollbar for mobile tab bar */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
@@ -111,7 +110,7 @@
     <option value="CHOC99">CHOC99 - Confectionery Mix</option>
   </datalist>
 
-  <!-- TOP HEADER (RESPONSIVE) -->
+  <!-- TOP HEADER -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
     <div class="max-w-[96%] mx-auto px-3 sm:px-4 py-2.5 sm:py-3.5 flex justify-between items-center gap-2">
       <div class="flex items-center space-x-2 sm:space-x-3 truncate">
@@ -120,7 +119,7 @@
         </div>
         <div class="truncate">
           <h1 class="text-xs sm:text-base font-bold text-slate-900 leading-tight truncate">International Food Link</h1>
-          <p class="hidden sm:block text-[11px] text-slate-400 truncate">Freight Hub, Multi-Temp Routing & Cost Allocation Portal</p>
+          <p class="hidden sm:block text-[11px] text-slate-400 truncate">Freight Hub, Multi-Temp Routing & Customs Compliance</p>
         </div>
       </div>
 
@@ -144,7 +143,7 @@
   <!-- MAIN WRAPPER -->
   <main class="max-w-[96%] mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 w-full relative z-10">
 
-    <!-- NAVIGATION TABS (MOBILE SWIPE SCROLLABLE) -->
+    <!-- NAVIGATION TABS -->
     <div class="border-b border-slate-200 mb-4 sm:mb-6 overflow-x-auto no-scrollbar">
       <div class="flex space-x-4 sm:space-x-8 whitespace-nowrap min-w-max pb-1">
         <button onclick="switchTab('active')" id="tabActive" class="pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5">
@@ -165,7 +164,7 @@
       </div>
     </div>
 
-    <!-- WORKSPACE VIEW (RESPONSIVE GRID) -->
+    <!-- WORKSPACE VIEW -->
     <div id="workspaceView" class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
       <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-3.5 sm:p-5 flex flex-col lg:h-[85vh] shadow-xs bg-white">
         <div class="relative mb-3 sm:mb-4">
@@ -205,8 +204,8 @@
     <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
       <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
         <div>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-4 sm:w-5 h-4 sm:h-5 text-action"></i> Shipment Directory & Data Management</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Filter loads, export full financial manifests and create GDPR database backups.</p>
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-4 sm:w-5 h-4 sm:h-5 text-action"></i> Shipment Directory & Custom Reports</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Filter loads, export manifests and create GDPR database backups.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-between xl:justify-end">
           <button onclick="downloadFullDatabaseBackup()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-2xs">
@@ -219,7 +218,7 @@
               <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Excel
             </button>
             <button onclick="exportExcelReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
-              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Financial
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Detailed
             </button>
             <button onclick="exportPDFReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
               <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-700"></i> PDF
@@ -273,7 +272,7 @@
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
             <tr>
               <th class="p-3">Trip #</th><th class="p-3">Coordinator</th><th class="p-3">Route</th><th class="p-3">Departure</th>
-              <th class="p-3">Mode</th><th class="p-3">Price</th><th class="p-3">Cost/Pallet</th><th class="p-3">Occupancy</th><th class="p-3">Status</th><th class="p-3 text-right">Action</th>
+              <th class="p-3">Mode</th><th class="p-3">Required Docs</th><th class="p-3">Pallets</th><th class="p-3">Occupancy</th><th class="p-3">Status</th><th class="p-3 text-right">Action</th>
             </tr>
           </thead>
           <tbody id="filteredTableBody" class="divide-y divide-slate-100"></tbody>
@@ -287,9 +286,9 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 pb-4 border-b border-slate-100">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Financial Matrix
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Operations Matrix
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency, unit costs per pallet, and period financial KPIs.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency and period logistics KPIs.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-between">
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1 rounded-xl text-xs">
@@ -310,8 +309,8 @@
           </div>
         </div>
 
-        <!-- KPI CARDS -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
+        <!-- KPI CARDS (CLEAN 3-CARD LAYOUT) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-6">
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
             <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Average Load Saturation</span>
             <span id="kpiAvgOccupancy" class="text-xl sm:text-2xl font-black text-ifl-blue">0%</span>
@@ -327,33 +326,28 @@
             <span id="kpiTotalPallets" class="text-xl sm:text-2xl font-black text-emerald-600">0</span>
             <span id="kpiPalletBreakdown" class="text-[9px] sm:text-[10px] text-slate-500 block mt-1">0 EUR / 0 UK</span>
           </div>
-          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Avg Cost / Pallet</span>
-            <span id="kpiAvgCostPerPallet" class="text-xl sm:text-2xl font-black text-slate-800">€0</span>
-            <span id="kpiTotalSpend" class="text-[9px] sm:text-[10px] text-slate-500 block mt-1 truncate">Total: €0</span>
-          </div>
         </div>
 
         <!-- CHARTS SECTION -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Trailer Occupancy (%)
+              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Trailer Occupancy Progression (%)
             </h3>
             <div class="h-56 sm:h-64"><canvas id="chartOccupancy"></canvas></div>
           </div>
           <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-              <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-600"></i> Freight Spend vs Pallet Volume
+              <i data-lucide="bar-chart" class="w-4 h-4 text-ifl-yellow"></i> Dispatched Pallet Volume per Route
             </h3>
-            <div class="h-56 sm:h-64"><canvas id="chartCostVolume"></canvas></div>
+            <div class="h-56 sm:h-64"><canvas id="chartVolumeBar"></canvas></div>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- TRUCK MODAL (MOBILE FRIENDLY) -->
+  <!-- TRUCK MODAL -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -368,7 +362,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Coordinator</label><input type="text" id="truckAuthor" placeholder="e.g. Magda" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Trip Number (Auto)</label><input type="text" id="truckTitle" placeholder="e.g. 26-0001" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none font-bold text-ifl-blue focus:ring-2 focus:ring-action"></div>
-          <div><label class="block font-semibold text-slate-600 mb-1">Trip Total Cost</label><input type="text" id="truckPrice" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
+          <div><label class="block font-semibold text-slate-600 mb-1">Trip Reference / Cost</label><input type="text" id="truckPrice" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div>
             <label class="block font-semibold text-slate-600 mb-1">Overall Truck Mode</label>
             <select id="truckTempMode" class="w-full px-2.5 py-2 border border-slate-200 rounded-xl outline-none bg-white font-medium">
@@ -386,6 +380,23 @@
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
+        <!-- SPECIAL COMPLIANCE DOCUMENTS REQUIRED CHECKBOXES -->
+        <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
+          <p class="font-bold text-amber-900 mb-1 flex items-center gap-1.5">
+            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-600"></i> Special Document Requirements Checklist:
+          </p>
+          <div class="flex flex-wrap gap-4 text-xs mt-1.5">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="truckReqEHC" class="w-4 h-4 text-action rounded border-amber-300 focus:ring-action">
+              <span class="font-semibold text-slate-700">Requires EHC (Export Health Certificate / Veterinario)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="truckReqAttestation" class="w-4 h-4 text-action rounded border-amber-300 focus:ring-action">
+              <span class="font-semibold text-slate-700">Requires Attestation / Declaration (POAO Animal Origin)</span>
+            </label>
+          </div>
+        </div>
+
         <!-- ROUTE PRESETS QUICK SELECTOR -->
         <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div class="flex items-center gap-1.5">
@@ -398,7 +409,7 @@
               <option value="enfield_coslada">Enfield / Maldon (UK) ➔ Coslada / Mercamadrid (ES)</option>
               <option value="lille_madrid">Lille Depot (FR) ➔ Madrid Hub (ES)</option>
               <option value="dover_valencia">Dover Port (UK) ➔ Valencia (ES)</option>
-              <option value="london_qatar">London Depot (UK) ➔ Doha Air/Sea Hub (Qatar)</option>
+              <option value="london_qatar">London Gateway (UK) ➔ Doha Port (Qatar)</option>
             </select>
             <button type="button" onclick="saveCurrentAsPreset()" title="Save current values as new preset" class="bg-white hover:bg-slate-100 text-ifl-blue border border-slate-200 px-2 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0">
               <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Save
@@ -438,18 +449,23 @@
           </div>
         </div>
 
-        <!-- STOPS -->
+        <!-- STOPS (WITH REORDERING UP/DOWN ARROWS) -->
         <div class="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex justify-between items-center mb-2">
-            <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops (Optional)</p>
+            <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops & Reordering</p>
             <button type="button" onclick="addStopInput()" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Stop</button>
           </div>
           <div id="stopsContainer" class="space-y-2"></div>
         </div>
 
-        <!-- DESTINATION -->
+        <!-- DESTINATION (WITH FAST EXTENSION BUTTON) -->
         <div class="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-          <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
+          <div class="flex justify-between items-center">
+            <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
+            <button type="button" onclick="convertDestToIntermediateStop()" class="text-[10px] text-ifl-blue font-bold hover:underline flex items-center gap-1">
+              <i data-lucide="corner-down-right" class="w-3 h-3"></i> Push to Intermediate Stop & Set Farther Final Destination
+            </button>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company (Optional)" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="truckDestCountry" onchange="autoFormatPostcodeHint('truckDestCountry', 'truckDestCP')" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white font-medium">
@@ -479,7 +495,7 @@
           </div>
         </div>
 
-        <!-- PALLET ALLOCATION (TOUCH FRIENDLY) -->
+        <!-- PALLET ALLOCATION -->
         <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Initial Pallet Allocation:</p>
           
@@ -625,7 +641,24 @@
           </div>
         </div>
 
-        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
+        <!-- SPECIAL COMPLIANCE DOCUMENTS REQUIRED CHECKBOXES FOR RESERVATIONS -->
+        <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
+          <p class="font-bold text-amber-900 mb-1 flex items-center gap-1.5">
+            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-600"></i> Required Sanitary / Customs Documents for this Booking:
+          </p>
+          <div class="flex flex-wrap gap-4 text-xs mt-1.5">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="resReqEHC" class="w-4 h-4 text-action rounded border-amber-300 focus:ring-action">
+              <span class="font-semibold text-slate-700">Requires EHC (Export Health Certificate)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="resReqAttestation" class="w-4 h-4 text-action rounded border-amber-300 focus:ring-action">
+              <span class="font-semibold text-slate-700">Requires POAO Attestation / Manufacturer Declaration</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Pallets to Book:</p>
           
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
@@ -780,9 +813,9 @@
     let resFilesBuffer = [];
 
     let chartOccInstance = null;
-    let chartCostVolumeInstance = null;
+    let chartVolumeBarInstance = null;
 
-    // === NATIVE AUTHENTICATION (SUPABASE AUTH) ===
+    // === NATIVE AUTHENTICATION ===
     async function checkAuthSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       const overlay = document.getElementById('authOverlay');
@@ -955,6 +988,26 @@
       await loadRoutePresets();
     }
 
+    // === CONVERT DESTINATION TO INTERMEDIATE STOP (EXTEND ROUTE) ===
+    function convertDestToIntermediateStop() {
+      const curComp = document.getElementById('truckDestComp').value;
+      const curCity = document.getElementById('truckDestCity').value;
+      const curCountry = document.getElementById('truckDestCountry').value;
+      const curCP = document.getElementById('truckDestCP').value;
+
+      if (!curCity && !curComp) {
+        alert("Destination is empty. Fill in current destination first.");
+        return;
+      }
+
+      addStopInput({ comp: curComp, city: curCity, country: curCountry, cp: curCP });
+
+      document.getElementById('truckDestComp').value = '';
+      document.getElementById('truckDestCity').value = '';
+      document.getElementById('truckDestCP').value = '';
+      alert(`Current destination (${curCity || curComp}) moved to intermediate stops. Enter the new final destination below.`);
+    }
+
     // === DRAG & DROP MULTI-FILE HANDLING ===
     function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dropzone-active'); }
     function handleDragLeave(e) { e.currentTarget.classList.remove('dropzone-active'); }
@@ -1000,8 +1053,10 @@
             <select onchange="${isTruck ? 'truckFilesBuffer' : 'resFilesBuffer'}[${index}].type = this.value" class="px-2 py-1 bg-white border border-slate-200 rounded text-xs outline-none">
               <option value="Invoice" ${item.type === 'Invoice' ? 'selected' : ''}>Invoice</option>
               <option value="Packing List" ${item.type === 'Packing List' ? 'selected' : ''}>Packing List</option>
+              <option value="HS Code Summary" ${item.type === 'HS Code Summary' ? 'selected' : ''}>HS Code Summary</option>
+              <option value="EHC (Veterinary Certificate)" ${item.type === 'EHC (Veterinary Certificate)' ? 'selected' : ''}>EHC (Veterinary Cert)</option>
+              <option value="Attestation / POAO Declaration" ${item.type === 'Attestation / POAO Declaration' ? 'selected' : ''}>Attestation (POAO)</option>
               <option value="CMR" ${item.type === 'CMR' ? 'selected' : ''}>CMR</option>
-              <option value="Spec Sheet" ${item.type === 'Spec Sheet' ? 'selected' : ''}>Spec Sheet</option>
               <option value="Other" ${item.type === 'Other' ? 'selected' : ''}>Other</option>
             </select>
             <button type="button" onclick="removePendingFile(${index}, '${containerId}')" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
@@ -1287,8 +1342,9 @@
             eurQty: Number(t.eur_qty) || 0, eurDesc: t.eur_desc || '', ukQty: Number(t.uk_qty) || 0, ukDesc: t.uk_desc || '',
             products: Array.isArray(t.products) ? t.products : [],
             tempMode: t.temp_mode || 'Ambient',
+            reqEHC: !!t.req_ehc,
+            reqAttestation: !!t.req_attestation,
             auditLog: Array.isArray(t.audit_log) ? t.audit_log : [],
-            costPerPallet: Number(t.cost_per_pallet) || 0,
             notes: t.notes || '', docs: Array.isArray(t.docs) ? t.docs : [], status: t.status || 'active'
           }));
         }
@@ -1300,7 +1356,8 @@
             eurQty: Number(r.eur_qty) || 0, eurDesc: r.eur_desc || '', ukQty: Number(r.uk_qty) || 0, ukDesc: r.uk_desc || '',
             products: Array.isArray(r.products) ? r.products : [],
             tempMode: r.temp_mode || 'Ambient',
-            allocatedCost: Number(r.allocated_cost) || 0,
+            reqEHC: !!r.req_ehc,
+            reqAttestation: !!r.req_attestation,
             stop: (r.stop && typeof r.stop === 'object') ? r.stop : {}, notes: r.notes || '', docs: Array.isArray(r.docs) ? r.docs : []
           }));
         }
@@ -1357,15 +1414,12 @@
       });
 
       const totalPallets = totalEUR + totalUK;
-      const priceNum = parseFloat((truck.price || '').replace(/[^0-9.-]+/g, '')) || 0;
-      const unitCost = totalPallets > 0 && priceNum > 0 ? (priceNum / totalPallets) : 0;
-
       const ratio = (totalEUR / 33) + (totalUK / 26);
       const pct = Math.round(ratio * 100);
       const remRatio = Math.max(0, 1 - ratio);
       
       let color = pct <= 60 ? '#10B981' : pct <= 80 ? '#EAB308' : pct < 100 ? '#F97316' : '#DC2626';
-      return { totalEUR, totalUK, totalPallets, pct, freeEUR: Math.floor(remRatio * 33), freeUK: Math.floor(remRatio * 26), color, isOverCapacity: pct >= 100, unitCost, priceNum };
+      return { totalEUR, totalUK, totalPallets, pct, freeEUR: Math.floor(remRatio * 33), freeUK: Math.floor(remRatio * 26), color, isOverCapacity: pct >= 100 };
     }
 
     function switchTab(tab) {
@@ -1437,29 +1491,24 @@
       let totalEUR = 0;
       let totalUK = 0;
       let totalOccupancySum = 0;
-      let totalSpend = 0;
 
       filtered.forEach(t => {
         const stats = calculateLoad(t);
         totalEUR += stats.totalEUR;
         totalUK += stats.totalUK;
         totalOccupancySum += stats.pct;
-        totalSpend += stats.priceNum;
       });
 
       const totalPallets = totalEUR + totalUK;
       const avgOcc = filtered.length > 0 ? Math.round(totalOccupancySum / filtered.length) : 0;
-      const avgCostPerPallet = totalPallets > 0 && totalSpend > 0 ? (totalSpend / totalPallets).toFixed(2) : '0.00';
 
       document.getElementById('kpiAvgOccupancy').innerText = `${avgOcc}%`;
       document.getElementById('kpiTotalTrips').innerText = filtered.length;
       document.getElementById('kpiTotalPallets').innerText = totalPallets;
       document.getElementById('kpiPalletBreakdown').innerText = `${totalEUR} EUR / ${totalUK} UK Pallets`;
-      document.getElementById('kpiAvgCostPerPallet').innerText = `€${avgCostPerPallet}`;
-      document.getElementById('kpiTotalSpend').innerText = `Total: €${totalSpend.toLocaleString()}`;
 
       renderOccupancyChart(filtered);
-      renderCostVolumeChart(filtered);
+      renderVolumeBarChart(filtered);
       lucide.createIcons();
     }
 
@@ -1499,36 +1548,31 @@
       });
     }
 
-    function renderCostVolumeChart(filteredTrucks) {
-      const ctx = document.getElementById('chartCostVolume')?.getContext('2d');
+    function renderVolumeBarChart(filteredTrucks) {
+      const ctx = document.getElementById('chartVolumeBar')?.getContext('2d');
       if (!ctx) return;
 
-      if (chartCostVolumeInstance) chartCostVolumeInstance.destroy();
+      if (chartVolumeBarInstance) chartVolumeBarInstance.destroy();
 
       const sorted = [...filteredTrucks].sort((a,b) => (a.departureDate || '').localeCompare(b.departureDate || '')).slice(-8);
       const labels = sorted.map(t => t.title);
-      const spendData = sorted.map(t => calculateLoad(t).priceNum);
-      const palletData = sorted.map(t => calculateLoad(t).totalPallets);
+      const eurData = sorted.map(t => calculateLoad(t).totalEUR);
+      const ukData = sorted.map(t => calculateLoad(t).totalUK);
 
-      chartCostVolumeInstance = new Chart(ctx, {
+      chartVolumeBarInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels,
           datasets: [
             {
-              label: 'Total Pallets',
-              data: palletData,
-              backgroundColor: '#1E40AF',
-              yAxisID: 'y'
+              label: 'EUR Pallets',
+              data: eurData,
+              backgroundColor: '#1E40AF'
             },
             {
-              label: 'Trip Spend (€)',
-              data: spendData,
-              type: 'line',
-              borderColor: '#10B981',
-              backgroundColor: '#10B981',
-              borderWidth: 2,
-              yAxisID: 'y1'
+              label: 'UK Pallets',
+              data: ukData,
+              backgroundColor: '#EAB308'
             }
           ]
         },
@@ -1536,8 +1580,8 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            y: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Pallets' } },
-            y1: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Cost (€)' } }
+            x: { stacked: true },
+            y: { stacked: true, beginAtZero: true }
           }
         }
       });
@@ -1587,7 +1631,7 @@
           </div>
           <div class="text-xs font-semibold text-slate-700 mb-1 truncate">${truck.origin} ➔ ${truck.destination}</div>
           <div class="flex items-center justify-between text-[11px] text-slate-400 mb-2">
-            <span class="truncate">${truck.departureDate} ${truck.price ? `· <strong class="text-slate-700">${truck.price}</strong>` : ''}</span>
+            <span class="truncate">${truck.departureDate}</span>
             <span style="color: ${stats.color}" class="font-bold shrink-0">${stats.pct}% loaded</span>
           </div>
           <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
@@ -1619,9 +1663,33 @@
       const allDocs = [...(truck.docs || [])];
       truckRes.forEach(r => { if (r.docs) allDocs.push(...r.docs); });
 
+      const hasUploadedEHC = allDocs.some(d => (d.type || '').includes('EHC'));
+      const hasUploadedAttestation = allDocs.some(d => (d.type || '').includes('Attestation'));
+
       container.innerHTML = `
         <div class="pb-5 border-b border-slate-100">
           ${stats.isOverCapacity ? `<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs flex items-center justify-between text-red-800"><div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i><span><strong>Capacity Limit Exceeded!</strong> Saturation at <strong>${stats.pct}%</strong>.</span></div><span class="text-[10px] uppercase font-black bg-red-200 px-2 py-0.5 rounded">Overload</span></div>` : ''}
+
+          <!-- SANITARY / COMPLIANCE REMINDERS BADGES -->
+          ${(truck.reqEHC || truck.reqAttestation || truckRes.some(r => r.reqEHC || r.reqAttestation)) ? `
+            <div class="mb-3 p-2.5 rounded-xl border text-xs flex flex-wrap items-center justify-between gap-2 ${(!hasUploadedEHC && (truck.reqEHC || truckRes.some(r => r.reqEHC))) || (!hasUploadedAttestation && (truck.reqAttestation || truckRes.some(r => r.reqAttestation))) ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'}">
+              <div class="flex items-center gap-2">
+                <i data-lucide="file-check-2" class="w-4 h-4 text-action"></i>
+                <span class="font-bold">Compliance Status:</span>
+                ${(truck.reqEHC || truckRes.some(r => r.reqEHC)) ? `
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold ${hasUploadedEHC ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-200 text-amber-900 animate-pulse'}">
+                    EHC (Veterinary): ${hasUploadedEHC ? '✓ Attached' : '⚠️ Missing File'}
+                  </span>
+                ` : ''}
+                ${(truck.reqAttestation || truckRes.some(r => r.reqAttestation)) ? `
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold ${hasUploadedAttestation ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-200 text-amber-900 animate-pulse'}">
+                    POAO Attestation: ${hasUploadedAttestation ? '✓ Attached' : '⚠️ Missing File'}
+                  </span>
+                ` : ''}
+              </div>
+              <span class="text-[10px] text-slate-500">Attach under "Real Documents"</span>
+            </div>
+          ` : ''}
 
           <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
             <div>
@@ -1629,7 +1697,7 @@
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
                 <span class="text-xs font-bold px-2 py-0.5 bg-blue-50 text-ifl-blue rounded border border-blue-200">${truck.tempMode || 'Ambient'}</span>
                 <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
-                ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
+                ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Ref: ${truck.price}</span>` : ''}
               </div>
               <h2 class="text-lg sm:text-2xl font-black text-slate-900 leading-tight">${truck.origin} ➔ ${truck.destination}</h2>
               <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Trip #: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
@@ -1691,12 +1759,11 @@
             </div>
           </div>
 
-          <!-- METRICS & COST ALLOCATION -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4">
+          <!-- METRICS (CLEAN 3-CARD LAYOUT) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mt-4">
             <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy</p><p class="text-xl sm:text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR (Max 33)</p><p class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[10px] font-normal text-emerald-600">(~${stats.freeEUR})</span></p></div>
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">UK (Max 26)</p><p class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${stats.totalUK} <span class="text-[10px] font-normal text-emerald-600">(~${stats.freeUK})</span></p></div>
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Cost / Pallet</p><p class="text-xl sm:text-2xl font-black text-emerald-700 mt-1">€${stats.unitCost.toFixed(2)}</p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR Pallets (Max 33)</p><p class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[10px] font-normal text-emerald-600">(~${stats.freeEUR} free)</span></p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">UK Pallets (Max 26)</p><p class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${stats.totalUK} <span class="text-[10px] font-normal text-emerald-600">(~${stats.freeUK} free)</span></p></div>
           </div>
 
           <!-- AUDIT LOG VIEWER -->
@@ -1739,7 +1806,6 @@
                   <span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span>
                   <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-semibold">${truck.tempMode || 'Ambient'}</span>
                 </div>
-                ${stats.unitCost > 0 ? `<span class="text-xs font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">Allocated Cost: €${((truck.eurQty + truck.ukQty) * stats.unitCost).toFixed(2)}</span>` : ''}
               </div>
 
               <div class="space-y-1.5 pl-3 border-l-2 border-ifl-blue">
@@ -1776,10 +1842,8 @@
               ` : ''}
             </div>
 
-            <!-- Team Reservations with Allocated Cost -->
+            <!-- Team Reservations -->
             ${truckRes.map(r => {
-              const resPallets = r.eurQty + r.ukQty;
-              const resCost = (resPallets * stats.unitCost).toFixed(2);
               return `
                 <div class="p-3.5 sm:p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
                   <div class="flex justify-between items-center flex-wrap gap-1">
@@ -1788,9 +1852,13 @@
                       <span class="text-[10px] bg-yellow-100 text-amber-800 font-bold px-2 py-0.5 rounded">Booker</span>
                       <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200 font-medium">${r.tempMode || 'Ambient'}</span>
                       ${r.projectNo ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">${r.projectNo}</span>` : ''}
+                      ${(r.reqEHC || r.reqAttestation) ? `
+                        <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                          Requires: ${[r.reqEHC ? 'EHC' : '', r.reqAttestation ? 'Attestation' : ''].filter(Boolean).join(' + ')}
+                        </span>
+                      ` : ''}
                     </div>
                     <div class="flex items-center gap-2 sm:gap-3">
-                      ${stats.unitCost > 0 ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">€${resCost}</span>` : ''}
                       <button onclick="openEditResModal('${r.id}')" class="text-slate-400 hover:text-action p-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                       <button onclick="cancelReservation('${r.id}')" class="text-slate-300 hover:text-red-500 p-1"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
                     </div>
@@ -1951,6 +2019,7 @@
       }
     }
 
+    // === STOPS BUILDER WITH UP/DOWN REORDERING ===
     function addStopInput(stopData = null) {
       const container = document.getElementById('stopsContainer');
       if (!container) return;
@@ -1979,14 +2048,30 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input type="text" list="cityHistory" value="${cityVal}" placeholder="City / Address" class="stop-city sm:col-span-2 px-2 py-1.5 border rounded-lg text-xs outline-none">
-          <div class="flex gap-1">
+          <div class="flex items-center gap-1">
             <input type="text" list="postcodeHistory" value="${cpVal}" placeholder="CP / Code" class="stop-cp flex-1 px-2 py-1.5 border rounded-lg text-xs outline-none">
-            <button type="button" onclick="this.closest('.stop-item').remove()" class="text-slate-400 hover:text-red-500 p-1.5"><i data-lucide="trash" class="w-4 h-4"></i></button>
+            <button type="button" onclick="moveStopUp(this)" title="Move Up" class="p-1.5 border border-slate-200 rounded hover:bg-slate-100 text-slate-600"><i data-lucide="arrow-up" class="w-3.5 h-3.5"></i></button>
+            <button type="button" onclick="moveStopDown(this)" title="Move Down" class="p-1.5 border border-slate-200 rounded hover:bg-slate-100 text-slate-600"><i data-lucide="arrow-down" class="w-3.5 h-3.5"></i></button>
+            <button type="button" onclick="this.closest('.stop-item').remove()" title="Delete Stop" class="text-slate-400 hover:text-red-500 p-1.5"><i data-lucide="trash" class="w-4 h-4"></i></button>
           </div>
         </div>
       `;
       container.appendChild(div);
       lucide.createIcons();
+    }
+
+    function moveStopUp(btn) {
+      const item = btn.closest('.stop-item');
+      if (item.previousElementSibling) {
+        item.parentNode.insertBefore(item, item.previousElementSibling);
+      }
+    }
+
+    function moveStopDown(btn) {
+      const item = btn.closest('.stop-item');
+      if (item.nextElementSibling) {
+        item.parentNode.insertBefore(item.nextElementSibling, item);
+      }
     }
 
     function prevMonth() { calendarDate.setMonth(calendarDate.getMonth() - 1); renderMonthlyCalendar(); }
@@ -2019,6 +2104,9 @@
       document.getElementById('truckUK').value = 0;
       if (document.getElementById('truckEURMobile')) document.getElementById('truckEURMobile').value = 0;
       if (document.getElementById('truckUKMobile')) document.getElementById('truckUKMobile').value = 0;
+
+      document.getElementById('truckReqEHC').checked = false;
+      document.getElementById('truckReqAttestation').checked = false;
 
       generateSequentialTripNumber();
 
@@ -2083,6 +2171,10 @@
       document.getElementById('truckUKDesc').value = t.ukDesc || '';
       if (document.getElementById('truckEURMobile')) document.getElementById('truckEURMobile').value = t.eurQty || 0;
       if (document.getElementById('truckUKMobile')) document.getElementById('truckUKMobile').value = t.ukQty || 0;
+      
+      document.getElementById('truckReqEHC').checked = !!t.reqEHC;
+      document.getElementById('truckReqAttestation').checked = !!t.reqAttestation;
+
       document.getElementById('truckNotes').value = t.notes || '';
       
       const stopsContainer = document.getElementById('stopsContainer');
@@ -2121,6 +2213,9 @@
       document.getElementById('resUK').value = 0;
       if (document.getElementById('resEURMobile')) document.getElementById('resEURMobile').value = 0;
       if (document.getElementById('resUKMobile')) document.getElementById('resUKMobile').value = 0;
+
+      document.getElementById('resReqEHC').checked = false;
+      document.getElementById('resReqAttestation').checked = false;
       
       document.getElementById('resModal').classList.remove('hidden');
       lucide.createIcons();
@@ -2174,6 +2269,10 @@
       document.getElementById('resUKDesc').value = r.ukDesc || '';
       if (document.getElementById('resEURMobile')) document.getElementById('resEURMobile').value = r.eurQty || 0;
       if (document.getElementById('resUKMobile')) document.getElementById('resUKMobile').value = r.ukQty || 0;
+      
+      document.getElementById('resReqEHC').checked = !!r.reqEHC;
+      document.getElementById('resReqAttestation').checked = !!r.reqAttestation;
+
       if (r.stop) {
         document.getElementById('resStopComp').value = r.stop.comp || '';
         document.getElementById('resStopCountry').value = r.stop.country || 'Spain';
@@ -2261,9 +2360,9 @@
         const eurQty = parseInt(document.getElementById('truckEUR').value, 10) || 0;
         const ukQty = parseInt(document.getElementById('truckUK').value, 10) || 0;
         const priceStr = document.getElementById('truckPrice').value.trim();
-        const priceNum = parseFloat(priceStr.replace(/[^0-9.-]+/g, '')) || 0;
-        const totalPallets = eurQty + ukQty;
-        const costPerPallet = totalPallets > 0 && priceNum > 0 ? (priceNum / totalPallets) : 0;
+
+        const reqEHC = document.getElementById('truckReqEHC').checked;
+        const reqAttestation = document.getElementById('truckReqAttestation').checked;
 
         const isNew = !existingTruck;
         const auditAction = isNew ? `Trip created with initial ${eurQty} EUR / ${ukQty} UK pallets` : `Trip updated (${departureDate}, ${priceStr || 'No cost'})`;
@@ -2289,7 +2388,8 @@
           eur_desc: document.getElementById('truckEURDesc').value.trim(),
           uk_qty: ukQty,
           uk_desc: document.getElementById('truckUKDesc').value.trim(),
-          cost_per_pallet: costPerPallet,
+          req_ehc: reqEHC,
+          req_attestation: reqAttestation,
           products,
           audit_log: updatedAuditLog,
           notes: document.getElementById('truckNotes').value.trim(),
@@ -2354,9 +2454,10 @@
         const eurQty = parseInt(document.getElementById('resEUR').value, 10) || 0;
         const ukQty = parseInt(document.getElementById('resUK').value, 10) || 0;
 
+        const reqEHC = document.getElementById('resReqEHC').checked;
+        const reqAttestation = document.getElementById('resReqAttestation').checked;
+
         const currentTruck = trucks.find(t => t.id === selectedTruckId);
-        const stats = currentTruck ? calculateLoad(currentTruck) : { unitCost: 0 };
-        const allocatedCost = (eurQty + ukQty) * stats.unitCost;
 
         const payload = {
           id,
@@ -2370,7 +2471,8 @@
           eur_desc: document.getElementById('resEURDesc').value.trim(),
           uk_qty: ukQty,
           uk_desc: document.getElementById('resUKDesc').value.trim(),
-          allocated_cost: allocatedCost,
+          req_ehc: reqEHC,
+          req_attestation: reqAttestation,
           products,
           stop: stopPayload,
           notes: document.getElementById('resNotes').value.trim(),
@@ -2490,14 +2592,17 @@
         const stats = calculateLoad(t);
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/70 transition';
+
+        const docsSummary = [t.reqEHC ? 'EHC' : '', t.reqAttestation ? 'Attestation' : ''].filter(Boolean).join(' + ') || 'Standard';
+
         tr.innerHTML = `
           <td class="p-3 font-bold text-slate-900">${t.title}</td>
           <td class="p-3 font-medium text-slate-700">${t.author}</td>
           <td class="p-3 text-slate-800">${t.origin} ➔ ${t.destination}</td>
           <td class="p-3 text-slate-500">${t.departureDate}</td>
           <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">${t.tempMode || 'Ambient'}</span></td>
-          <td class="p-3 font-bold text-emerald-700">${t.price || '-'}</td>
-          <td class="p-3 font-bold text-slate-700">€${stats.unitCost.toFixed(2)}</td>
+          <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded ${docsSummary !== 'Standard' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500'}">${docsSummary}</span></td>
+          <td class="p-3 font-semibold text-slate-700">${stats.totalEUR} EUR / ${stats.totalUK} UK</td>
           <td class="p-3"><span class="font-bold" style="color: ${stats.color}">${stats.pct}%</span></td>
           <td class="p-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded ${t.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-ifl-blue'}">${t.status}</span></td>
           <td class="p-3 text-right"><button onclick="inspectTripDirectly('${t.id}')" class="text-action font-bold hover:underline">Inspect</button></td>
@@ -2532,11 +2637,11 @@
             "Trip #": t.title,
             "Coordinator": t.author,
             "Mode / Temp": t.tempMode || 'Ambient',
+            "Requires EHC": t.reqEHC ? 'Yes' : 'No',
+            "Requires Attestation": t.reqAttestation ? 'Yes' : 'No',
             "Origin": t.origin,
             "Destination": t.destination,
             "Departure Date": t.departureDate,
-            "Total Price": t.price || '-',
-            "Unit Cost / Pallet": `€${stats.unitCost.toFixed(2)}`,
             "Total EUR Pallets": stats.totalEUR,
             "Total UK Pallets": stats.totalUK,
             "Occupancy %": `${stats.pct}%`,
@@ -2555,19 +2660,18 @@
             "Trip Status": t.status,
             "Coordinator": t.author,
             "Temperature Mode": t.tempMode || 'Ambient',
+            "EHC Req": t.reqEHC ? 'YES' : 'NO',
+            "Attestation Req": t.reqAttestation ? 'YES' : 'NO',
             "Origin Hub": `${t.originComp || ''} (${t.origin})`,
             "Final Destination": `${t.destComp || ''} (${t.destination})`,
             "Intermediate Stops": stopsSummary,
             "Departure Date": `${t.departureDate} ${t.departureTime || ''}`,
-            "Total Trip Price": t.price || '-',
-            "Unit Cost / Pallet": `€${stats.unitCost.toFixed(2)}`,
             "Total Saturation %": `${stats.pct}%`,
             "Role / Type": "Publisher Initial Load",
             "Booker / Partner": t.author,
             "Project #": "-",
             "EUR Pallets": t.eurQty || 0,
             "UK Pallets": t.ukQty || 0,
-            "Allocated Order Cost": `€${((t.eurQty + t.ukQty) * stats.unitCost).toFixed(2)}`,
             "Associated SKUs & Invoices": prodsSummary,
             "Booking Notes": t.notes || '',
             "Attached Docs": (t.docs || []).map(d => d.name).join(', ') || 'None'
@@ -2575,26 +2679,23 @@
 
           tripRes.forEach(r => {
             const resProdsSummary = (r.products || []).map(p => `${p.code} (Inv:${p.invoiceRef || '-'})`).join(', ') || 'None';
-            const resPallets = r.eurQty + r.ukQty;
-            const resCost = (resPallets * stats.unitCost).toFixed(2);
             dataToExport.push({
               "Trip #": t.title,
               "Trip Status": t.status,
               "Coordinator": t.author,
               "Temperature Mode": r.tempMode || t.tempMode || 'Ambient',
+              "EHC Req": r.reqEHC ? 'YES' : 'NO',
+              "Attestation Req": r.reqAttestation ? 'YES' : 'NO',
               "Origin Hub": t.origin,
               "Final Destination": t.destination,
               "Intermediate Stops": "-",
               "Departure Date": t.departureDate,
-              "Total Trip Price": "-",
-              "Unit Cost / Pallet": `€${stats.unitCost.toFixed(2)}`,
               "Total Saturation %": "-",
               "Role / Type": "Reserved Space",
               "Booker / Partner": `${r.author} (${r.partnerType || 'Partner'}: ${r.partnerName || 'N/A'})`,
               "Project #": r.projectNo || '-',
               "EUR Pallets": r.eurQty || 0,
               "UK Pallets": r.ukQty || 0,
-              "Allocated Order Cost": `€${resCost}`,
               "Associated SKUs & Invoices": resProdsSummary,
               "Booking Notes": `${r.notes || ''} ${r.stop?.city ? `[Stop: ${r.stop.city}]` : ''}`,
               "Attached Docs": (r.docs || []).map(d => d.name).join(', ') || 'None'
@@ -2621,17 +2722,18 @@
 
       doc.setFontSize(14);
       doc.setTextColor(30, 64, 175);
-      doc.text("INTERNATIONAL FOOD LINK - FREIGHT SHIPMENT & COST REPORT", 14, 15);
+      doc.text("INTERNATIONAL FOOD LINK - FREIGHT SHIPMENT & MANIFEST REPORT", 14, 15);
       
       doc.setFontSize(9);
       doc.setTextColor(100);
       doc.text(`Generated on: ${new Date().toLocaleString('en-GB')} | Report Level: ${type.toUpperCase()}`, 14, 21);
 
       if (type === 'simple') {
-        const headers = [["Trip #", "Coordinator", "Route", "Departure", "Mode", "Price", "Cost/Pallet", "EUR / UK", "Load %", "Status"]];
+        const headers = [["Trip #", "Coordinator", "Route", "Departure", "Mode", "Sanitary Docs", "EUR / UK", "Load %", "Status"]];
         const rows = listToExport.map(t => {
           const stats = calculateLoad(t);
-          return [t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate, t.tempMode || 'Ambient', t.price || '-', `€${stats.unitCost.toFixed(2)}`, `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
+          const docsSummary = [t.reqEHC ? 'EHC' : '', t.reqAttestation ? 'Attest.' : ''].filter(Boolean).join('+') || 'None';
+          return [t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate, t.tempMode || 'Ambient', docsSummary, `${stats.totalEUR} / ${stats.totalUK}`, `${stats.pct}%`, t.status];
         });
 
         doc.autoTable({
@@ -2643,26 +2745,26 @@
           styles: { fontSize: 8 }
         });
       } else {
-        const headers = [["Trip #", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "Mode", "EUR", "UK", "Cost Alloc.", "SKUs"]];
+        const headers = [["Trip #", "Coord", "Route", "Departure", "Booker / Partner", "Project #", "Mode", "EUR", "UK", "Sanitary", "SKUs"]];
         const rows = [];
 
         listToExport.forEach(t => {
-          const stats = calculateLoad(t);
           const tripRes = reservations.filter(r => r.truckId === t.id);
           const prodsSummary = (t.products || []).map(p => `${p.code}`).join(', ') || '-';
+          const tripSanitary = [t.reqEHC ? 'EHC' : '', t.reqAttestation ? 'Attest.' : ''].filter(Boolean).join('+') || '-';
           
           rows.push([
             t.title, t.author, `${t.origin} -> ${t.destination}`, t.departureDate,
-            `${t.author} (Publisher)`, "-", t.tempMode || 'Ambient', t.eurQty || 0, t.ukQty || 0, `€${((t.eurQty + t.ukQty) * stats.unitCost).toFixed(2)}`, prodsSummary
+            `${t.author} (Publisher)`, "-", t.tempMode || 'Ambient', t.eurQty || 0, t.ukQty || 0, tripSanitary, prodsSummary
           ]);
 
           tripRes.forEach(r => {
             const resProdsSummary = (r.products || []).map(p => `${p.code}`).join(', ') || '-';
-            const resCost = ((r.eurQty + r.ukQty) * stats.unitCost).toFixed(2);
+            const resSanitary = [r.reqEHC ? 'EHC' : '', r.reqAttestation ? 'Attest.' : ''].filter(Boolean).join('+') || '-';
             rows.push([
               "", "", "", "",
               `${r.author} (${r.partnerName || 'Client'})`, r.projectNo || '-',
-              r.tempMode || 'Ambient', r.eurQty || 0, r.ukQty || 0, `€${resCost}`, resProdsSummary
+              r.tempMode || 'Ambient', r.eurQty || 0, r.ukQty || 0, resSanitary, resProdsSummary
             ]);
           });
         });
