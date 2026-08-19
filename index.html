@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>IFL - Freight & Load Management Platform</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -50,15 +50,18 @@
       background-size: contain; background-position: center;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%231E40AF' d='M224 96l64 96 128-32-64 160 96 96H64l32-160 96-32 32-128z'/%3E%3C/svg%3E"); z-index: 0;
     }
-    #routeMap { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+    #routeMap { height: 260px; width: 100%; border-radius: 0.75rem; z-index: 10; }
     .dropzone-active { border-color: #ea0a2a !important; background-color: #fef2f2 !important; }
+    /* Hide scrollbar for mobile tab bar */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-watermark min-h-screen text-slate-800 font-sans antialiased flex flex-col relative">
+<body class="bg-watermark min-h-screen text-slate-800 font-sans antialiased flex flex-col relative pb-12 sm:pb-0">
 
   <!-- PANTALLA DE AUTENTICACIÓN INDIVIDUAL EMPRESARIAL -->
   <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 text-center">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 text-center">
       <div class="inline-flex border border-slate-200 px-4 py-2 rounded-2xl shadow-xs bg-white mb-4">
         <span class="text-3xl font-black text-ifl-blue tracking-tighter">i<span class="text-ifl-yellow">FL</span></span>
       </div>
@@ -83,7 +86,7 @@
           <p id="authErrorMsg" class="hidden text-[11px] font-bold text-red-600 mt-1.5 flex items-center gap-1"></p>
         </div>
 
-        <button type="submit" id="btnLoginSubmit" class="w-full bg-action hover:bg-action-hover text-white font-bold text-sm py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+        <button type="submit" id="btnLoginSubmit" class="w-full bg-action hover:bg-action-hover text-white font-bold text-sm py-3 sm:py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
           <span>Sign In to Platform</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
@@ -108,136 +111,131 @@
     <option value="CHOC99">CHOC99 - Confectionery Mix</option>
   </datalist>
 
-  <!-- TOP HEADER -->
+  <!-- TOP HEADER (RESPONSIVE) -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
-    <div class="max-w-[96%] mx-auto px-4 py-3.5 flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <div class="border border-slate-200 px-3 py-1.5 rounded-xl shadow-2xs bg-white">
-          <span class="text-2xl font-black text-ifl-blue tracking-tighter">i<span class="text-ifl-yellow">FL</span></span>
+    <div class="max-w-[96%] mx-auto px-3 sm:px-4 py-2.5 sm:py-3.5 flex justify-between items-center gap-2">
+      <div class="flex items-center space-x-2 sm:space-x-3 truncate">
+        <div class="border border-slate-200 px-2.5 py-1 rounded-xl shadow-2xs bg-white shrink-0">
+          <span class="text-xl sm:text-2xl font-black text-ifl-blue tracking-tighter">i<span class="text-ifl-yellow">FL</span></span>
         </div>
-        <div>
-          <h1 class="text-base font-bold text-slate-900 leading-tight">International Food Link</h1>
-          <p class="text-[11px] text-slate-400">Freight Hub, Multi-Temp Routing & Cost Allocation Portal</p>
+        <div class="truncate">
+          <h1 class="text-xs sm:text-base font-bold text-slate-900 leading-tight truncate">International Food Link</h1>
+          <p class="hidden sm:block text-[11px] text-slate-400 truncate">Freight Hub, Multi-Temp Routing & Cost Allocation Portal</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <div id="currentUserBadge" class="text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5 border border-slate-200">
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div id="currentUserBadge" class="hidden md:flex text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl items-center gap-1.5 border border-slate-200">
           <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-600"></i>
-          <span id="userEmailDisplay" class="max-w-[180px] truncate">Authenticated</span>
+          <span id="userEmailDisplay" class="max-w-[140px] lg:max-w-[180px] truncate">Authenticated</span>
         </div>
-        <button onclick="openTruckModal()" class="bg-action hover:bg-action-hover text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-xs flex items-center gap-2 transition">
+        <button onclick="openTruckModal()" class="bg-action hover:bg-action-hover text-white font-semibold text-xs px-3 sm:px-4 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition">
           <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
-          <span>Publish Trip</span>
+          <span class="hidden xs:inline">Publish</span> Trip
         </button>
-        <button onclick="handleUserSignOut()" title="Sign Out" class="border border-slate-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-slate-600 font-semibold text-xs px-3 py-2 rounded-xl flex items-center gap-1 transition">
+        <button onclick="handleUserSignOut()" title="Sign Out" class="border border-slate-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-slate-600 font-semibold text-xs p-2 sm:px-3 sm:py-2 rounded-xl flex items-center gap-1 transition">
           <i data-lucide="log-out" class="w-4 h-4"></i>
-          <span>Sign Out</span>
+          <span class="hidden sm:inline">Sign Out</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- MAIN WRAPPER -->
-  <main class="max-w-[96%] mx-auto px-4 py-6 flex-1 w-full relative z-10">
+  <main class="max-w-[96%] mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 w-full relative z-10">
 
-    <!-- NAVIGATION TABS -->
-    <div class="flex items-center justify-between border-b border-slate-200 mb-6">
-      <div class="flex space-x-8">
-        <button onclick="switchTab('active')" id="tabActive" class="pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2">
-          <i data-lucide="truck" class="w-4 h-4"></i> In Transit / Scheduled
+    <!-- NAVIGATION TABS (MOBILE SWIPE SCROLLABLE) -->
+    <div class="border-b border-slate-200 mb-4 sm:mb-6 overflow-x-auto no-scrollbar">
+      <div class="flex space-x-4 sm:space-x-8 whitespace-nowrap min-w-max pb-1">
+        <button onclick="switchTab('active')" id="tabActive" class="pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5">
+          <i data-lucide="truck" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Active Trips
         </button>
-        <button onclick="switchTab('completed')" id="tabCompleted" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
-          <i data-lucide="check-circle-2" class="w-4 h-4"></i> Completed Deliveries
+        <button onclick="switchTab('completed')" id="tabCompleted" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+          <i data-lucide="check-circle-2" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Completed
         </button>
-        <button onclick="switchTab('calendar')" id="tabCalendar" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
-          <i data-lucide="calendar" class="w-4 h-4"></i> Monthly Calendar
+        <button onclick="switchTab('calendar')" id="tabCalendar" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+          <i data-lucide="calendar" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Monthly Calendar
         </button>
-        <button onclick="switchTab('filters')" id="tabFilters" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Search & Manifests
+        <button onclick="switchTab('filters')" id="tabFilters" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+          <i data-lucide="sliders-horizontal" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Search & Data
         </button>
-        <button onclick="switchTab('analytics')" id="tabAnalytics" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2">
-          <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics & KPIs
+        <button onclick="switchTab('analytics')" id="tabAnalytics" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+          <i data-lucide="bar-chart-3" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Analytics & KPIs
         </button>
       </div>
     </div>
 
-    <!-- WORKSPACE VIEW -->
-    <div id="workspaceView" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-5 flex flex-col h-[85vh] shadow-xs bg-white">
-        <div class="relative mb-4">
+    <!-- WORKSPACE VIEW (RESPONSIVE GRID) -->
+    <div id="workspaceView" class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+      <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-3.5 sm:p-5 flex flex-col lg:h-[85vh] shadow-xs bg-white">
+        <div class="relative mb-3 sm:mb-4">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
           <input type="text" id="searchInput" oninput="renderTrucks()" placeholder="Search by trip #, route, partner, SKU..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-action">
         </div>
-        <div id="trucksList" class="overflow-y-auto space-y-3 pr-1 flex-1"></div>
+        <div id="trucksList" class="overflow-y-auto space-y-2.5 sm:space-y-3 pr-1 max-h-[50vh] lg:max-h-none flex-1"></div>
       </section>
 
-      <section class="lg:col-span-8 border border-slate-200 rounded-2xl p-6 flex flex-col h-[85vh] overflow-y-auto shadow-xs bg-white">
+      <section id="truckDetailSection" class="lg:col-span-8 border border-slate-200 rounded-2xl p-4 sm:p-6 flex flex-col lg:h-[85vh] overflow-y-auto shadow-xs bg-white">
         <div id="truckDetail"></div>
       </section>
     </div>
 
     <!-- CALENDAR VIEW -->
-    <div id="calendarView" class="hidden border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
-      <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-        <div class="flex items-center gap-4">
-          <h2 id="calendarMonthTitle" class="text-lg font-bold text-slate-900">Month Year</h2>
+    <div id="calendarView" class="hidden border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6 pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <h2 id="calendarMonthTitle" class="text-base sm:text-lg font-bold text-slate-900">Month Year</h2>
           <div class="flex gap-1.5">
             <button onclick="prevMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i></button>
             <button onclick="nextMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i></button>
           </div>
-          <span class="text-xs text-slate-400 italic">Click any day cell to publish a trip</span>
         </div>
-        <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Reservations
+        <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition self-end sm:self-auto">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Trips
         </button>
       </div>
 
-      <div class="grid grid-cols-7 gap-2 mb-2 text-center text-[11px] font-bold text-slate-400 uppercase">
+      <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">
         <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
       </div>
-      <div id="calendarGrid" class="grid grid-cols-7 gap-2 min-h-[600px]"></div>
+      <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 min-h-[400px] sm:min-h-[600px]"></div>
     </div>
 
     <!-- FILTERS VIEW WITH REPORTING & BACKUP -->
-    <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
-      <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+    <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
+      <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
         <div>
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-action"></i> Shipment Directory & Data Management</h2>
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-4 sm:w-5 h-4 sm:h-5 text-action"></i> Shipment Directory & Data Management</h2>
           <p class="text-xs text-slate-400 mt-0.5">Filter loads, export full financial manifests and create GDPR database backups.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <!-- BACKUP & ARCHIVE TOOLS -->
+        <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-between xl:justify-end">
           <button onclick="downloadFullDatabaseBackup()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-2xs">
-            <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i> Full DB Backup (JSON)
+            <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i> Backup (JSON)
           </button>
 
-          <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
-            <span class="text-[11px] font-bold text-slate-500 px-2">Export:</span>
-            <button onclick="exportExcelReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
-              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Excel (Simple)
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
+            <span class="text-[11px] font-bold text-slate-500 px-1">Export:</span>
+            <button onclick="exportExcelReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Excel
             </button>
-            <button onclick="exportExcelReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
-              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Excel (Financial)
+            <button onclick="exportExcelReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Financial
             </button>
-            <button onclick="exportPDFReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
-              <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-600"></i> PDF (Simple)
-            </button>
-            <button onclick="exportPDFReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-2xs">
-              <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-700"></i> PDF (Full)
+            <button onclick="exportPDFReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-700"></i> PDF
             </button>
           </div>
 
-          <button onclick="resetFilters()" class="text-xs text-action font-bold hover:underline px-2">Reset</button>
-          <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
+          <button onclick="resetFilters()" class="text-xs text-action font-bold hover:underline px-1">Reset</button>
+          <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition">
             <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6 text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mb-6 text-xs">
         <div>
-          <label class="block font-semibold text-slate-600 mb-1">Departure Date Range</label>
+          <label class="block font-semibold text-slate-600 mb-1">Departure Range</label>
           <div class="grid grid-cols-2 gap-1.5">
             <input type="date" id="filterFromDate" onchange="applyAdvancedFilters()" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg outline-none">
             <input type="date" id="filterToDate" onchange="applyAdvancedFilters()" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg outline-none">
@@ -271,7 +269,7 @@
       </div>
 
       <div class="overflow-x-auto border border-slate-200 rounded-xl">
-        <table class="w-full text-left text-xs text-slate-600">
+        <table class="w-full text-left text-xs text-slate-600 whitespace-nowrap min-w-[700px]">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
             <tr>
               <th class="p-3">Trip #</th><th class="p-3">Coordinator</th><th class="p-3">Route</th><th class="p-3">Departure</th>
@@ -284,20 +282,20 @@
     </div>
 
     <!-- ANALYTICS & EXECUTIVE REPORTING -->
-    <div id="analyticsView" class="hidden space-y-6">
-      <div class="border border-slate-200 rounded-2xl p-6 bg-white shadow-xs">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+    <div id="analyticsView" class="hidden space-y-4 sm:space-y-6">
+      <div class="border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 pb-4 border-b border-slate-100">
           <div>
-            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Financial Matrix
             </h2>
             <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency, unit costs per pallet, and period financial KPIs.</p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-between">
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1 rounded-xl text-xs">
-              <label class="font-semibold text-slate-600 px-2">Timeframe:</label>
-              <select id="analyticsTimeframe" onchange="renderAnalyticsDashboard()" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none font-semibold">
-                <option value="all">All-Time Cumulative</option>
+              <label class="font-semibold text-slate-600 px-1 sm:px-2">Timeframe:</label>
+              <select id="analyticsTimeframe" onchange="renderAnalyticsDashboard()" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none font-semibold">
+                <option value="all">All-Time</option>
                 <option value="this_year">Current Year</option>
                 <option value="q1">Q1 (Jan - Mar)</option>
                 <option value="q2">Q2 (Apr - Jun)</option>
@@ -306,68 +304,68 @@
                 <option value="last_30">Last 30 Days</option>
               </select>
             </div>
-            <button onclick="exportExcelReport('full')" class="bg-action hover:bg-action-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Report
+            <button onclick="exportExcelReport('full')" class="bg-action hover:bg-action-hover text-white text-xs font-bold px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl flex items-center gap-1.5 transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Export
             </button>
           </div>
         </div>
 
         <!-- KPI CARDS -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Average Load Saturation</span>
-            <span id="kpiAvgOccupancy" class="text-2xl font-black text-ifl-blue">0%</span>
-            <span class="text-[10px] text-slate-400 block mt-1">Trailer geometry basis (33 EUR / 26 UK)</span>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
+          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Average Load Saturation</span>
+            <span id="kpiAvgOccupancy" class="text-xl sm:text-2xl font-black text-ifl-blue">0%</span>
+            <span class="text-[9px] sm:text-[10px] text-slate-400 block mt-1">Trailer geometry basis</span>
           </div>
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Dispatched Shipments</span>
-            <span id="kpiTotalTrips" class="text-2xl font-black text-slate-900">0</span>
-            <span class="text-[10px] text-slate-400 block mt-1">Consolidations logged in period</span>
+          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Dispatched Shipments</span>
+            <span id="kpiTotalTrips" class="text-xl sm:text-2xl font-black text-slate-900">0</span>
+            <span class="text-[9px] sm:text-[10px] text-slate-400 block mt-1">Consolidations in period</span>
           </div>
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Total Pallets Moved</span>
-            <span id="kpiTotalPallets" class="text-2xl font-black text-emerald-600">0</span>
-            <span id="kpiPalletBreakdown" class="text-[10px] text-slate-500 block mt-1">0 EUR / 0 UK</span>
+          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Total Pallets Moved</span>
+            <span id="kpiTotalPallets" class="text-xl sm:text-2xl font-black text-emerald-600">0</span>
+            <span id="kpiPalletBreakdown" class="text-[9px] sm:text-[10px] text-slate-500 block mt-1">0 EUR / 0 UK</span>
           </div>
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-            <span class="text-[11px] font-semibold text-slate-500 block mb-1">Avg Cost / Pallet</span>
-            <span id="kpiAvgCostPerPallet" class="text-2xl font-black text-slate-800">€0</span>
-            <span id="kpiTotalSpend" class="text-[10px] text-slate-500 block mt-1">Total spend: €0</span>
+          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 block mb-1">Avg Cost / Pallet</span>
+            <span id="kpiAvgCostPerPallet" class="text-xl sm:text-2xl font-black text-slate-800">€0</span>
+            <span id="kpiTotalSpend" class="text-[9px] sm:text-[10px] text-slate-500 block mt-1 truncate">Total: €0</span>
           </div>
         </div>
 
         <!-- CHARTS SECTION -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="p-4 rounded-xl border border-slate-200 bg-white">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Trailer Occupancy Progression (%)
+              <i data-lucide="trending-up" class="w-4 h-4 text-ifl-blue"></i> Trailer Occupancy (%)
             </h3>
-            <div class="h-64"><canvas id="chartOccupancy"></canvas></div>
+            <div class="h-56 sm:h-64"><canvas id="chartOccupancy"></canvas></div>
           </div>
-          <div class="p-4 rounded-xl border border-slate-200 bg-white">
+          <div class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white">
             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
               <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-600"></i> Freight Spend vs Pallet Volume
             </h3>
-            <div class="h-64"><canvas id="chartCostVolume"></canvas></div>
+            <div class="h-56 sm:h-64"><canvas id="chartCostVolume"></canvas></div>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- TRUCK MODAL (PRESET MOVED DOWN, MULTI-TEMP & CLEANED) -->
-  <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
+  <!-- TRUCK MODAL (MOBILE FRIENDLY) -->
+  <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <i data-lucide="truck" class="w-5 h-5 text-action"></i><h3 id="truckModalTitle" class="text-base font-bold text-slate-900">Publish New Trip</h3>
         </div>
-        <button onclick="closeTruckModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button onclick="closeTruckModal()" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="truckForm" onsubmit="saveTruck(event)" class="space-y-4 text-xs">
+      <form id="truckForm" onsubmit="saveTruck(event)" class="space-y-3 sm:space-y-4 text-xs">
         <input type="hidden" id="editingTruckId" value="">
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Coordinator</label><input type="text" id="truckAuthor" placeholder="e.g. Magda" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Trip Number (Auto)</label><input type="text" id="truckTitle" placeholder="e.g. 26-0001" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none font-bold text-ifl-blue focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Trip Total Cost</label><input type="text" id="truckPrice" placeholder="e.g. €1,800" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
@@ -383,36 +381,36 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Departure Date</label><input type="date" id="truckDate" onchange="generateSequentialTripNumber()" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Estimated Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
 
-        <!-- ROUTE PRESETS QUICK SELECTOR (MOVED BELOW HEADER FIELDS) -->
-        <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <i data-lucide="bookmark" class="w-4 h-4 text-ifl-blue"></i>
+        <!-- ROUTE PRESETS QUICK SELECTOR -->
+        <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="bookmark" class="w-4 h-4 text-ifl-blue shrink-0"></i>
             <span class="text-xs font-bold text-slate-800">Quick Route Preset:</span>
           </div>
-          <div class="flex items-center gap-2">
-            <select id="routePresetSelect" onchange="applyRoutePreset(this.value)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none font-medium">
-              <option value="">-- Choose a standard route --</option>
+          <div class="flex items-center gap-1.5 w-full sm:w-auto">
+            <select id="routePresetSelect" onchange="applyRoutePreset(this.value)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs outline-none font-medium flex-1 sm:flex-none">
+              <option value="">-- Choose route preset --</option>
               <option value="enfield_coslada">Enfield / Maldon (UK) ➔ Coslada / Mercamadrid (ES)</option>
               <option value="lille_madrid">Lille Depot (FR) ➔ Madrid Hub (ES)</option>
               <option value="dover_valencia">Dover Port (UK) ➔ Valencia (ES)</option>
               <option value="london_qatar">London Depot (UK) ➔ Doha Air/Sea Hub (Qatar)</option>
             </select>
-            <button type="button" onclick="saveCurrentAsPreset()" title="Save current values as new preset" class="bg-white hover:bg-slate-100 text-ifl-blue border border-slate-200 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Save Preset
+            <button type="button" onclick="saveCurrentAsPreset()" title="Save current values as new preset" class="bg-white hover:bg-slate-100 text-ifl-blue border border-slate-200 px-2 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Save
             </button>
           </div>
         </div>
 
         <!-- ORIGIN -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+        <div class="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-action"></i> Origin Hub</p>
-          <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="truckOriginComp" list="companyHistory" placeholder="Company Name (Optional)" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="truckOriginCountry" onchange="autoFormatPostcodeHint('truckOriginCountry', 'truckOriginCP')" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white font-medium">
               <optgroup label="Europe">
                 <option value="United Kingdom" selected>United Kingdom (UK)</option>
@@ -434,14 +432,14 @@
               <option value="Other">Other Global Hub</option>
             </select>
           </div>
-          <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckOriginCity" list="cityHistory" placeholder="City / Municipality / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="truckOriginCity" list="cityHistory" placeholder="City / Municipality / Address" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <input type="text" id="truckOriginCP" list="postcodeHistory" placeholder="Postal Code / Area Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
           </div>
         </div>
 
         <!-- STOPS -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+        <div class="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex justify-between items-center mb-2">
             <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="milestone" class="w-3.5 h-3.5 text-ifl-yellow"></i> Intermediate Stops (Optional)</p>
             <button type="button" onclick="addStopInput()" class="text-[11px] text-action font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Stop</button>
@@ -450,10 +448,10 @@
         </div>
 
         <!-- DESTINATION -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+        <div class="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-600"></i> Final Destination</p>
-          <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="truckDestComp" list="companyHistory" placeholder="Receiving Company (Optional)" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="truckDestCountry" onchange="autoFormatPostcodeHint('truckDestCountry', 'truckDestCP')" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white font-medium">
               <optgroup label="Europe">
                 <option value="Spain" selected>Spain (ES)</option>
@@ -475,57 +473,78 @@
               <option value="Other">Other Destination</option>
             </select>
           </div>
-          <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="truckDestCity" list="cityHistory" placeholder="City / Municipality / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="truckDestCity" list="cityHistory" placeholder="City / Municipality / Address" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <input type="text" id="truckDestCP" list="postcodeHistory" placeholder="Postal Code / Area Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
           </div>
         </div>
 
-        <!-- PALLET ALLOCATION WITH PER-ROW TEMPERATURE SELECTOR -->
-        <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
+        <!-- PALLET ALLOCATION (TOUCH FRIENDLY) -->
+        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Initial Pallet Allocation:</p>
           
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
-            <div class="w-1/4"><span class="font-bold block text-xs">EUR Pallets</span></div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="truckEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="flex items-center justify-between sm:w-1/4">
+              <span class="font-bold block text-xs">EUR Pallets</span>
+              <div class="flex items-center gap-1.5 sm:hidden">
+                <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">-</button>
+                <input type="number" id="truckEURMobile" oninput="document.getElementById('truckEUR').value = this.value" min="0" value="0" class="w-14 text-center py-2 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+                <button type="button" onclick="adjustQty('truckEUR', 1); document.getElementById('truckEURMobile').value = document.getElementById('truckEUR').value;" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">+</button>
+              </div>
             </div>
-            <select id="truckEURTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
-              <option value="Ambient">Ambient</option>
-              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
-              <option value="Frozen (-18ºC)">Frozen</option>
-              <option value="Dry Goods / Packaging">Dry Goods</option>
-            </select>
-            <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+
+            <div class="hidden sm:flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('truckEUR', -1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckEUR', 1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+            </div>
+
+            <div class="flex items-center gap-2 flex-1">
+              <select id="truckEURTemp" class="px-2 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none shrink-0">
+                <option value="Ambient">Ambient</option>
+                <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+                <option value="Frozen (-18ºC)">Frozen</option>
+                <option value="Dry Goods / Packaging">Dry Goods</option>
+              </select>
+              <input type="text" id="truckEURDesc" placeholder="Description (Optional)" class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg outline-none">
+            </div>
           </div>
 
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
-            <div class="w-1/4"><span class="font-bold block text-xs">UK Pallets</span></div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('truckUK', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="truckUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('truckUK', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="flex items-center justify-between sm:w-1/4">
+              <span class="font-bold block text-xs">UK Pallets</span>
+              <div class="flex items-center gap-1.5 sm:hidden">
+                <button type="button" onclick="adjustQty('truckUK', -1)" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">-</button>
+                <input type="number" id="truckUKMobile" oninput="document.getElementById('truckUK').value = this.value" min="0" value="0" class="w-14 text-center py-2 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+                <button type="button" onclick="adjustQty('truckUK', 1); document.getElementById('truckUKMobile').value = document.getElementById('truckUK').value;" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">+</button>
+              </div>
             </div>
-            <select id="truckUKTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
-              <option value="Ambient">Ambient</option>
-              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
-              <option value="Frozen (-18ºC)">Frozen</option>
-              <option value="Dry Goods / Packaging">Dry Goods</option>
-            </select>
-            <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+
+            <div class="hidden sm:flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('truckUK', -1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="truckUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('truckUK', 1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+            </div>
+
+            <div class="flex items-center gap-2 flex-1">
+              <select id="truckUKTemp" class="px-2 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none shrink-0">
+                <option value="Ambient">Ambient</option>
+                <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+                <option value="Frozen (-18ºC)">Frozen</option>
+                <option value="Dry Goods / Packaging">Dry Goods</option>
+              </select>
+              <input type="text" id="truckUKDesc" placeholder="Description (Optional)" class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg outline-none">
+            </div>
           </div>
         </div>
 
         <!-- PRODUCT LIST SECTION -->
-        <div class="p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
+        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
           <div class="flex justify-between items-center mb-2">
             <div>
               <p class="font-bold text-slate-800 flex items-center gap-1.5">
-                <i data-lucide="boxes" class="w-3.5 h-3.5 text-ifl-blue"></i> Itemized Products / Stock Codes (Optional)
+                <i data-lucide="boxes" class="w-3.5 h-3.5 text-ifl-blue"></i> Itemized Products / SKUs (Optional)
               </p>
-              <span class="text-[10px] text-slate-400">Add SKUs (e.g. PHF0120, KK0030) and link to invoice numbers</span>
             </div>
             <button type="button" onclick="addProductRow('truckProductContainer')" class="text-[11px] text-action font-bold flex items-center gap-1">
               <i data-lucide="plus" class="w-3 h-3"></i> Add SKU
@@ -535,13 +554,13 @@
         </div>
 
         <!-- EXISTING ATTACHED FILES -->
-        <div id="truckExistingDocsSection" class="hidden p-3.5 border border-slate-200 rounded-xl bg-slate-50">
+        <div id="truckExistingDocsSection" class="hidden p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-slate-50">
           <p class="font-bold text-slate-700 mb-2">Manage Uploaded Documents:</p>
           <div id="truckExistingDocsList" class="space-y-1.5"></div>
         </div>
 
         <!-- NEW ATTACHMENTS (DRAG & DROP) -->
-        <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
+        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-white">
           <p class="font-bold text-slate-700 mb-2">Attach Real Documents (PDF, Excel, Word, Images):</p>
           
           <div id="truckDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'truckDropzone', 'truckPendingFiles')" class="border-2 border-dashed border-slate-200 hover:border-action rounded-xl p-4 text-center cursor-pointer bg-slate-50/50 transition">
@@ -549,7 +568,7 @@
             <div onclick="document.getElementById('truckFileInput').click()" class="space-y-1">
               <i data-lucide="upload-cloud" class="w-6 h-6 text-slate-400 mx-auto"></i>
               <p class="text-xs font-semibold text-slate-700">Drag & Drop files here, or <span class="text-action underline font-bold">browse</span></p>
-              <p class="text-[10px] text-slate-400">Supports multiple files simultaneously (PDF, XLSX, DOCX, PNG, JPG)</p>
+              <p class="text-[10px] text-slate-400">Supports multiple files simultaneously</p>
             </div>
           </div>
           
@@ -561,29 +580,29 @@
           <textarea id="truckNotes" rows="2" placeholder="Optional remarks..." class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-          <button type="button" onclick="closeTruckModal()" class="px-4 py-2 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
-          <button type="submit" id="btnSaveTruckSubmit" class="px-4 py-2 bg-action text-white rounded-xl font-bold hover:bg-action-hover shadow-xs">Publish Trip</button>
+          <button type="button" onclick="closeTruckModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="btnSaveTruckSubmit" class="px-5 py-2.5 bg-action text-white rounded-xl font-bold hover:bg-action-hover shadow-xs">Publish Trip</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- RESERVATION MODAL -->
-  <div id="resModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
+  <div id="resModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-4 sm:my-8 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <i data-lucide="package-plus" class="w-5 h-5 text-action"></i><h3 id="resModalTitle" class="text-base font-bold text-slate-900">Book Pallets</h3>
         </div>
-        <button onclick="closeResModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button onclick="closeResModal()" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <form id="resForm" onsubmit="saveReservation(event)" class="space-y-4 text-xs">
+      <form id="resForm" onsubmit="saveReservation(event)" class="space-y-3 sm:space-y-4 text-xs">
         <input type="hidden" id="editingResId" value="">
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <div><label class="block font-semibold text-slate-600 mb-1">Booker Name</label><input type="text" id="resAuthor" placeholder="e.g. Colin" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
           <div><label class="block font-semibold text-slate-600 mb-1">Project Number (Ref)</label><input type="text" id="resProjectNo" placeholder="Optional (e.g. PRJ-2026-01)" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-action"></div>
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
           <div>
             <label class="block font-semibold text-slate-600 mb-1">Partner Type</label>
             <select id="resPartnerType" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none bg-white">
@@ -606,44 +625,66 @@
           </div>
         </div>
 
-        <div class="p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
+        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-white space-y-3">
           <p class="font-bold text-slate-800">Pallets to Book:</p>
           
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
-            <div class="w-1/4"><span class="font-bold block text-xs">EUR Pallets</span></div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('resEUR', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="resEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('resEUR', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="flex items-center justify-between sm:w-1/4">
+              <span class="font-bold block text-xs">EUR Pallets</span>
+              <div class="flex items-center gap-1.5 sm:hidden">
+                <button type="button" onclick="adjustQty('resEUR', -1)" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">-</button>
+                <input type="number" id="resEURMobile" oninput="document.getElementById('resEUR').value = this.value" min="0" value="0" class="w-14 text-center py-2 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+                <button type="button" onclick="adjustQty('resEUR', 1); document.getElementById('resEURMobile').value = document.getElementById('resEUR').value;" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">+</button>
+              </div>
             </div>
-            <select id="resEURTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
-              <option value="Ambient">Ambient</option>
-              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
-              <option value="Frozen (-18ºC)">Frozen</option>
-              <option value="Dry Goods / Packaging">Dry Goods</option>
-            </select>
-            <input type="text" id="resEURDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+
+            <div class="hidden sm:flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('resEUR', -1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="resEUR" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('resEUR', 1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+            </div>
+
+            <div class="flex items-center gap-2 flex-1">
+              <select id="resEURTemp" class="px-2 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none shrink-0">
+                <option value="Ambient">Ambient</option>
+                <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+                <option value="Frozen (-18ºC)">Frozen</option>
+                <option value="Dry Goods / Packaging">Dry Goods</option>
+              </select>
+              <input type="text" id="resEURDesc" placeholder="Description (Optional)" class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg outline-none">
+            </div>
           </div>
 
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
-            <div class="w-1/4"><span class="font-bold block text-xs">UK Pallets</span></div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustQty('resUK', -1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
-              <input type="number" id="resUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
-              <button type="button" onclick="adjustQty('resUK', 1)" class="w-8 h-8 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 gap-2">
+            <div class="flex items-center justify-between sm:w-1/4">
+              <span class="font-bold block text-xs">UK Pallets</span>
+              <div class="flex items-center gap-1.5 sm:hidden">
+                <button type="button" onclick="adjustQty('resUK', -1)" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">-</button>
+                <input type="number" id="resUKMobile" oninput="document.getElementById('resUK').value = this.value" min="0" value="0" class="w-14 text-center py-2 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+                <button type="button" onclick="adjustQty('resUK', 1); document.getElementById('resUKMobile').value = document.getElementById('resUK').value;" class="w-10 h-10 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-base">+</button>
+              </div>
             </div>
-            <select id="resUKTemp" class="px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none">
-              <option value="Ambient">Ambient</option>
-              <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
-              <option value="Frozen (-18ºC)">Frozen</option>
-              <option value="Dry Goods / Packaging">Dry Goods</option>
-            </select>
-            <input type="text" id="resUKDesc" placeholder="Description (Optional)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none">
+
+            <div class="hidden sm:flex items-center gap-1.5">
+              <button type="button" onclick="adjustQty('resUK', -1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">-</button>
+              <input type="number" id="resUK" min="0" value="0" class="w-16 text-center py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-sm outline-none">
+              <button type="button" onclick="adjustQty('resUK', 1)" class="w-9 h-9 bg-white border border-slate-300 font-bold rounded-lg hover:bg-slate-100 flex items-center justify-center text-sm">+</button>
+            </div>
+
+            <div class="flex items-center gap-2 flex-1">
+              <select id="resUKTemp" class="px-2 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none shrink-0">
+                <option value="Ambient">Ambient</option>
+                <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+                <option value="Frozen (-18ºC)">Frozen</option>
+                <option value="Dry Goods / Packaging">Dry Goods</option>
+              </select>
+              <input type="text" id="resUKDesc" placeholder="Description (Optional)" class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg outline-none">
+            </div>
           </div>
         </div>
 
         <!-- PRODUCT LIST FOR RESERVATIONS -->
-        <div class="p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
+        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-slate-50/70">
           <div class="flex justify-between items-center mb-2">
             <div>
               <p class="font-bold text-slate-800 flex items-center gap-1.5">
@@ -659,8 +700,8 @@
 
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
           <p class="font-bold text-slate-700">Requested Stop / Delivery Point (Optional)</p>
-          <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="resStopComp" list="companyHistory" placeholder="Company (Optional)" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="resStopComp" list="companyHistory" placeholder="Company (Optional)" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <select id="resStopCountry" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
               <option value="Spain">Spain</option>
               <option value="France">France</option>
@@ -670,20 +711,20 @@
               <option value="Other">Other</option>
             </select>
           </div>
-          <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="resStopCity" list="cityHistory" placeholder="City / Address" class="col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="resStopCity" list="cityHistory" placeholder="City / Address" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
             <input type="text" id="resStopCP" list="postcodeHistory" placeholder="Postal Code" class="px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none bg-white">
           </div>
         </div>
 
         <!-- EXISTING ATTACHED FILES -->
-        <div id="resExistingDocsSection" class="hidden p-3.5 border border-slate-200 rounded-xl bg-slate-50">
+        <div id="resExistingDocsSection" class="hidden p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-slate-50">
           <p class="font-bold text-slate-700 mb-2">Manage Uploaded Documents:</p>
           <div id="resExistingDocsList" class="space-y-1.5"></div>
         </div>
 
         <!-- NEW ATTACHMENTS (DRAG & DROP) -->
-        <div class="p-3.5 border border-slate-200 rounded-xl bg-white">
+        <div class="p-3 sm:p-3.5 border border-slate-200 rounded-xl bg-white">
           <p class="font-bold text-slate-700 mb-2">Attach Real Documents (PDF, Excel, Word, Images):</p>
           <div id="resDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'resDropzone', 'resPendingFiles')" class="border-2 border-dashed border-slate-200 hover:border-action rounded-xl p-4 text-center cursor-pointer bg-slate-50/50 transition">
             <input type="file" id="resFileInput" multiple onchange="handleFileSelect(event, 'resPendingFiles')" class="hidden">
@@ -700,8 +741,8 @@
           <textarea id="resNotes" rows="2" placeholder="Optional notes..." class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none"></textarea>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-          <button type="button" onclick="closeResModal()" class="px-4 py-2 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
-          <button type="submit" id="btnSaveResSubmit" class="px-4 py-2 bg-action text-white rounded-xl font-bold hover:bg-action-hover shadow-xs">Save Booking</button>
+          <button type="button" onclick="closeResModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="btnSaveResSubmit" class="px-5 py-2.5 bg-action text-white rounded-xl font-bold hover:bg-action-hover shadow-xs">Save Booking</button>
         </div>
       </form>
     </div>
@@ -984,6 +1025,8 @@
       if (isNaN(val)) val = 0;
       val = Math.max(0, val + delta);
       el.value = val;
+      const mobEl = document.getElementById(id + 'Mobile');
+      if (mobEl) mobEl.value = val;
     }
 
     // === PRODUCT LINES BUILDER ===
@@ -998,20 +1041,20 @@
       const invVal = prod?.invoiceRef || '';
 
       div.innerHTML = `
-        <div class="col-span-3">
-          <input type="text" list="productCodePresets" placeholder="Code (e.g. PHF0120)" value="${codeVal}" class="prod-code w-full px-2 py-1 border border-slate-200 rounded outline-none font-bold text-slate-800">
+        <div class="col-span-12 sm:col-span-3">
+          <input type="text" list="productCodePresets" placeholder="Code (e.g. PHF0120)" value="${codeVal}" class="prod-code w-full px-2 py-1.5 border border-slate-200 rounded outline-none font-bold text-slate-800">
         </div>
-        <div class="col-span-4">
-          <input type="text" placeholder="Product / Description" value="${descVal}" class="prod-desc w-full px-2 py-1 border border-slate-200 rounded outline-none text-slate-700">
+        <div class="col-span-12 sm:col-span-4">
+          <input type="text" placeholder="Product / Description" value="${descVal}" class="prod-desc w-full px-2 py-1.5 border border-slate-200 rounded outline-none text-slate-700">
         </div>
-        <div class="col-span-2">
-          <input type="text" placeholder="Qty / Units" value="${qtyVal}" class="prod-qty w-full px-2 py-1 border border-slate-200 rounded outline-none text-slate-700">
+        <div class="col-span-5 sm:col-span-2">
+          <input type="text" placeholder="Qty" value="${qtyVal}" class="prod-qty w-full px-2 py-1.5 border border-slate-200 rounded outline-none text-slate-700">
         </div>
-        <div class="col-span-2">
-          <input type="text" placeholder="Linked Inv #" value="${invVal}" class="prod-invoice w-full px-2 py-1 border border-slate-200 rounded outline-none text-emerald-700 font-semibold">
+        <div class="col-span-5 sm:col-span-2">
+          <input type="text" placeholder="Inv #" value="${invVal}" class="prod-invoice w-full px-2 py-1.5 border border-slate-200 rounded outline-none text-emerald-700 font-semibold">
         </div>
-        <div class="col-span-1 text-center">
-          <button type="button" onclick="this.closest('.product-row').remove()" class="text-slate-400 hover:text-red-500"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+        <div class="col-span-2 sm:col-span-1 text-center">
+          <button type="button" onclick="this.closest('.product-row').remove()" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
         </div>
       `;
       container.appendChild(div);
@@ -1208,7 +1251,6 @@
       link.click();
     }
 
-    // === FULL DATABASE BACKUP (JSON / GDPR COMPLIANCE) ===
     function downloadFullDatabaseBackup() {
       const backupData = {
         exportedAt: new Date().toISOString(),
@@ -1340,7 +1382,7 @@
       const analytics = document.getElementById('analyticsView');
 
       [tabAct, tabComp, tabCal, tabFilt, tabAna].forEach(btn => {
-        if(btn) btn.className = 'pb-3 text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-2';
+        if(btn) btn.className = 'pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5';
       });
       if(workspace) workspace.classList.add('hidden');
       if(calendarView) calendarView.classList.add('hidden');
@@ -1348,28 +1390,27 @@
       if(analytics) analytics.classList.add('hidden');
 
       if (tab === 'calendar') {
-        if(tabCal) tabCal.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(tabCal) tabCal.className = 'pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5';
         if(calendarView) calendarView.classList.remove('hidden');
         renderMonthlyCalendar();
       } else if (tab === 'filters') {
-        if(tabFilt) tabFilt.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(tabFilt) tabFilt.className = 'pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5';
         if(filters) filters.classList.remove('hidden');
         applyAdvancedFilters();
       } else if (tab === 'analytics') {
-        if(tabAna) tabAna.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(tabAna) tabAna.className = 'pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5';
         if(analytics) analytics.classList.remove('hidden');
         renderAnalyticsDashboard();
       } else {
         if(workspace) workspace.classList.remove('hidden');
         const targetBtn = tab === 'active' ? tabAct : tabComp;
-        if(targetBtn) targetBtn.className = 'pb-3 text-sm font-bold text-action border-b-2 border-action flex items-center gap-2';
+        if(targetBtn) targetBtn.className = 'pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5';
         selectedTruckId = trucks.filter(t => t.status === currentTab)[0]?.id || null;
         renderTrucks();
         renderDetail();
       }
     }
 
-    // === ANALYTICS & EXECUTIVE REPORTING LOGIC ===
     function renderAnalyticsDashboard() {
       const timeframe = document.getElementById('analyticsTimeframe')?.value || 'all';
       const now = new Date();
@@ -1415,7 +1456,7 @@
       document.getElementById('kpiTotalPallets').innerText = totalPallets;
       document.getElementById('kpiPalletBreakdown').innerText = `${totalEUR} EUR / ${totalUK} UK Pallets`;
       document.getElementById('kpiAvgCostPerPallet').innerText = `€${avgCostPerPallet}`;
-      document.getElementById('kpiTotalSpend').innerText = `Total spend: €${totalSpend.toLocaleString()}`;
+      document.getElementById('kpiTotalSpend').innerText = `Total: €${totalSpend.toLocaleString()}`;
 
       renderOccupancyChart(filtered);
       renderCostVolumeChart(filtered);
@@ -1502,6 +1543,15 @@
       });
     }
 
+    function selectTruckMobile(id) {
+      selectedTruckId = id;
+      renderTrucks();
+      renderDetail();
+      if (window.innerWidth < 1024) {
+        document.getElementById('truckDetailSection')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
     function renderTrucks() {
       const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
       const currentList = trucks.filter(t => t.status === currentTab);
@@ -1516,7 +1566,7 @@
 
       const container = document.getElementById('trucksList');
       if (!container) return;
-      container.innerHTML = filtered.length === 0 ? `<p class="text-xs text-slate-400 text-center py-16">No trips found.</p>` : '';
+      container.innerHTML = filtered.length === 0 ? `<p class="text-xs text-slate-400 text-center py-12 sm:py-16">No trips found.</p>` : '';
 
       filtered.forEach(truck => {
         const stats = calculateLoad(truck);
@@ -1524,21 +1574,21 @@
         const dynStat = getDynamicStatus(truck);
         
         const card = document.createElement('div');
-        card.onclick = () => { selectedTruckId = truck.id; renderTrucks(); renderDetail(); };
-        card.className = `p-4 rounded-xl cursor-pointer border transition-all ${isSelected ? 'border-action bg-red-50/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'}`;
+        card.onclick = () => selectTruckMobile(truck.id);
+        card.className = `p-3.5 sm:p-4 rounded-xl cursor-pointer border transition-all ${isSelected ? 'border-action bg-red-50/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'}`;
         card.innerHTML = `
           <div class="flex justify-between items-start mb-2">
-            <div class="flex items-center gap-1.5">
-              <i data-lucide="truck" class="w-4 h-4 text-action"></i>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <i data-lucide="truck" class="w-4 h-4 text-action shrink-0"></i>
               <span class="font-bold text-sm text-slate-900">${truck.title}</span>
               <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">${truck.tempMode || 'Ambient'}</span>
             </div>
-            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${dynStat.style}">${dynStat.text}</span>
           </div>
-          <div class="text-xs font-semibold text-slate-700 mb-1">${truck.origin} ➔ ${truck.destination}</div>
+          <div class="text-xs font-semibold text-slate-700 mb-1 truncate">${truck.origin} ➔ ${truck.destination}</div>
           <div class="flex items-center justify-between text-[11px] text-slate-400 mb-2">
-            <span>${truck.departureDate} ${truck.price ? `· <strong class="text-slate-700">${truck.price}</strong>` : ''}</span>
-            <span style="color: ${stats.color}" class="font-bold">${stats.pct}% loaded</span>
+            <span class="truncate">${truck.departureDate} ${truck.price ? `· <strong class="text-slate-700">${truck.price}</strong>` : ''}</span>
+            <span style="color: ${stats.color}" class="font-bold shrink-0">${stats.pct}% loaded</span>
           </div>
           <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
             <div class="h-full rounded-full" style="width: ${Math.min(100, stats.pct)}%; background-color: ${stats.color}"></div>
@@ -1555,7 +1605,7 @@
       if (!container) return;
       
       if (!truck) {
-        container.innerHTML = '<div class="text-center py-28 text-slate-400 text-xs">Select a transport trip to inspect manifest details.</div>';
+        container.innerHTML = '<div class="text-center py-16 sm:py-28 text-slate-400 text-xs">Select a transport trip to inspect manifest details.</div>';
         return;
       }
 
@@ -1573,32 +1623,32 @@
         <div class="pb-5 border-b border-slate-100">
           ${stats.isOverCapacity ? `<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs flex items-center justify-between text-red-800"><div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i><span><strong>Capacity Limit Exceeded!</strong> Saturation at <strong>${stats.pct}%</strong>.</span></div><span class="text-[10px] uppercase font-black bg-red-200 px-2 py-0.5 rounded">Overload</span></div>` : ''}
 
-          <div class="flex justify-between items-start">
+          <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
             <div>
-              <div class="flex items-center gap-2 mb-1">
+              <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded ${dynStat.style}">${dynStat.text}</span>
                 <span class="text-xs font-bold px-2 py-0.5 bg-blue-50 text-ifl-blue rounded border border-blue-200">${truck.tempMode || 'Ambient'}</span>
                 <span class="text-xs text-slate-400">Created by <strong class="text-slate-700">${truck.author}</strong></span>
                 ${truck.price ? `<span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Price: ${truck.price}</span>` : ''}
               </div>
-              <h2 class="text-2xl font-black text-slate-900">${truck.origin} (${truck.originCountry || ''}) ➔ ${truck.destination} (${truck.destCountry || ''})</h2>
-              <p class="text-sm text-slate-500 mt-1">Trip Number: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
+              <h2 class="text-lg sm:text-2xl font-black text-slate-900 leading-tight">${truck.origin} ➔ ${truck.destination}</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Trip #: <strong>${truck.title}</strong> | Departure: ${truck.departureDate} ${truck.departureTime ? `at ${truck.departureTime}` : ''}</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-start sm:justify-end">
               ${truck.status === 'active' ? `
-                <button onclick="toggleTruckStatus('${truck.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Complete Trip</button>
-                <button onclick="openEditTruckModal('${truck.id}')" class="border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="edit-3" class="w-4 h-4 text-action"></i> Edit</button>
-                <button onclick="openResModal('${truck.id}')" class="bg-action text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs hover:bg-action-hover"><i data-lucide="plus" class="w-4 h-4"></i> Book Pallets</button>
-              ` : `<button onclick="toggleTruckStatus('${truck.id}')" class="text-xs border border-slate-200 text-slate-600 px-3 py-2 rounded-xl font-semibold">Reactivate Trip</button>`}
-              <button onclick="deleteTruck('${truck.id}')" class="p-2 border border-slate-200 text-slate-400 hover:text-red-600 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <button onclick="toggleTruckStatus('${truck.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Complete</button>
+                <button onclick="openEditTruckModal('${truck.id}')" class="border border-slate-200 text-slate-700 text-xs font-bold px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl flex items-center gap-1.5"><i data-lucide="edit-3" class="w-4 h-4 text-action"></i> Edit</button>
+                <button onclick="openResModal('${truck.id}')" class="bg-action text-white font-bold text-xs px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-xs hover:bg-action-hover"><i data-lucide="plus" class="w-4 h-4"></i> Book Pallets</button>
+              ` : `<button onclick="toggleTruckStatus('${truck.id}')" class="text-xs border border-slate-200 text-slate-600 px-3 py-1.5 rounded-xl font-semibold">Reactivate Trip</button>`}
+              <button onclick="deleteTruck('${truck.id}')" class="p-1.5 sm:p-2 border border-slate-200 text-slate-400 hover:text-red-600 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </div>
           </div>
 
           <!-- ROUTE MAP -->
-          <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="mt-4 p-2.5 sm:p-3 bg-slate-50 border border-slate-200 rounded-xl">
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="map" class="w-4 h-4 text-action"></i> Visual Route Itinerary</span>
-              <span class="text-[10px] text-slate-400">OpenStreetMap Engine</span>
+              <span class="text-[10px] text-slate-400">OpenStreetMap</span>
             </div>
             <div id="routeMap"></div>
           </div>
@@ -1608,33 +1658,33 @@
             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Route Stops & Checkpoint Status</h4>
             <div class="space-y-2">
               <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full ${hasDeparted ? 'bg-blue-600' : 'bg-amber-500'}"></span>
-                  <div><strong>Origin:</strong> ${truck.originComp ? truck.originComp + ' - ' : ''}${truck.origin} ${truck.originCP ? `(${truck.originCP})` : ''}</div>
+                <div class="flex items-center gap-2 truncate">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0 ${hasDeparted ? 'bg-blue-600' : 'bg-amber-500'}"></span>
+                  <div class="truncate"><strong>Origin:</strong> ${truck.originComp ? truck.originComp + ' - ' : ''}${truck.origin}</div>
                 </div>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${hasDeparted ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-800'}">
-                  ${hasDeparted ? 'Departed' : 'Scheduled / Pending'}
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ${hasDeparted ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-800'}">
+                  ${hasDeparted ? 'Departed' : 'Scheduled'}
                 </span>
               </div>
 
               ${(truck.stops || []).map((s, idx) => `
                 <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full ${s.arrived ? 'bg-emerald-500' : 'bg-yellow-500'}"></span>
-                    <div><strong>Stop ${idx + 1}:</strong> ${s.comp ? s.comp + ' - ' : ''}${s.city || s.addr || 'Waypoint'} ${s.cp ? `(${s.cp})` : ''}</div>
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0 ${s.arrived ? 'bg-emerald-500' : 'bg-yellow-500'}"></span>
+                    <div class="truncate"><strong>Stop ${idx + 1}:</strong> ${s.comp ? s.comp + ' - ' : ''}${s.city || s.addr || 'Waypoint'}</div>
                   </div>
-                  <button onclick="toggleTruckStopArrived('${truck.id}', ${idx})" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition ${s.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 hover:border-emerald-500'}">
-                    ${s.arrived ? '✓ Arrived' : 'Mark as Arrived'}
+                  <button onclick="toggleTruckStopArrived('${truck.id}', ${idx})" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition shrink-0 ${s.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 hover:border-emerald-500'}">
+                    ${s.arrived ? '✓ Arrived' : 'Mark Arrived'}
                   </button>
                 </div>
               `).join('')}
 
               <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full ${truck.status === 'completed' ? 'bg-emerald-600' : 'bg-slate-400'}"></span>
-                  <div><strong>Destination:</strong> ${truck.destComp ? truck.destComp + ' - ' : ''}${truck.destination} ${truck.destCP ? `(${truck.destCP})` : ''}</div>
+                <div class="flex items-center gap-2 truncate">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0 ${truck.status === 'completed' ? 'bg-emerald-600' : 'bg-slate-400'}"></span>
+                  <div class="truncate"><strong>Destination:</strong> ${truck.destComp ? truck.destComp + ' - ' : ''}${truck.destination}</div>
                 </div>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${truck.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ${truck.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
                   ${truck.status === 'completed' ? 'Delivered' : 'Pending'}
                 </span>
               </div>
@@ -1642,11 +1692,11 @@
           </div>
 
           <!-- METRICS & COST ALLOCATION -->
-          <div class="grid grid-cols-4 gap-3 mt-4">
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy</p><p class="text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR (Max 33)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeEUR})</span></p></div>
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">UK (Max 26)</p><p class="text-2xl font-black text-slate-800 mt-1">${stats.totalUK} <span class="text-[11px] font-normal text-emerald-600">(Rem: ~${stats.freeUK})</span></p></div>
-            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Cost / Pallet</p><p class="text-2xl font-black text-emerald-700 mt-1">€${stats.unitCost.toFixed(2)}</p></div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4">
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Occupancy</p><p class="text-xl sm:text-2xl font-black mt-1" style="color: ${stats.color}">${stats.pct}%</p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">EUR (Max 33)</p><p class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${stats.totalEUR} <span class="text-[10px] font-normal text-emerald-600">(~${stats.freeEUR})</span></p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">UK (Max 26)</p><p class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${stats.totalUK} <span class="text-[10px] font-normal text-emerald-600">(~${stats.freeUK})</span></p></div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl"><p class="text-[11px] font-semibold text-slate-500">Cost / Pallet</p><p class="text-xl sm:text-2xl font-black text-emerald-700 mt-1">€${stats.unitCost.toFixed(2)}</p></div>
           </div>
 
           <!-- AUDIT LOG VIEWER -->
@@ -1654,13 +1704,13 @@
             <details class="cursor-pointer">
               <summary class="font-bold text-slate-700 flex items-center justify-between">
                 <span class="flex items-center gap-1.5"><i data-lucide="history" class="w-3.5 h-3.5 text-ifl-blue"></i> Traceability & Audit Trail (${(truck.auditLog || []).length} events)</span>
-                <span class="text-[10px] text-slate-400 font-normal">Click to view change log</span>
+                <span class="text-[10px] text-slate-400 font-normal">View log</span>
               </summary>
               <div class="mt-2.5 pt-2 border-t border-slate-200 space-y-1.5 max-h-36 overflow-y-auto">
                 ${(truck.auditLog && truck.auditLog.length > 0) ? truck.auditLog.map(log => `
-                  <div class="text-[11px] text-slate-600 flex items-center justify-between bg-white p-1.5 rounded border border-slate-100">
-                    <div><strong class="text-slate-800">${log.user}</strong>: ${log.action}</div>
-                    <span class="text-[10px] text-slate-400">${new Date(log.timestamp).toLocaleString('en-GB')}</span>
+                  <div class="text-[11px] text-slate-600 flex items-center justify-between bg-white p-1.5 rounded border border-slate-100 gap-2">
+                    <div class="truncate"><strong class="text-slate-800">${log.user}</strong>: ${log.action}</div>
+                    <span class="text-[10px] text-slate-400 shrink-0">${new Date(log.timestamp).toLocaleString('en-GB')}</span>
                   </div>
                 `).join('') : '<p class="text-[11px] text-slate-400 py-1">No modifications logged yet.</p>'}
               </div>
@@ -1669,21 +1719,21 @@
 
           <!-- BULK DOWNLOAD -->
           ${allDocs.length > 0 ? `
-            <div class="mt-4 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs gap-2">
               <span class="font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="archive" class="w-4 h-4 text-action"></i> Secure Trip File Archive (${allDocs.length} files)</span>
-              <button onclick="downloadAllDocs('${truck.id}')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-2xs">
-                <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-action"></i> Download All as ZIP
+              <button onclick="downloadAllDocs('${truck.id}')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-2xs w-full sm:w-auto justify-center">
+                <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-action"></i> Download All (ZIP)
               </button>
             </div>
           ` : ''}
         </div>
 
         <div class="mt-6">
-          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest, Costs & Products</h3>
+          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Itemized Load Manifest & Products</h3>
           <div class="space-y-4">
             
-            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm space-y-3">
-              <div class="flex justify-between items-center">
+            <div class="p-3.5 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm space-y-3">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-slate-900">${truck.author}</span>
                   <span class="text-[10px] bg-blue-100 text-ifl-blue font-bold px-2 py-0.5 rounded">Trip Publisher</span>
@@ -1693,14 +1743,14 @@
               </div>
 
               <div class="space-y-1.5 pl-3 border-l-2 border-ifl-blue">
-                ${truck.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.eurDesc || 'EUR Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.eurQty} EUR Pallets</span></div>` : ''}
-                ${truck.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${truck.ukDesc || 'UK Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.ukQty} UK Pallets</span></div>` : ''}
+                ${truck.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700 text-xs sm:text-sm"><span>${truck.eurDesc || 'EUR Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.eurQty} EUR</span></div>` : ''}
+                ${truck.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700 text-xs sm:text-sm"><span>${truck.ukDesc || 'UK Cargo'}</span><span class="font-bold bg-white px-2.5 py-1 rounded border border-slate-200">${truck.ukQty} UK</span></div>` : ''}
               </div>
 
               <!-- Product items badge display -->
               ${(truck.products && truck.products.length > 0) ? `
                 <div class="mt-2 pt-2 border-t border-slate-200/60">
-                  <span class="text-[11px] font-bold text-slate-600 block mb-1.5">Registered SKUs / Products:</span>
+                  <span class="text-[11px] font-bold text-slate-600 block mb-1.5">Registered SKUs:</span>
                   <div class="flex flex-wrap gap-1.5">
                     ${truck.products.map(p => `
                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs">
@@ -1718,7 +1768,7 @@
               ${(truck.docs && truck.docs.length > 0) ? `
                 <div class="flex flex-wrap gap-2 pt-1">
                   ${truck.docs.map(d => `
-                    <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                    <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
                       <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
                     </button>
                   `).join('')}
@@ -1731,25 +1781,24 @@
               const resPallets = r.eurQty + r.ukQty;
               const resCost = (resPallets * stats.unitCost).toFixed(2);
               return `
-                <div class="p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
-                  <div class="flex justify-between items-center">
+                <div class="p-3.5 sm:p-4 bg-white border border-slate-200 rounded-xl text-sm space-y-3 shadow-2xs">
+                  <div class="flex justify-between items-center flex-wrap gap-1">
                     <div class="flex items-center gap-2">
                       <span class="font-bold text-slate-900">${r.author}</span>
                       <span class="text-[10px] bg-yellow-100 text-amber-800 font-bold px-2 py-0.5 rounded">Booker</span>
                       <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200 font-medium">${r.tempMode || 'Ambient'}</span>
-                      ${r.projectNo ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">Project: ${r.projectNo}</span>` : ''}
-                      ${r.partnerName ? `<span class="text-[11px] font-medium text-slate-500">(${r.partnerType || 'Partner'}: <strong class="text-slate-800">${r.partnerName}</strong>)</span>` : ''}
+                      ${r.projectNo ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">${r.projectNo}</span>` : ''}
                     </div>
-                    <div class="flex items-center gap-3">
-                      ${stats.unitCost > 0 ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">Cost: €${resCost}</span>` : ''}
-                      <button onclick="openEditResModal('${r.id}')" class="text-slate-400 hover:text-action"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                      <button onclick="cancelReservation('${r.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                      ${stats.unitCost > 0 ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">€${resCost}</span>` : ''}
+                      <button onclick="openEditResModal('${r.id}')" class="text-slate-400 hover:text-action p-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                      <button onclick="cancelReservation('${r.id}')" class="text-slate-300 hover:text-red-500 p-1"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
                     </div>
                   </div>
 
                   <div class="space-y-1.5 pl-3 border-l-2 border-ifl-yellow">
-                    ${r.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.eurDesc || 'EUR Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.eurQty} EUR Pallets</span></div>` : ''}
-                    ${r.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700"><span>${r.ukDesc || 'UK Booking'}</span><span class="font-bold bg-slate-50 px-2.5 py-1 rounded border border-slate-200">${r.ukQty} UK Pallets</span></div>` : ''}
+                    ${r.eurQty > 0 ? `<div class="flex justify-between items-center text-slate-700 text-xs sm:text-sm"><span>${r.eurDesc || 'EUR Booking'}</span><span class="font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-200">${r.eurQty} EUR</span></div>` : ''}
+                    ${r.ukQty > 0 ? `<div class="flex justify-between items-center text-slate-700 text-xs sm:text-sm"><span>${r.ukDesc || 'UK Booking'}</span><span class="font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-200">${r.ukQty} UK</span></div>` : ''}
                   </div>
 
                   ${(r.products && r.products.length > 0) ? `
@@ -1770,11 +1819,11 @@
                   ${r.notes ? `<div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100"><strong class="text-slate-800">Notes:</strong> ${r.notes}</div>` : ''}
                   
                   ${r.stop && (r.stop.city || r.stop.addr) ? `
-                    <div class="flex items-center justify-between p-2 bg-yellow-50/60 border border-yellow-200 rounded-lg text-xs">
-                      <p class="text-amber-800 font-medium">
-                        <i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Requested Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.city || r.stop.addr} ${r.stop.cp ? `(${r.stop.cp})` : ''}
+                    <div class="flex items-center justify-between p-2 bg-yellow-50/60 border border-yellow-200 rounded-lg text-xs gap-2">
+                      <p class="text-amber-800 font-medium truncate">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Stop: ${r.stop.comp ? r.stop.comp + ' - ' : ''}${r.stop.city || r.stop.addr}
                       </p>
-                      <button onclick="toggleResStopArrived('${r.id}')" class="text-[10px] font-bold px-2.5 py-0.5 rounded-md border transition ${r.stop.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 hover:border-emerald-500'}">
+                      <button onclick="toggleResStopArrived('${r.id}')" class="text-[10px] font-bold px-2.5 py-0.5 rounded-md border transition shrink-0 ${r.stop.arrived ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 hover:border-emerald-500'}">
                         ${r.stop.arrived ? '✓ Arrived' : 'Mark Arrived'}
                       </button>
                     </div>
@@ -1783,7 +1832,7 @@
                   ${(r.docs && r.docs.length > 0) ? `
                     <div class="flex flex-wrap gap-2 pt-1">
                       ${r.docs.map(d => `
-                        <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
+                        <button onclick='openOriginalDoc("${d.url}", "${d.name}")' class="text-[11px] bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg text-slate-700 flex items-center gap-1.5 hover:border-action hover:text-action transition shadow-2xs font-semibold">
                           <i data-lucide="file-text" class="w-3.5 h-3.5 text-action"></i> [${d.type}] ${d.name}
                         </button>
                       `).join('')}
@@ -1826,7 +1875,7 @@
           routePoints.push(stopCoords);
           L.circleMarker(stopCoords, { color: '#B45309', fillColor: '#FBBF24', fillOpacity: 0.9, radius: 6 })
             .addTo(currentLeafletMap)
-            .bindPopup(`<b>Stop:</b> ${s.comp || ''} ${s.city || s.addr || 'Waypoint'} (${s.arrived ? 'Arrived' : 'Pending'})`);
+            .bindPopup(`<b>Stop:</b> ${s.comp || ''} ${s.city || s.addr || 'Waypoint'}`);
         }
 
         for (const r of truckRes) {
@@ -1886,17 +1935,17 @@
       if (!grid) return;
       grid.innerHTML = '';
       
-      for (let i = 0; i < startingIndex; i++) grid.appendChild(Object.assign(document.createElement('div'), {className: 'h-28 bg-slate-50/50 rounded-xl border border-slate-100'}));
+      for (let i = 0; i < startingIndex; i++) grid.appendChild(Object.assign(document.createElement('div'), {className: 'h-20 sm:h-28 bg-slate-50/50 rounded-xl border border-slate-100'}));
 
       for (let d = 1; d <= totalDays; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const dayTrucks = trucks.filter(t => t.departureDate === dateStr);
         const cell = document.createElement('div');
-        cell.className = 'h-28 bg-white border border-slate-200 rounded-xl p-2 flex flex-col justify-between hover:border-action transition cursor-pointer group shadow-2xs';
+        cell.className = 'h-20 sm:h-28 bg-white border border-slate-200 rounded-xl p-1.5 sm:p-2 flex flex-col justify-between hover:border-action transition cursor-pointer group shadow-2xs';
         cell.onclick = (e) => { if (!e.target.closest('.truck-pill')) openTruckModal(dateStr); };
         cell.innerHTML = `
-          <div class="flex justify-between items-center text-xs font-bold text-slate-600"><span>${d}</span><span class="text-[10px] text-action opacity-0 group-hover:opacity-100 font-bold">+ Publish</span></div>
-          <div class="space-y-1 overflow-y-auto max-h-16">${dayTrucks.map(t => `<div onclick="event.stopPropagation(); inspectTripDirectly('${t.id}')" class="truck-pill bg-blue-50 hover:bg-blue-100 border border-blue-200 p-1.5 rounded text-[10px] flex justify-between items-center"><strong class="text-ifl-blue truncate">${t.title}</strong><span class="text-[9px] font-bold text-slate-500">${t.eurQty + t.ukQty}p</span></div>`).join('')}</div>
+          <div class="flex justify-between items-center text-[11px] sm:text-xs font-bold text-slate-600"><span>${d}</span><span class="text-[9px] sm:text-[10px] text-action opacity-0 group-hover:opacity-100 font-bold">+ Trip</span></div>
+          <div class="space-y-1 overflow-y-auto max-h-12 sm:max-h-16">${dayTrucks.map(t => `<div onclick="event.stopPropagation(); inspectTripDirectly('${t.id}')" class="truck-pill bg-blue-50 hover:bg-blue-100 border border-blue-200 p-1 sm:p-1.5 rounded text-[9px] sm:text-[10px] flex justify-between items-center"><strong class="text-ifl-blue truncate">${t.title}</strong><span class="text-[8px] sm:text-[9px] font-bold text-slate-500">${t.eurQty + t.ukQty}p</span></div>`).join('')}</div>
         `;
         grid.appendChild(cell);
       }
@@ -1914,9 +1963,9 @@
       const cpVal = stopData?.cp || '';
 
       div.innerHTML = `
-        <div class="grid grid-cols-3 gap-2">
-          <input type="text" list="companyHistory" value="${compVal}" placeholder="Company Name (Optional)" class="stop-comp col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
-          <select class="stop-country px-2 py-1 border rounded-lg text-xs outline-none bg-white font-medium">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input type="text" list="companyHistory" value="${compVal}" placeholder="Company Name (Optional)" class="stop-comp sm:col-span-2 px-2 py-1.5 border rounded-lg text-xs outline-none">
+          <select class="stop-country px-2 py-1.5 border rounded-lg text-xs outline-none bg-white font-medium">
             <option value="United Kingdom" ${countryVal === 'United Kingdom' ? 'selected' : ''}>United Kingdom</option>
             <option value="France" ${countryVal === 'France' ? 'selected' : ''}>France</option>
             <option value="Spain" ${countryVal === 'Spain' ? 'selected' : ''}>Spain</option>
@@ -1928,11 +1977,11 @@
             <option value="Other" ${countryVal === 'Other' ? 'selected' : ''}>Other</option>
           </select>
         </div>
-        <div class="grid grid-cols-3 gap-2">
-          <input type="text" list="cityHistory" value="${cityVal}" placeholder="City / Address" class="stop-city col-span-2 px-2 py-1 border rounded-lg text-xs outline-none">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input type="text" list="cityHistory" value="${cityVal}" placeholder="City / Address" class="stop-city sm:col-span-2 px-2 py-1.5 border rounded-lg text-xs outline-none">
           <div class="flex gap-1">
-            <input type="text" list="postcodeHistory" value="${cpVal}" placeholder="CP / Code" class="stop-cp flex-1 px-2 py-1 border rounded-lg text-xs outline-none">
-            <button type="button" onclick="this.closest('.stop-item').remove()" class="text-slate-400 hover:text-red-500 px-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+            <input type="text" list="postcodeHistory" value="${cpVal}" placeholder="CP / Code" class="stop-cp flex-1 px-2 py-1.5 border rounded-lg text-xs outline-none">
+            <button type="button" onclick="this.closest('.stop-item').remove()" class="text-slate-400 hover:text-red-500 p-1.5"><i data-lucide="trash" class="w-4 h-4"></i></button>
           </div>
         </div>
       `;
@@ -1942,7 +1991,14 @@
 
     function prevMonth() { calendarDate.setMonth(calendarDate.getMonth() - 1); renderMonthlyCalendar(); }
     function nextMonth() { calendarDate.setMonth(calendarDate.getMonth() + 1); renderMonthlyCalendar(); }
-    function inspectTripDirectly(id) { selectedTruckId = id; const t = trucks.find(x => x.id === id); if (t) switchTab(t.status); }
+    function inspectTripDirectly(id) { 
+      selectedTruckId = id; 
+      const t = trucks.find(x => x.id === id); 
+      if (t) switchTab(t.status);
+      if (window.innerWidth < 1024) {
+        document.getElementById('truckDetailSection')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
 
     function openTruckModal(defaultDate = null) {
       document.getElementById('truckModalTitle').innerText = 'Publish Trip';
@@ -1961,6 +2017,8 @@
       
       document.getElementById('truckEUR').value = 0;
       document.getElementById('truckUK').value = 0;
+      if (document.getElementById('truckEURMobile')) document.getElementById('truckEURMobile').value = 0;
+      if (document.getElementById('truckUKMobile')) document.getElementById('truckUKMobile').value = 0;
 
       generateSequentialTripNumber();
 
@@ -2023,6 +2081,8 @@
       document.getElementById('truckEURDesc').value = t.eurDesc || '';
       document.getElementById('truckUK').value = t.ukQty || 0;
       document.getElementById('truckUKDesc').value = t.ukDesc || '';
+      if (document.getElementById('truckEURMobile')) document.getElementById('truckEURMobile').value = t.eurQty || 0;
+      if (document.getElementById('truckUKMobile')) document.getElementById('truckUKMobile').value = t.ukQty || 0;
       document.getElementById('truckNotes').value = t.notes || '';
       
       const stopsContainer = document.getElementById('stopsContainer');
@@ -2059,6 +2119,8 @@
 
       document.getElementById('resEUR').value = 0;
       document.getElementById('resUK').value = 0;
+      if (document.getElementById('resEURMobile')) document.getElementById('resEURMobile').value = 0;
+      if (document.getElementById('resUKMobile')) document.getElementById('resUKMobile').value = 0;
       
       document.getElementById('resModal').classList.remove('hidden');
       lucide.createIcons();
@@ -2110,6 +2172,8 @@
       document.getElementById('resEURDesc').value = r.eurDesc || '';
       document.getElementById('resUK').value = r.ukQty || 0;
       document.getElementById('resUKDesc').value = r.ukDesc || '';
+      if (document.getElementById('resEURMobile')) document.getElementById('resEURMobile').value = r.eurQty || 0;
+      if (document.getElementById('resUKMobile')) document.getElementById('resUKMobile').value = r.ukQty || 0;
       if (r.stop) {
         document.getElementById('resStopComp').value = r.stop.comp || '';
         document.getElementById('resStopCountry').value = r.stop.country || 'Spain';
@@ -2134,7 +2198,7 @@
 
     function closeResModal() { document.getElementById('resModal').classList.add('hidden'); }
 
-    // === SAVE FUNCTIONS WITH AUDIT TRAIL LOGGING ===
+    // === SAVE FUNCTIONS ===
     async function saveTruck(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('btnSaveTruckSubmit');
