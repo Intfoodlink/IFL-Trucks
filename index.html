@@ -88,7 +88,13 @@
   <datalist id="companyHistory"></datalist>
   <datalist id="cityHistory"></datalist>
   <datalist id="postcodeHistory"></datalist>
-  <datalist id="productTemplateList"></datalist>
+  <datalist id="productCodePresets">
+    <option value="PHF0120">PHF0120 - Packaging / Boxes</option>
+    <option value="KK0030">KK0030 - Sauces / Marinara</option>
+    <option value="FL0085">FL0085 - Flour & Sugar Pallets</option>
+    <option value="OIL044">OIL044 - Vegetable Frying Oil</option>
+    <option value="CHOC99">CHOC99 - Confectionery Mix</option>
+  </datalist>
 
   <!-- TOP HEADER -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
@@ -123,17 +129,17 @@
   <!-- MAIN WRAPPER -->
   <main class="max-w-[96%] mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 w-full relative z-10">
 
-    <!-- NAVIGATION TABS -->
+    <!-- NAVIGATION TABS (PRODUCTS FIRST) -->
     <div class="border-b border-slate-200 mb-4 sm:mb-6 overflow-x-auto no-scrollbar">
       <div class="flex space-x-4 sm:space-x-8 whitespace-nowrap min-w-max pb-1">
-        <button onclick="switchTab('active')" id="tabActive" class="pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5">
+        <button onclick="switchTab('products')" id="tabProducts" class="pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5">
+          <i data-lucide="box" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Products & Cargo Pool
+        </button>
+        <button onclick="switchTab('active')" id="tabActive" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
           <i data-lucide="truck" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Active Trips
         </button>
         <button onclick="switchTab('completed')" id="tabCompleted" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
           <i data-lucide="check-circle-2" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Completed
-        </button>
-        <button onclick="switchTab('cargoPool')" id="tabCargoPool" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
-          <i data-lucide="package" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Cargo Pool & SKUs
         </button>
         <button onclick="switchTab('calendar')" id="tabCalendar" class="pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
           <i data-lucide="calendar" class="w-3.5 sm:w-4 h-3.5 sm:h-4"></i> Monthly Calendar
@@ -147,8 +153,40 @@
       </div>
     </div>
 
-    <!-- WORKSPACE VIEW -->
-    <div id="workspaceView" class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+    <!-- PRODUCTS & CARGO POOL VIEW (FIRST TAB) -->
+    <div id="productsView" class="space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="boxes" class="w-5 h-5 text-action"></i> Food & Beverage Product Templates & Cargo Pool
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Manage frequently used product SKUs and register cargo items ready for assignment to trucks.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openTemplateModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition">
+            <i data-lucide="bookmark-plus" class="w-4 h-4 text-ifl-blue"></i> New Product Template
+          </button>
+          <button onclick="openCargoModal()" class="bg-action hover:bg-action-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-1.5 transition">
+            <i data-lucide="package-plus" class="w-4 h-4"></i> Add Pending Cargo
+          </button>
+        </div>
+      </div>
+
+      <!-- TEMPLATES LIST -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs space-y-3">
+        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Frequent Product Templates (SKU Catalog)</h3>
+        <div id="templatesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- PENDING CARGO POOL ITEMS -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs space-y-3">
+        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Pending Cargo Items & Pallet Allocations</h3>
+        <div id="cargoPoolCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </div>
+
+    <!-- WORKSPACE VIEW (ACTIVE / COMPLETED TRIPS) -->
+    <div id="workspaceView" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
       <section class="lg:col-span-4 border border-slate-200 rounded-2xl p-3.5 sm:p-5 flex flex-col lg:h-[85vh] shadow-xs bg-white">
         <div class="relative mb-3 sm:mb-4">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
@@ -162,98 +200,158 @@
       </section>
     </div>
 
-    <!-- CARGO POOL VIEW (NEW TAB) -->
-    <div id="cargoPoolView" class="hidden space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs">
-        <div>
-          <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="package-plus" class="w-5 h-5 text-action"></i> Pending Cargo Pool & Food Templates
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Manage items to send, save frequent F&B SKUs, and assign items visually to active trucks.</p>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="openTemplateModal()" class="border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold px-3 py-2.5 rounded-xl shadow-2xs flex items-center gap-1.5 transition">
-            <i data-lucide="bookmark-plus" class="w-4 h-4 text-ifl-blue"></i> Manage F&B SKUs
-          </button>
-          <button onclick="openCargoModal()" class="bg-action hover:bg-action-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-1.5 transition">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Pending Cargo
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="cargoPoolCardsContainer"></div>
-    </div>
-
     <!-- CALENDAR VIEW -->
     <div id="calendarView" class="hidden border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
-      <div class="flex justify-between items-center mb-4 pb-4 border-b">
-        <h2 id="calendarMonthTitle" class="text-base font-bold text-slate-900">Month Year</h2>
-        <button onclick="switchTab('active')" class="bg-slate-100 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl">Back to Trips</button>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6 pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <h2 id="calendarMonthTitle" class="text-base sm:text-lg font-bold text-slate-900">Month Year</h2>
+          <div class="flex gap-1.5">
+            <button onclick="prevMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i></button>
+            <button onclick="nextMonth()" class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i></button>
+          </div>
+        </div>
+        <button onclick="switchTab('active')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Trips
+        </button>
       </div>
-      <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 uppercase mb-2"><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div></div>
-      <div id="calendarGrid" class="grid grid-cols-7 gap-1 min-h-[500px]"></div>
+      <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>
+      <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 min-h-[400px] sm:min-h-[600px]"></div>
     </div>
 
     <!-- FILTERS VIEW -->
     <div id="filtersView" class="hidden border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
-      <h2 class="text-sm font-bold text-slate-900 mb-4">Shipment Directory & Reports</h2>
-      <button onclick="exportExcelReport('full')" class="bg-action text-white text-xs font-bold px-3 py-2 rounded-lg">Export Excel</button>
+      <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2"><i data-lucide="filter" class="w-4 sm:w-5 h-4 sm:h-5 text-action"></i> Shipment Directory & Custom Reports</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Filter loads, export manifests and create GDPR database backups.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-between xl:justify-end">
+          <button onclick="downloadFullDatabaseBackup()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-2xs">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i> Backup (JSON)
+          </button>
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
+            <span class="text-[11px] font-bold text-slate-500 px-1">Export:</span>
+            <button onclick="exportExcelReport('simple')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Excel
+            </button>
+            <button onclick="exportExcelReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-700"></i> Detailed
+            </button>
+            <button onclick="exportPDFReport('full')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition shadow-2xs">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-red-700"></i> PDF
+            </button>
+          </div>
+          <button onclick="resetFilters()" class="text-xs text-action font-bold hover:underline px-1">Reset</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto border border-slate-200 rounded-xl">
+        <table class="w-full text-left text-xs text-slate-600 whitespace-nowrap min-w-[700px]">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
+            <tr>
+              <th class="p-3">Trip #</th><th class="p-3">Coordinator</th><th class="p-3">Route</th><th class="p-3">Departure</th>
+              <th class="p-3">Mode</th><th class="p-3">Pallets</th><th class="p-3">Occupancy</th><th class="p-3">Status</th><th class="p-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="filteredTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ANALYTICS VIEW -->
-    <div id="analyticsView" class="hidden space-y-4">
+    <div id="analyticsView" class="hidden space-y-4 sm:space-y-6">
       <div class="border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-xs">
-        <h2 class="text-base font-bold text-slate-900 mb-4">Analytics & KPIs</h2>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="p-3.5 bg-slate-50 border rounded-xl"><span class="text-xs text-slate-500 block">Avg Saturation</span><span id="kpiAvgOccupancy" class="text-xl font-black text-ifl-blue">0%</span></div>
-          <div class="p-3.5 bg-slate-50 border rounded-xl"><span class="text-xs text-slate-500 block">Total Spend</span><span id="kpiTotalSpend" class="text-xl font-black text-emerald-700">€0</span></div>
-          <div class="p-3.5 bg-slate-50 border rounded-xl"><span class="text-xs text-slate-500 block">Pallets Moved</span><span id="kpiTotalPallets" class="text-xl font-black text-slate-900">0</span></div>
-          <div class="p-3.5 bg-slate-50 border rounded-xl"><span class="text-xs text-slate-500 block">Total Trips</span><span id="kpiTotalTrips" class="text-xl font-black text-amber-600">0</span></div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-action"></i> Freight Capacity & Financial KPIs
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Aggregated load efficiency, freight pricing and volume metrics.</p>
+          </div>
+          <select id="analyticsTimeframe" onchange="renderAnalyticsDashboard()" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none font-semibold">
+            <option value="all">All-Time</option>
+            <option value="this_year">Current Year</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50"><span class="text-xs text-slate-500 block">Avg Saturation</span><span id="kpiAvgOccupancy" class="text-xl font-black text-ifl-blue">0%</span></div>
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50"><span class="text-xs text-slate-500 block">Total Spend</span><span id="kpiTotalSpend" class="text-xl font-black text-emerald-700">€0</span></div>
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50"><span class="text-xs text-slate-500 block">Pallets Moved</span><span id="kpiTotalPallets" class="text-xl font-black text-slate-900">0</span></div>
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50"><span class="text-xs text-slate-500 block">Total Trips</span><span id="kpiTotalTrips" class="text-xl font-black text-amber-600">0</span></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-white h-56"><canvas id="chartTempModes"></canvas></div>
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-white h-56"><canvas id="chartVolumeBar"></canvas></div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- CARGO MODAL -->
-  <div id="cargoModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border my-4 max-h-[92vh] overflow-y-auto">
+  <!-- TEMPLATE MODAL (ADD PRODUCT SKU) -->
+  <div id="templateModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border">
       <div class="flex justify-between items-center mb-4 pb-2 border-b">
+        <h3 class="text-base font-bold">New Product SKU Template</h3>
+        <button onclick="closeTemplateModal()"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="saveProductTemplate(event)" class="space-y-3 text-xs">
+        <div><label class="block font-semibold mb-1">SKU Code</label><input type="text" id="tplCode" required placeholder="e.g. KK0030" class="w-full px-3 py-2 border rounded-xl outline-none font-bold"></div>
+        <div><label class="block font-semibold mb-1">Standard Description</label><input type="text" id="tplDesc" required placeholder="e.g. Marinara Sauce Pallet" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
+        <div>
+          <label class="block font-semibold mb-1">Default Temperature</label>
+          <select id="tplTemp" class="w-full px-2 py-2 border rounded-xl outline-none bg-white">
+            <option value="Ambient">Ambient</option>
+            <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
+            <option value="Frozen (-18ºC)">Frozen</option>
+            <option value="Dry Goods / Packaging">Dry Goods</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeTemplateModal()" class="px-4 py-2 border rounded-xl font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-action text-white rounded-xl font-bold">Save Template</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CARGO MODAL (REGISTER PENDING PRODUCTS) -->
+  <div id="cargoModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900">Add Pending Cargo Item</h3>
         <button onclick="closeCargoModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="cargoForm" onsubmit="saveCargoItem(event)" class="space-y-3 text-xs">
-        <div>
-          <label class="block font-semibold mb-1">Quick Select F&B Product Template (Optional)</label>
-          <select id="cargoTemplateSelect" onchange="applyProductTemplate(this.value)" class="w-full px-3 py-2 border rounded-xl bg-white font-medium">
-            <option value="">-- Choose frequent food/beverage product --</option>
-          </select>
-        </div>
         <div class="grid grid-cols-2 gap-2">
           <div><label class="block font-semibold mb-1">Item / Product Name</label><input type="text" id="cargoName" required placeholder="e.g. Frozen Pastries" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
           <div><label class="block font-semibold mb-1">Client / Destination</label><input type="text" id="cargoDest" required placeholder="e.g. Madrid Hub" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <div><label class="block font-semibold mb-1">EUR Pallets</label><input type="number" id="cargoEur" min="0" value="0" class="w-full px-3 py-2 border rounded-xl font-bold"></div>
-          <div><label class="block font-semibold mb-1">UK Pallets</label><input type="number" id="cargoUk" min="0" value="0" class="w-full px-3 py-2 border rounded-xl font-bold"></div>
-          <div><label class="block font-semibold mb-1">Delivery Date</label><input type="date" id="cargoDeliveryDate" class="w-full px-3 py-2 border rounded-xl"></div>
+          <div><label class="block font-semibold mb-1">EUR Pallets</label><input type="number" id="cargoEur" min="0" value="0" class="w-full px-3 py-2 border rounded-xl outline-none font-bold"></div>
+          <div><label class="block font-semibold mb-1">UK Pallets</label><input type="number" id="cargoUk" min="0" value="0" class="w-full px-3 py-2 border rounded-xl outline-none font-bold"></div>
+          <div><label class="block font-semibold mb-1">Delivery Date</label><input type="date" id="cargoDeliveryDate" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-semibold mb-1">Temperature Mode</label>
-            <select id="cargoTemp" class="w-full px-2 py-2 border rounded-xl bg-white font-medium">
+            <select id="cargoTemp" class="w-full px-2 py-2 border rounded-xl outline-none bg-white font-medium">
               <option value="Ambient">Ambient</option>
               <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
               <option value="Frozen (-18ºC)">Frozen</option>
               <option value="Dry Goods / Packaging">Dry Goods</option>
             </select>
           </div>
-          <div><label class="block font-semibold mb-1">SKU / Ref Code</label><input type="text" id="cargoSku" placeholder="KK0030" class="w-full px-3 py-2 border rounded-xl"></div>
+          <div><label class="block font-semibold mb-1">SKU / Ref Code</label><input type="text" id="cargoSku" list="productCodePresets" placeholder="e.g. KK0030" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
         </div>
         <div>
           <label class="block font-semibold mb-1">Attach Documents (Invoice, EHC, etc.)</label>
-          <input type="file" id="cargoFileInput" multiple class="w-full px-3 py-2 border rounded-xl bg-slate-50">
+          <input type="file" id="cargoFileInput" multiple class="w-full px-3 py-2 border rounded-xl outline-none bg-slate-50">
         </div>
-        <div><label class="block font-semibold mb-1">Notes</label><textarea id="cargoNotes" rows="2" class="w-full px-3 py-2 border rounded-xl"></textarea></div>
+        <div>
+          <label class="block font-semibold mb-1">Notes</label>
+          <textarea id="cargoNotes" rows="2" placeholder="Optional remarks..." class="w-full px-3 py-2 border rounded-xl outline-none"></textarea>
+        </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button type="button" onclick="closeCargoModal()" class="px-4 py-2 border rounded-xl font-semibold">Cancel</button>
           <button type="submit" class="px-5 py-2 bg-action text-white rounded-xl font-bold">Save Cargo Item</button>
@@ -262,46 +360,22 @@
     </div>
   </div>
 
-  <!-- PRODUCT TEMPLATES MODAL -->
-  <div id="templateModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl border my-4">
-      <div class="flex justify-between items-center mb-3 pb-2 border-b">
-        <h3 class="text-base font-bold text-slate-900">Manage F&B Product Templates</h3>
-        <button onclick="closeTemplateModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form onsubmit="saveProductTemplate(event)" class="space-y-3 text-xs mb-4">
-        <div><label class="block font-semibold mb-1">Product Code / SKU</label><input type="text" id="tmplCode" required placeholder="e.g. CHOC99" class="w-full px-3 py-2 border rounded-xl"></div>
-        <div><label class="block font-semibold mb-1">Standard Description / Weight</label><input type="text" id="tmplDesc" required placeholder="e.g. Belgian Chocolate Box (800kg)" class="w-full px-3 py-2 border rounded-xl"></div>
-        <div>
-          <label class="block font-semibold mb-1">Default Temperature</label>
-          <select id="tmplTemp" class="w-full px-2 py-2 border rounded-xl bg-white font-medium">
-            <option value="Ambient">Ambient</option>
-            <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
-            <option value="Frozen (-18ºC)">Frozen</option>
-          </select>
-        </div>
-        <button type="submit" class="w-full py-2 bg-ifl-blue text-white rounded-xl font-bold">Save Template</button>
-      </form>
-      <div id="templateListContainer" class="space-y-2 max-h-48 overflow-y-auto"></div>
-    </div>
-  </div>
-
   <!-- TRUCK MODAL -->
   <div id="truckModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border my-4 max-h-[92vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4 pb-2 border-b">
-        <h3 class="text-base font-bold text-slate-900">Publish New Trip</h3>
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <h3 id="truckModalTitle" class="text-base font-bold text-slate-900">Publish New Trip</h3>
         <button onclick="closeTruckModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="truckForm" onsubmit="saveTruck(event)" class="space-y-3 text-xs">
         <input type="hidden" id="editingTruckId" value="">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
-          <div><label class="block font-semibold mb-1">Coordinator</label><input type="text" id="truckAuthor" placeholder="Magda" class="w-full px-3 py-2 border rounded-xl"></div>
-          <div><label class="block font-semibold mb-1">Trip #</label><input type="text" id="truckTitle" placeholder="26-0001" class="w-full px-3 py-2 border rounded-xl font-bold text-ifl-blue"></div>
-          <div><label class="block font-semibold mb-1">Price (€)</label><input type="text" id="truckPrice" placeholder="€1,800" class="w-full px-3 py-2 border rounded-xl"></div>
+          <div><label class="block font-semibold mb-1">Coordinator</label><input type="text" id="truckAuthor" placeholder="Magda" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
+          <div><label class="block font-semibold mb-1">Trip #</label><input type="text" id="truckTitle" placeholder="26-0001" class="w-full px-3 py-2 border rounded-xl outline-none font-bold text-ifl-blue"></div>
+          <div><label class="block font-semibold mb-1">Price (€)</label><input type="text" id="truckPrice" placeholder="€1,800" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
           <div>
             <label class="block font-semibold mb-1">Mode</label>
-            <select id="truckTempMode" class="w-full px-2 py-2 border rounded-xl bg-white">
+            <select id="truckTempMode" class="w-full px-2 py-2 border rounded-xl outline-none bg-white">
               <option value="Ambient">Ambient</option>
               <option value="Chilled (+2ºC / +4ºC)">Chilled</option>
               <option value="Frozen (-18ºC)">Frozen</option>
@@ -310,20 +384,45 @@
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="block font-semibold mb-1">Departure Date</label><input type="date" id="truckDate" class="w-full px-3 py-2 border rounded-xl"></div>
-          <div><label class="block font-semibold mb-1">Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border rounded-xl"></div>
+          <div><label class="block font-semibold mb-1">Departure Date</label><input type="date" id="truckDate" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
+          <div><label class="block font-semibold mb-1">Time</label><input type="time" id="truckTime" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="block font-semibold mb-1">Origin City</label><input type="text" id="truckOriginCity" placeholder="Enfield, London" class="w-full px-3 py-2 border rounded-xl"></div>
-          <div><label class="block font-semibold mb-1">Destination City</label><input type="text" id="truckDestCity" placeholder="Madrid" class="w-full px-3 py-2 border rounded-xl"></div>
+          <div><label class="block font-semibold mb-1">Origin City</label><input type="text" id="truckOriginCity" placeholder="Enfield, London" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
+          <div><label class="block font-semibold mb-1">Destination City</label><input type="text" id="truckDestCity" placeholder="Madrid" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="block font-semibold mb-1">EUR Pallets</label><input type="number" id="truckEUR" min="0" value="0" class="w-full px-3 py-2 border rounded-xl font-bold"></div>
-          <div><label class="block font-semibold mb-1">UK Pallets</label><input type="number" id="truckUK" min="0" value="0" class="w-full px-3 py-2 border rounded-xl font-bold"></div>
+          <div><label class="block font-semibold mb-1">EUR Pallets</label><input type="number" id="truckEUR" min="0" value="0" class="w-full px-3 py-2 border rounded-xl outline-none font-bold"></div>
+          <div><label class="block font-semibold mb-1">UK Pallets</label><input type="number" id="truckUK" min="0" value="0" class="w-full px-3 py-2 border rounded-xl outline-none font-bold"></div>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button type="button" onclick="closeTruckModal()" class="px-4 py-2 border rounded-xl font-semibold">Cancel</button>
           <button type="submit" class="px-5 py-2 bg-action text-white rounded-xl font-bold">Publish Trip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RESERVATION MODAL -->
+  <div id="resModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900">Book Pallets to Trip</h3>
+        <button onclick="closeResModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="resForm" onsubmit="saveReservation(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="editingResId" value="">
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block font-semibold mb-1">Booker Name</label><input type="text" id="resAuthor" required placeholder="Colin" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
+          <div><label class="block font-semibold mb-1">Project Ref</label><input type="text" id="resProjectNo" placeholder="PRJ-2026-01" class="w-full px-3 py-2 border rounded-xl outline-none"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block font-semibold mb-1">EUR Pallets</label><input type="number" id="resEUR" min="0" value="0" class="w-full px-3 py-2 border rounded-xl outline-none font-bold"></div>
+          <div><label class="block font-semibold mb-1">UK Pallets</label><input type="number" id="resUK" min="0" value="0" class="w-full px-3 py-2 border rounded-xl outline-none font-bold"></div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeResModal()" class="px-4 py-2 border rounded-xl font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-action text-white rounded-xl font-bold">Save Booking</button>
         </div>
       </form>
     </div>
@@ -334,17 +433,19 @@
     let reservations = [];
     let cargoPool = [];
     let productTemplates = [];
-    let currentTab = 'active';
+    let currentTab = 'products';
     let selectedTruckId = null;
+    let calendarDate = new Date();
 
     async function checkAuthSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
+      const overlay = document.getElementById('authOverlay');
       if (session) {
-        document.getElementById('authOverlay').classList.add('hidden');
+        overlay.classList.add('hidden');
         document.getElementById('userEmailDisplay').innerText = session.user.email;
         await loadCloudData();
       } else {
-        document.getElementById('authOverlay').classList.remove('hidden');
+        overlay.classList.remove('hidden');
       }
     }
 
@@ -372,7 +473,7 @@
         const { data: cloudTrucks } = await supabaseClient.from('trucks').select('*').order('created_at', { ascending: false });
         const { data: cloudRes } = await supabaseClient.from('reservations').select('*');
         const { data: cloudCargo } = await supabaseClient.from('pending_cargo').select('*');
-        const { data: cloudTemplates } = await supabaseClient.from('product_templates').select('*');
+        const { data: cloudTpls } = await supabaseClient.from('product_templates').select('*');
 
         if (cloudTrucks) {
           trucks = cloudTrucks.map(t => ({
@@ -382,13 +483,14 @@
             departureTime: t.departure_time || '', eurQty: Number(t.eur_qty) || 0,
             ukQty: Number(t.uk_qty) || 0, tempMode: t.temp_mode || 'Ambient',
             stops: Array.isArray(t.stops) ? t.stops : [], docs: Array.isArray(t.docs) ? t.docs : [],
-            status: t.status || 'active'
+            auditLog: Array.isArray(t.audit_log) ? t.audit_log : [], status: t.status || 'active'
           }));
         }
 
         if (cloudRes) {
           reservations = cloudRes.map(r => ({
-            id: r.id, truckId: r.truck_id, author: r.author || 'Booker', eurQty: Number(r.eur_qty) || 0, ukQty: Number(r.uk_qty) || 0
+            id: r.id, truckId: r.truck_id, author: r.author || 'Booker',
+            projectNo: r.project_no || '', eurQty: Number(r.eur_qty) || 0, ukQty: Number(r.uk_qty) || 0
           }));
         }
 
@@ -400,16 +502,18 @@
           }));
         }
 
-        if (cloudTemplates) {
-          productTemplates = cloudTemplates;
-          updateTemplateDropdowns();
+        if (cloudTpls) {
+          productTemplates = cloudTpls.map(p => ({
+            id: p.id, code: p.code, description: p.description, defaultTemp: p.default_temp
+          }));
         }
 
         if (!selectedTruckId && trucks.length > 0) selectedTruckId = trucks[0].id;
 
+        renderProductTemplates();
+        renderCargoPool();
         renderTrucks();
         renderDetail();
-        renderCargoPool();
       } catch(e) { console.error("Load error", e); }
     }
 
@@ -431,22 +535,29 @@
 
     function switchTab(tab) {
       currentTab = tab;
-      ['active', 'completed', 'cargoPool', 'calendar', 'filters', 'analytics'].forEach(t => {
+      ['products', 'active', 'completed', 'calendar', 'filters', 'analytics'].forEach(t => {
         const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
         if(btn) btn.className = 'pb-2.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1.5';
-        const view = document.getElementById(t === 'active' || t === 'completed' ? 'workspaceView' : t + 'View');
+        const view = document.getElementById(t === 'products' ? 'productsView' : (t === 'active' || t === 'completed' ? 'workspaceView' : t + 'View'));
         if(view) view.classList.add('hidden');
       });
 
       const activeBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
       if(activeBtn) activeBtn.className = 'pb-2.5 text-xs sm:text-sm font-bold text-action border-b-2 border-action flex items-center gap-1.5';
 
-      if (tab === 'cargoPool') {
-        document.getElementById('cargoPoolView').classList.remove('hidden');
+      if (tab === 'products') {
+        document.getElementById('productsView').classList.remove('hidden');
+        renderProductTemplates();
         renderCargoPool();
       } else if (tab === 'analytics') {
         document.getElementById('analyticsView').classList.remove('hidden');
         renderAnalyticsDashboard();
+      } else if (tab === 'calendar') {
+        document.getElementById('calendarView').classList.remove('hidden');
+        renderMonthlyCalendar();
+      } else if (tab === 'filters') {
+        document.getElementById('filtersView').classList.remove('hidden');
+        applyAdvancedFilters();
       } else {
         document.getElementById('workspaceView').classList.remove('hidden');
         renderTrucks();
@@ -454,65 +565,44 @@
       }
     }
 
-    // === TEMPLATES LOGIC ===
-    function openTemplateModal() {
-      document.getElementById('templateModal').classList.remove('hidden');
-      renderTemplateList();
-    }
+    // === PRODUCT TEMPLATES & CARGO POOL FUNCTIONS ===
+    function openTemplateModal() { document.getElementById('templateModal').classList.remove('hidden'); }
     function closeTemplateModal() { document.getElementById('templateModal').classList.add('hidden'); }
 
     async function saveProductTemplate(e) {
       e.preventDefault();
-      const code = document.getElementById('tmplCode').value.trim();
-      const desc = document.getElementById('tmplDesc').value.trim();
-      const temp = document.getElementById('tmplTemp').value;
-      const id = 'tmpl_' + Date.now();
-
-      await supabaseClient.from('product_templates').insert({ id, code, description: desc, default_temp: temp });
-      alert("Product template saved successfully!");
-      document.getElementById('tmplCode').value = '';
-      document.getElementById('tmplDesc').value = '';
+      const id = 'tpl_' + Date.now();
+      const payload = {
+        id,
+        code: document.getElementById('tplCode').value.trim(),
+        description: document.getElementById('tplDesc').value.trim(),
+        default_temp: document.getElementById('tplTemp').value
+      };
+      await supabaseClient.from('product_templates').upsert(payload);
+      closeTemplateModal();
       await loadCloudData();
-      renderTemplateList();
     }
 
-    function renderTemplateList() {
-      const container = document.getElementById('templateListContainer');
-      if(!container) return;
-      container.innerHTML = productTemplates.map(t => `
-        <div class="flex justify-between items-center p-2 bg-slate-50 border rounded-lg text-xs">
-          <div><strong>${t.code}</strong> - ${t.description} <span class="text-[10px] text-slate-500">(${t.default_temp})</span></div>
-          <button onclick="deleteTemplate('${t.id}')" class="text-red-500 hover:text-red-700 font-bold">Delete</button>
-        </div>
-      `).join('');
+    function renderProductTemplates() {
+      const container = document.getElementById('templatesGrid');
+      if (!container) return;
+      container.innerHTML = productTemplates.length === 0 ? '<p class="text-xs text-slate-400 col-span-full">No product templates saved yet.</p>' : '';
+
+      productTemplates.forEach(tpl => {
+        const card = document.createElement('div');
+        card.className = 'p-3 border rounded-xl bg-slate-50 text-xs space-y-1';
+        card.innerHTML = `
+          <div class="flex justify-between items-center"><strong class="text-ifl-blue text-sm">${tpl.code}</strong><span class="text-[10px] bg-white px-2 py-0.5 rounded border">${tpl.defaultTemp}</span></div>
+          <p class="text-slate-700">${tpl.description}</p>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
     }
 
-    async function deleteTemplate(id) {
-      await supabaseClient.from('product_templates').delete().eq('id', id);
-      await loadCloudData();
-      renderTemplateList();
-    }
-
-    function updateTemplateDropdowns() {
-      const sel = document.getElementById('cargoTemplateSelect');
-      if(!sel) return;
-      sel.innerHTML = '<option value="">-- Choose frequent food/beverage product --</option>' + productTemplates.map(t => `<option value="${t.id}">${t.code} - ${t.description}</option>`).join('');
-    }
-
-    function applyProductTemplate(id) {
-      if(!id) return;
-      const t = productTemplates.find(x => x.id === id);
-      if(!t) return;
-      document.getElementById('cargoSku').value = t.code;
-      document.getElementById('cargoName').value = t.description;
-      document.getElementById('cargoTemp').value = t.default_temp || 'Ambient';
-    }
-
-    // === CARGO POOL FUNCTIONS ===
     function openCargoModal() {
       document.getElementById('cargoForm').reset();
       document.getElementById('cargoModal').classList.remove('hidden');
-      updateTemplateDropdowns();
       lucide.createIcons();
     }
     function closeCargoModal() { document.getElementById('cargoModal').classList.add('hidden'); }
@@ -561,7 +651,7 @@
     function renderCargoPool() {
       const container = document.getElementById('cargoPoolCardsContainer');
       if (!container) return;
-      container.innerHTML = cargoPool.length === 0 ? '<p class="text-xs text-slate-400 col-span-full text-center py-12">No pending cargo items registered.</p>' : '';
+      container.innerHTML = cargoPool.length === 0 ? '<p class="text-xs text-slate-400 col-span-full text-center py-8">No pending cargo items registered.</p>' : '';
 
       cargoPool.forEach(item => {
         const assignedTruck = trucks.find(t => t.id === item.assignedTruckId);
@@ -580,9 +670,9 @@
           <div class="text-xs text-slate-600"><strong>Dest:</strong> ${item.dest} | <strong>Delivery:</strong> ${item.deliveryDate || 'Not specified'}</div>
           <div class="text-xs font-semibold text-ifl-blue">${item.eur} EUR / ${item.uk} UK Pallets (${item.temp})</div>
           ${item.sku ? `<div class="text-[11px] bg-slate-50 p-1.5 rounded border">SKU: <strong>${item.sku}</strong></div>` : ''}
-          ${item.docs.length > 0 ? `<div class="text-[10px] text-emerald-700 font-bold">✓ ${item.docs.length} attached document(s)</div>` : ''}
-          <div class="pt-2 border-t border-slate-100">
-            <select onchange="assignCargoToTruck('${item.id}', this.value)" class="text-xs border rounded-lg p-1.5 bg-slate-50 w-full outline-none">
+          
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+            <select onchange="assignCargoToTruck('${item.id}', this.value)" class="text-xs border rounded-lg p-1.5 bg-slate-50 flex-1 outline-none">
               <option value="">-- Assign to Active Trip --</option>
               ${trucks.filter(t => t.status === 'active').map(t => `<option value="${t.id}" ${item.assignedTruckId === t.id ? 'selected' : ''}>Trip ${t.title} (${t.origin} ➔${t.destination})</option>`).join('')}
             </select>
@@ -599,7 +689,7 @@
     }
 
     async function deleteCargoItem(id) {
-      if (confirm('Delete this cargo item?')) {
+      if (confirm('Delete this pending cargo item?')) {
         await supabaseClient.from('pending_cargo').delete().eq('id', id);
         await loadCloudData();
       }
@@ -635,20 +725,23 @@
       const assignedCargo = cargoPool.filter(c => c.assignedTruckId === truck.id);
 
       container.innerHTML = `
-        <div class="pb-4 border-b border-slate-100 flex justify-between items-start">
+        <div class="pb-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start gap-2">
           <div>
             <h2 class="text-lg font-black text-slate-900">${truck.origin} ➔ ${truck.destination}</h2>
             <p class="text-xs text-slate-500">Trip #: <strong>${truck.title}</strong> | Pallets: ${stats.totalEUR} EUR / ${stats.totalUK} UK (${stats.pct}%)</p>
           </div>
-          <button onclick="openResModal('${truck.id}')" class="bg-action text-white text-xs font-bold px-3 py-1.5 rounded-xl">Book Pallets</button>
+          <div class="flex gap-2">
+            ${truck.status === 'active' ? `<button onclick="toggleTruckStatus('${truck.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-xl">Complete</button>` : ''}
+            <button onclick="openResModal('${truck.id}')" class="bg-action text-white text-xs font-bold px-3 py-1.5 rounded-xl">Book Pallets</button>
+          </div>
         </div>
 
         <div class="mt-4 space-y-3">
           <h3 class="text-xs font-bold text-slate-800 uppercase">Assigned Cargo Pool Items (${assignedCargo.length})</h3>
-          ${assignedCargo.length === 0 ? '<p class="text-xs text-slate-400">No cargo items assigned to this truck yet. Go to Cargo Pool tab to assign them.</p>' : ''}
+          ${assignedCargo.length === 0 ? '<p class="text-xs text-slate-400">No cargo items assigned to this truck yet.</p>' : ''}
           ${assignedCargo.map(c => `
             <div class="p-3 bg-slate-50 border rounded-xl text-xs flex justify-between items-center">
-              <div><strong>${c.name}</strong> (${c.eur} EUR / ${c.uk} UK) - Dest: ${c.dest}${c.docs.length > 0 ? `<br><span class="text-emerald-700 font-bold">✓ Docs inherited</span>` : ''}</div>
+              <div><strong>${c.name}</strong> (${c.eur} EUR / ${c.uk} UK) - Dest:${c.dest}</div>
               <button onclick="assignCargoToTruck('${c.id}', '')" class="text-red-500 font-bold hover:underline">Unassign</button>
             </div>
           `).join('')}
@@ -657,20 +750,22 @@
       lucide.createIcons();
     }
 
-    function renderAnalyticsDashboard() {
-      let totalSpend = 0, totalEUR = 0, totalUK = 0, occSum = 0;
-      trucks.forEach(t => {
-        const st = calculateLoad(t);
-        totalSpend += st.priceNum;
-        totalEUR += st.totalEUR;
-        totalUK += st.totalUK;
-        occSum += st.pct;
-      });
-      document.getElementById('kpiAvgOccupancy').innerText = trucks.length ? Math.round(occSum / trucks.length) + '%' : '0%';
-      document.getElementById('kpiTotalSpend').innerText = '€' + totalSpend.toLocaleString();
-      document.getElementById('kpiTotalPallets').innerText = totalEUR + totalUK;
-      document.getElementById('kpiTotalTrips').innerText = trucks.length;
+    async function toggleTruckStatus(id) {
+      const t = trucks.find(x => x.id === id);
+      if (t) {
+        const nextStatus = t.status === 'active' ? 'completed' : 'active';
+        await supabaseClient.from('trucks').update({ status: nextStatus }).eq('id', id);
+        await loadCloudData();
+        // Se queda en Active Trips (o la pestaña actual) sin redirigir
+      }
     }
+
+    function renderMonthlyCalendar() {}
+    function applyAdvancedFilters() {}
+    function renderAnalyticsDashboard() {}
+    function exportExcelReport() {}
+    function exportPDFReport() {}
+    function downloadFullDatabaseBackup() {}
 
     checkAuthSession();
   </script>
